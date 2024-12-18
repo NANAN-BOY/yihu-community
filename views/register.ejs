@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <div>
+      <h1>注册新用户</h1>
+      <form action="/register" method="POST">
+
+        <!-- 用户名 -->
+        <label for="user_name">用户名:</label>
+        <input type="text" id="user_name" name="user_name" required><br><br>
+
+        <!-- 密码 -->
+        <label for="password">密码:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <!-- 提交按钮 -->
+        <button type="submit">注册</button>
+      </form>
+      <br>
+      <a href="/login">已有账户? 登录</a>
+    </div>
+  </body>
+</html>

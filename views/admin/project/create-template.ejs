@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建表单</title>
+    <link rel="stylesheet" href="/styles/create-form.css"> <!-- 引用外部样式表 -->
+    <script>
+        function showAddModal() {document.getElementById("addModal").style.display = "block";}
+        function closeAddModal() {document.getElementById("addModal").style.display = "none";}
+        function addOption() {const optionValue = document.getElementById("singleOption").value;
+            if (!optionValue) {alert("选项内容不能为空！");return;}
+            const optionsList = document.getElementById("optionsList");
+            const optionItem = document.createElement("li");
+            optionItem.textContent = optionValue;
+            optionsList.appendChild(optionItem);
+            // 清空输入框
+            document.getElementById("singleOption").value = "";
+        }
+        function addField() {
+            const fieldType = document.getElementById("fieldType").value;
+            const fieldName = document.getElementById("fieldName").value;
+            const isRequired = document.getElementById("isRequired").checked;
+            if (!fieldName) {alert("字段名称是必填项！");return;}
+            const options = Array.from(document.getElementById("optionsList").children).map(li => li.textContent);
+            const field = {
+                fieldName: fieldName,
+                fieldType: fieldType,
+                isRequired: isRequired,
+                options: fieldType === "3" ? options : null
+            };
+            const fieldList = document.getElementById("fieldList");
+            let fieldHtml;
+            if (fieldType === "1") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><input type="text" class="preview-input" onclick="return false;" onkeydown="return false;"></div>`;
+            } else if (fieldType === "2") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><textarea class="preview-input" onclick="return false;" onkeydown="return false;"></textarea></div>`;
+            } else if (fieldType === "3") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><select class="preview-input" onclick="return false;" onkeydown="return false;">${field.options.map(option => `<option>${option}</option>`).join('')}</select></div>`;
+            } else if (fieldType === "4") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><input type="file" class="preview-input" onclick="return false;" onkeydown="return false;"></div>`;
+            }
+            fieldList.innerHTML += fieldHtml;
+            // 清空表单输入框
+            document.getElementById("fieldName").value = "";
+            document.getElementById("singleOption").value = "";
+            document.getElementById("optionsList").innerHTML = "";
+            // 将字段添加到隐藏的数组中
+            const fieldsInput = document.getElementById("fieldsInput");
+            const existingFields = JSON.parse(fieldsInput.value || "[]");
+            existingFields.push(field);
+            fieldsInput.value = JSON.stringify(existingFields);
+            // 关闭模态框
+            closeAddModal();
+        }
+
+        // 提交表单
+        async function submitForm(event) {
+            event.preventDefault();  // 防止默认提交
+            const formName = document.getElementById("formName").value;
+            const formDescription = document.getElementById("description").value;
+            const fieldsInput = document.getElementById("fieldsInput").value;
+            const fields = JSON.parse(fieldsInput);  // 获取隐藏的字段数据
+            // 构建数据
+            const formData = {
+                form_name: formName,
+                form_description: formDescription,
+                fields: fields
+            };
+            // 使用 Fetch 提交表单
+            try {
+                const response = await fetch('/admin/create-template', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (response.ok) {alert('表单上传成功');} else {alert('表单上传失败');}
+            } catch (error) {alert('网络错误，请重试');}
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>创建新模板</h1>
+        <form id="createForm" onsubmit="submitForm(event)">
+            <div class="form-group">
+                <label for="formName">模板名称：</label>
+                <input type="text" id="formName" name="formName" required>
+            </div>
+            <div class="form-group">
+                <label for="description">描述：</label>
+                <textarea id="description" name="description"></textarea>
+            </div>
+            <h2>预览字段</h2>
+            <div id="fieldList"></div>
+            <!-- 隐藏字段，用于保存字段数组 -->
+            <input type="hidden" id="fieldsInput" name="fields" value="[]">
+            <button type="submit" class="btn">保存模板</button>
+            <button id="discardButton" class="btn">放弃保存</button>
+        </form>
+        <!-- 添加按钮 -->
+        <button id="addButton" onclick="showAddModal()">添加字段</button>
+        <!-- 添加字段模态框 -->
+        <div id="addModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAddModal()">&times;</span>
+                <h2>添加字段</h2>
+                <div class="form-group">
+                    <label for="fieldName">字段名称：</label>
+                    <input type="text" id="fieldName" required>
+                </div>
+                <div class="form-group">
+                    <label for="fieldType">字段类型：</label>
+                    <select id="fieldType">
+                        <option value="1">文本框</option>
+                        <option value="2">多行文本框</option>
+                        <option value="3">下拉选择</option>
+                        <option value="4">文件上传</option>
+                    </select>
+                </div>
+                <div class="isRequired">
+                    <label for="isRequired">必填：</label>
+                    <input type="checkbox" id="isRequired">
+                </div>
+                <div id="optionDiv" style="display:none;">
+                    <label for="singleOption">选项：</label>
+                    <ul id="optionsList"></ul>
+                    <input class="optionDivinput" type="text" id="singleOption">
+                    <button type="button" onclick="addOption()">+</button>
+                </div>
+                <button type="button" class="btn" onclick="addField()">添加字段</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 根据字段类型显示额外的选项输入框（如select的选项）
+        document.getElementById("fieldType").addEventListener("change", function() {
+            const fieldType = this.value;
+            if (fieldType === "3") {
+                document.getElementById("optionDiv").style.display = "block";
+            } else {
+                document.getElementById("optionDiv").style.display = "none";
+            }
+        });
+        document.getElementById('discardButton').addEventListener('click', function() {
+         const isConfirmed = confirm('你确定要放弃保存吗？');
+        // 根据用户的选择执行不同的逻辑
+        if (isConfirmed) {window.location.href = '/admin/manage-templates';}
+        });
+
+        // 点击模态框外关闭模态框
+        window.onclick = function(event) {
+            if (event.target == document.getElementById("addModal")) {
+            }
+        }
+    </script>
+</body>
+</html>

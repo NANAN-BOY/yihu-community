@@ -5,19 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
     <link rel="stylesheet" href="/stylesheets/style.css" />
+    <style>
+      /* 设置基本样式 */
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f7f7f7;
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* 登录页面容器 */
+      .login-container {
+        display: flex;
+        width: 80%;
+        max-width: 1200px;
+        min-height: 500px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        background-color: #ffffff;
+      }
+
+      /* 左侧艺术字体区域 */
+      .welcome-section {
+        flex: 1;
+        background-color: #16a085; /* 同页面其他风格的绿色 */
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 40px;
+      }
+
+      .welcome-section h2 {
+        font-family: 'Brush Script MT', cursive, sans-serif; /* 艺术字体 */
+        font-size: 3rem;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      /* 右侧登录区域 */
+      .login-form {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .login-form h1 {
+        text-align: center;
+        color: #34495e;
+        font-size: 2rem;
+        margin-bottom: 30px;
+      }
+
+      /* 表单标签和输入框样式 */
+      .login-form label {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        color: #34495e;
+      }
+
+      .login-form input {
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1rem;
+        width: 100%;
+      }
+
+      .login-form button {
+        padding: 12px;
+        background-color: #16a085; /* 与左侧一致的绿色 */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .login-form button:hover {
+        background-color: #1abc9c; /* 鼠标悬停时颜色变化 */
+      }
+
+      /* 响应式布局 */
+      @media (max-width: 768px) {
+        .login-container {
+          flex-direction: column;
+        }
+
+        .welcome-section h2 {
+          font-size: 2rem;
+        }
+
+        .login-form h1 {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div>
-      <h1>登录</h1>
-      <form action="/login" method="POST">
-        <label for="user_id">用户ID:</label>
-        <input type="text" id="user_id" name="user_id" required><br><br>
-        
-        <label for="password">密码:</label>
-        <input type="password" id="password" name="password" required><br><br>
+    <div class="login-container">
+      <!-- 左侧艺术字体欢迎区域 -->
+      <div class="welcome-section">
+        <h2>欢迎使用智能管理系统Beta</h2>
+      </div>
 
-        <button type="submit">登录</button>
-      </form>
+      <!-- 右侧登录表单 -->
+      <div class="login-form">
+        <h1>登录</h1>
+        <form action="/login" method="POST">
+          <label for="user_id">用户ID:</label>
+          <input type="text" id="user_id" name="user_id" required><br>
+
+          <label for="password">密码:</label>
+          <input type="password" id="password" name="password" required><br>
+
+          <button type="submit">登录</button>
+        </form>
+      </div>
     </div>
   </body>
 </html>

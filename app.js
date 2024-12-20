@@ -204,12 +204,13 @@ app.get('/admin/edit-template/:templateId', async (req, res) => {
 });
 // 编辑项目模板Post
 app.post('/admin/edit-template/:templateId', async (req, res) => {
+    console.log(req.body);
     if (req.session.user?.user_role === undefined || req.session.user.user_role !== 2) { 
         return res.status(401).redirect('/login'); 
     }
     const { templateId } = req.params;
     const { form_name, form_description, fields } = req.body;
-
+    
     try {
         const connection = await db.getConnection();
         await connection.beginTransaction();

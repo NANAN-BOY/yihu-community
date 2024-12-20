@@ -6,6 +6,7 @@
     <title>编辑模板</title>
     <link rel="stylesheet" href="/styles/create-form.css">
     <script>
+        let template = <%- JSON.stringify(template) %>;
         function showAddModal() {
             document.getElementById("addModal").style.display = "block";
         }
@@ -76,40 +77,35 @@
             closeAddModal();
         }
 
+        // 提交表单
         async function submitForm(event) {
-            event.preventDefault();
-
+            event.preventDefault();  // 防止默认提交
             const formName = document.getElementById("formName").value;
             const formDescription = document.getElementById("description").value;
             const fieldsInput = document.getElementById("fieldsInput").value;
-            const fields = JSON.parse(fieldsInput);
-
+            const fields = JSON.parse(fieldsInput);  // 获取隐藏的字段数据
+            // 构建数据
             const formData = {
                 form_name: formName,
                 form_description: formDescription,
                 fields: fields
             };
-
+            // 使用 Fetch 提交表单
             try {
-                const response = await fetch(`/admin/edit-template/<%= template.template_id %>`, {
+                console.log(formData);
+                const response = await fetch(`/admin/edit-template/${template.template_id}`, {
+                    
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(formData)
                 });
-
                 const data = await response.json();
-
-                if (response.ok) {
-                    alert('模板更新成功');
-                    window.location.href = '/admin/manage-templates';
-                } else {
-                    alert('模板更新失败');
-                }
+                if (response.ok) {alert('表单上传成功');} else {alert('表单上传失败');}
             } catch (error) {
-                alert('网络错误，请重试');
-            }
+                console.error('Error:', error);
+                alert('网络错误，请重试');}
         }
     </script>
 </head>
@@ -131,17 +127,17 @@
                 <% template.fields.forEach(function(field) { %>
                     <div class="field">
                         <label><%= field.template_fields_name %> <%= field.fields_isRequired ? '*' : '' %></label>
-                        <% if (field.template_fields_type === "1") { %>
+                        <% if (field.template_fields_type === 1) { %>
                             <input type="text" class="preview-input" >
-                        <% } else if (field.template_fields_type === "2") { %>
+                        <% } else if (field.template_fields_type === 2) { %>
                             <textarea class="preview-input" ></textarea>
-                        <% } else if (field.template_fields_type === "3") { %>
+                        <% } else if (field.template_fields_type === 3) { %>
                             <select class="preview-input" >
                                 <% field.template_fields_options.forEach(function(option) { %>
                                     <option><%= option %></option>
                                 <% }) %>
                             </select>
-                        <% } else if (field.template_fields_type === "4") { %>
+                        <% } else if (field.template_fields_type === 4) { %>
                             <input type="file" class="preview-input" >
                         <% } %>
                     </div>
@@ -192,6 +188,7 @@
     </div>
 
     <script>
+        
         document.getElementById("fieldType").addEventListener("change", function() {
             const fieldType = this.value;
             if (fieldType === "3") {

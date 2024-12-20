@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑模板</title>
+    <link rel="stylesheet" href="/styles/create-form.css">
+    <script>
+        function showAddModal() {
+            document.getElementById("addModal").style.display = "block";
+        }
+        function closeAddModal() {
+            document.getElementById("addModal").style.display = "none";
+        }
+
+        function addOption() {
+            const optionValue = document.getElementById("singleOption").value;
+            if (!optionValue) {
+                alert("选项内容不能为空！");
+                return;
+            }
+            const optionsList = document.getElementById("optionsList");
+            const optionItem = document.createElement("li");
+            optionItem.textContent = optionValue;
+            optionsList.appendChild(optionItem);
+            // 清空输入框
+            document.getElementById("singleOption").value = "";
+        }
+
+        function addField() {
+            const fieldType = document.getElementById("fieldType").value;
+            const fieldName = document.getElementById("fieldName").value;
+            const isRequired = document.getElementById("isRequired").checked;
+
+            if (!fieldName) {
+                alert("字段名称是必填项！");
+                return;
+            }
+
+            const options = Array.from(document.getElementById("optionsList").children).map(li => li.textContent);
+
+            const field = {
+                fieldName: fieldName,
+                fieldType: fieldType,
+                isRequired: isRequired,
+                options: fieldType === "3" ? options : null
+            };
+
+            const fieldList = document.getElementById("fieldList");
+
+            let fieldHtml;
+            if (fieldType === "1") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><input type="text" class="preview-input" onclick="return false;" onkeydown="return false;"></div>`;
+            } else if (fieldType === "2") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><textarea class="preview-input" onclick="return false;" onkeydown="return false;"></textarea></div>`;
+            } else if (fieldType === "3") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><select class="preview-input" onclick="return false;" onkeydown="return false;">${field.options.map(option => `<option>${option}</option>`).join('')}</select></div>`;
+            } else if (fieldType === "4") {
+                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><input type="file" class="preview-input" onclick="return false;" onkeydown="return false;"></div>`;
+            }
+
+            fieldList.innerHTML += fieldHtml;
+
+            // 清空表单输入框
+            document.getElementById("fieldName").value = "";
+            document.getElementById("singleOption").value = "";
+            document.getElementById("optionsList").innerHTML = "";
+
+            // 将字段添加到隐藏的数组中
+            const fieldsInput = document.getElementById("fieldsInput");
+            const existingFields = JSON.parse(fieldsInput.value || "[]");
+            existingFields.push(field);
+            fieldsInput.value = JSON.stringify(existingFields);
+
+            // 关闭模态框
+            closeAddModal();
+        }
+
+        async function submitForm(event) {
+            event.preventDefault();
+
+            const formName = document.getElementById("formName").value;
+            const formDescription = document.getElementById("description").value;
+            const fieldsInput = document.getElementById("fieldsInput").value;
+            const fields = JSON.parse(fieldsInput);
+
+            const formData = {
+                form_name: formName,
+                form_description: formDescription,
+                fields: fields
+            };
+
+            try {
+                const response = await fetch(`/admin/edit-template/<%= template.template_id %>`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('模板更新成功');
+                    window.location.href = '/admin/manage-templates';
+                } else {
+                    alert('模板更新失败');
+                }
+            } catch (error) {
+                alert('网络错误，请重试');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>编辑模板</h1>
+        <form id="editForm" onsubmit="submitForm(event)">
+            <div class="form-group">
+                <label for="formName">模板名称：</label>
+                <input type="text" id="formName" name="formName" value="<%= template.template_name %>" required>
+            </div>
+            <div class="form-group">
+                <label for="description">描述：</label>
+                <textarea id="description" name="description"><%= template.template_description %></textarea>
+            </div>
+
+            <h2>预览字段</h2>
+            <div id="fieldList">
+                <% template.fields.forEach(function(field) { %>
+                    <div class="field">
+                        <label><%= field.template_fields_name %> <%= field.fields_isRequired ? '*' : '' %></label>
+                        <% if (field.template_fields_type === "1") { %>
+                            <input type="text" class="preview-input" >
+                        <% } else if (field.template_fields_type === "2") { %>
+                            <textarea class="preview-input" ></textarea>
+                        <% } else if (field.template_fields_type === "3") { %>
+                            <select class="preview-input" >
+                                <% field.template_fields_options.forEach(function(option) { %>
+                                    <option><%= option %></option>
+                                <% }) %>
+                            </select>
+                        <% } else if (field.template_fields_type === "4") { %>
+                            <input type="file" class="preview-input" >
+                        <% } %>
+                    </div>
+                <% }) %>
+            </div>
+
+            <!-- 隐藏字段，用于保存字段数组 -->
+            <input type="hidden" id="fieldsInput" name="fields" value='<%= JSON.stringify(template.fields) %>'>
+
+            <button type="submit" class="btn">保存更改</button>
+            <button id="cancelButton" class="btn">取消</button>
+        </form>
+
+        <!-- 添加按钮 -->
+        <button id="addButton" onclick="showAddModal()">添加字段</button>
+
+        <!-- 添加字段模态框 -->
+        <div id="addModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAddModal()">&times;</span>
+                <h2>添加字段</h2>
+                <div class="form-group">
+                    <label for="fieldName">字段名称：</label>
+                    <input type="text" id="fieldName" required>
+                </div>
+                <div class="form-group">
+                    <label for="fieldType">字段类型：</label>
+                    <select id="fieldType">
+                        <option value="1">文本框</option>
+                        <option value="2">多行文本框</option>
+                        <option value="3">下拉选择</option>
+                        <option value="4">文件上传</option>
+                    </select>
+                </div>
+                <div class="isRequired">
+                    <label for="isRequired">必填：</label>
+                    <input type="checkbox" id="isRequired">
+                </div>
+                <div id="optionDiv" style="display:none;">
+                    <label for="singleOption">选项：</label>
+                    <ul id="optionsList"></ul>
+                    <input class="optionDivinput" type="text" id="singleOption">
+                    <button type="button" onclick="addOption()">+</button>
+                </div>
+                <button type="button" class="btn" onclick="addField()">添加字段</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("fieldType").addEventListener("change", function() {
+            const fieldType = this.value;
+            if (fieldType === "3") {
+                document.getElementById("optionDiv").style.display = "block";
+            } else {
+                document.getElementById("optionDiv").style.display = "none";
+            }
+        });
+        
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            const isConfirmed = confirm('你确定要放弃更改吗？');
+            if (isConfirmed) {
+                window.location.href = '/admin/manage-templates';
+            }
+        });
+
+        // 点击模态框外关闭模态框
+        window.onclick = function(event) {
+            if (event.target == document.getElementById("addModal")) {
+                closeAddModal();
+            }
+        }
+    </script>
+</body>
+</html>

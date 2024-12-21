@@ -100,7 +100,6 @@ app.get('/project-declaration', async (req, res) => {
     if (!req.session.user || req.session.user.user_role !== 3) {
         return res.status(401).redirect('/login'); // 验证登录和权限
     }
-
     try {
         // 查询当前启用的模板
         const [enabledTemplate] = await db.query('SELECT * FROM ProjectTemplate WHERE template_enable = 1');
@@ -109,7 +108,6 @@ app.get('/project-declaration', async (req, res) => {
         }
 
         const template = enabledTemplate[0];
-
         // 查询模板的字段
         const [fields] = await db.query(
             'SELECT * FROM template_fields WHERE template_id = ?',
@@ -142,14 +140,28 @@ app.get('/project-declaration', async (req, res) => {
 });
 // 提交项目申报表单
 app.post('/project-declaration', async (req, res) => {
-    if (!req.session.user || req.session.user.user_role !== 3) {
-        return res.status(401).redirect('/login'); // 验证登录和权限
-    }
+    console.log('Received req.body:', req.body);
 
-    const { template_id, fields } = req.body;
-    const user_id = req.session.user.user_id;
+    const { template_id } = req.body;
 
-    if (!template_id || !fields || !Array.isArray(fields)) {
+    // 解析 fields 数据
+    const fields = Object.keys(req.body)
+        .filter(key => key.startsWith('fields[')) // 筛选出字段数据
+        .map(key => {
+            const matches = key.match(/fields\[(\d+)\]\[field_value\]/); // 匹配字段 ID
+            if (matches) {
+                return {
+                    template_fields_id: matches[1], // 提取字段 ID
+                    field_value: req.body[key]     // 对应的值
+                };
+            }
+            return null;
+        })
+        .filter(field => field !== null); // 过滤掉无效字段
+
+    console.log('Parsed fields:', fields);
+
+    if (!template_id || fields.length === 0) {
         return res.status(400).send('缺少必要的参数');
     }
 
@@ -161,7 +173,7 @@ app.post('/project-declaration', async (req, res) => {
         // 创建新的 form_entries 记录
         const [entryResult] = await connection.execute(
             'INSERT INTO form_entries (template_id, user_id, submitted_at) VALUES (?, ?, CURRENT_TIMESTAMP)',
-            [template_id, user_id]
+            [template_id, req.session.user.user_id]
         );
 
         const entry_id = entryResult.insertId;
@@ -169,11 +181,6 @@ app.post('/project-declaration', async (req, res) => {
         // 插入每个字段的值到 field_values 表
         for (const field of fields) {
             const { template_fields_id, field_value } = field;
-
-            if (!template_fields_id || field_value === undefined) {
-                console.warn('字段值无效，跳过插入:', field);
-                continue;
-            }
 
             await connection.execute(
                 'INSERT INTO field_values (entry_id, template_fields_id, field_value) VALUES (?, ?, ?)',
@@ -195,6 +202,7 @@ app.post('/project-declaration', async (req, res) => {
         }
     }
 });
+
 
 //区管理员面板路由
 app.get('/admindashboard', (req, res) => {

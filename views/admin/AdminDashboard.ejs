@@ -3,218 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/stylesheets/style.css" />
     <title>管理员仪表盘</title>
-    <style>
-        /* 移除 body 默认的 margin 和 padding */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f7f7f7; /* 浅灰色背景 */
-            }
-        /* 页面容器 */
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-        /* 左侧边栏样式 */
-        aside {
-            width: 250px; /* 侧边栏宽度 */
-            background-color: #2c3e50; /* 深蓝色背景 */
-            color: white;
-            padding: 20px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            box-sizing: border-box;
-        }
-
-        aside h3 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            color: #ecf0f1;
-        }
-
-        aside ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        aside ul li {
-            margin-bottom: 15px;
-        }
-
-        aside ul li a {
-            color: #bdc3c7;
-            text-decoration: none;
-            padding: 10px;
-            display: block;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        aside ul li a:hover {
-            background-color: #34495e;
-        }
-
-        /* 主内容区域样式 */
-        .content-wrapper {
-            margin-left: 270px; /* 给侧边栏留出空间 */
-            padding: 20px;
-            flex-grow: 1;
-            background-color: #ecf0f1; /* 浅灰色背景 */
-            box-sizing: border-box;
-            padding-top: 80px; /* 为顶部导航栏留出空间 */
-        }
-
-        /* 导航栏样式 */
-        nav {
-            background-color: #34495e; /* 深灰色 */
-            height: 50px;
-            color: white;
-            width: 100%;
-            box-sizing: border-box;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between; /* 左右两侧对齐 */
-            align-items: center;
-        }
-
-        /* 导航链接样式 */
-        nav a {
-            color: white;
-            text-align: center;
-            padding: 14px 20px;
-            text-decoration: none;
-            font-size: 1rem;
-            margin-right: 20px;
-            transition: background-color 0.3s;
-        }
-
-        /* 首页链接样式 */
-        nav a.home {
-            background-color: #16a085; /* 绿松石色背景 */
-            margin-right: 0;
-            margin-left: -4px;
-        }
-
-        /* 当鼠标悬停在导航链接上时改变颜色 */
-        nav a:hover {
-            background-color: #1abc9c;
-        }
-
-        /* 右侧登出按钮样式（与左侧一致） */
-        nav .logout-btn {
-            margin-right: -4px;
-            color:rgb(255, 255, 255);
-            text-decoration: none;
-            display: block;
-            transition: background-color 0.3s;
-        }
-        nav .logout-btn:hover {
-            background-color:rgb(224, 10, 10);
-        }
-
-        /* 页面标题样式 */
-        h1 {
-            font-size: 2rem;
-            color: #2c3e50;
-            margin-top: 20px;
-        }
-
-        /* 功能标题样式 */
-        h2 {
-            font-size: 1.5rem;
-            color: #34495e;
-        }
-
-        /* 列表样式 */
-        ul {
-            padding-left: 20px;
-            list-style-type: none;
-        }
-
-        ul li {
-            margin-bottom: 10px;
-        }
-
-        ul li a {
-            color: #2c3e50;
-            text-decoration: none;
-            font-size: 1.1rem;
-        }
-
-        ul li a:hover {
-            color: #16a085;
-        }
-
-        /* 响应式设计：当屏幕宽度小于 768px 时调整布局 */
-        @media (max-width: 768px) {
-            aside {
-                width: 200px;
-            }
-
-            .content-wrapper {
-                margin-left: 0;
-                padding: 10px;
-            }
-
-            nav {
-                padding: 10px;
-            }
-
-            nav a {
-                padding: 10px 12px;
-            }
-
-            .container {
-                flex-direction: column;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            h2 {
-                font-size: 1.3rem;
-            }
-        }
-    </style>
 </head>
 <body>
-    <nav>
-        <div>
-            <!-- 左侧导航链接 -->
-            <a href="#" class="home">智能管理平台Beta</a>
-            <a href="#news">新闻</a>
-            <a href="#contact">联系我们</a>
-            <a href="#about">关于我们</a>
-        </div>
-        
-        <!-- 右侧登出按钮 -->
-        <a href="/logout" class="logout-btn">安全登出</a>
-    </nav>
-
-    <!-- 主容器：包含侧边栏和内容 -->
-    <div class="container">
         <!-- 侧边栏 -->
         <aside>
-            <h3>功能菜单</h3>
+            <h1>智能管理平台Beta</h1>
             <ul>
+                <li><a class="onclick"  href="/admindashboard">首页</a></li>
                 <li><a href="/admin/manage-templates">管理项目填报模板</a></li>
                 <li><a href="#">用户管理</a></li>
                 <li><a href="#">报告生成</a></li>
                 <li><a href="#">设置</a></li>
-                <!-- 根据需求添加更多功能 -->
             </ul>
         </aside>
 
         <!-- 页面内容容器 -->
-        <div class="content-wrapper">
+        <div class="container">
             <h1>欢迎, <%= user_name %>！</h1>
             <div>
                 <h2>功能：</h2>
@@ -226,6 +32,5 @@
                 </ul>
             </div>
         </div>
-    </div>
 </body>
 </html>

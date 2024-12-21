@@ -96,11 +96,105 @@ app.get('/userdashboard', (req, res) => {
     res.render('user/userdashboard', { user_name: req.session.user.user_name });
 });
 // 基层组织项目申报路由
-app.get('/project-declaration', (req, res) => {
-    if (req.session.user?.user_role === undefined || req.session.user.user_role !== 3) { return res.status(401).redirect('/login'); }
-    res.render('user/project/project-declaration'); // 渲染项目申报页面
-});
+app.get('/project-declaration', async (req, res) => {
+    if (!req.session.user || req.session.user.user_role !== 3) {
+        return res.status(401).redirect('/login'); // 验证登录和权限
+    }
 
+    try {
+        // 查询当前启用的模板
+        const [enabledTemplate] = await db.query('SELECT * FROM ProjectTemplate WHERE template_enable = 1');
+        if (enabledTemplate.length === 0) {
+            return res.status(404).send('当前没有启用的模板');
+        }
+
+        const template = enabledTemplate[0];
+
+        // 查询模板的字段
+        const [fields] = await db.query(
+            'SELECT * FROM template_fields WHERE template_id = ?',
+            [template.template_id]
+        );
+
+        // 解析 JSON 字符串为数组
+        fields.forEach(field => {
+            if (typeof field.template_fields_options === 'string' && field.template_fields_options.trim() !== '') {
+                try {
+                    field.template_fields_options = JSON.parse(field.template_fields_options);
+                } catch (e) {
+                    console.error('Failed to parse template_fields_options:', e);
+                    field.template_fields_options = []; // 如果解析失败，设置为空数组
+                }
+            } else {
+                field.template_fields_options = []; // 确保始终是一个数组
+            }
+        });
+
+        res.render('user/project/project-declaration', {
+            user_name: req.session.user.user_name,
+            template,
+            fields, // 模板的字段列表
+        });
+    } catch (error) {
+        console.error('加载申报页面失败:', error);
+        res.status(500).send('系统错误');
+    }
+});
+// 提交项目申报表单
+app.post('/project-declaration', async (req, res) => {
+    if (!req.session.user || req.session.user.user_role !== 3) {
+        return res.status(401).redirect('/login'); // 验证登录和权限
+    }
+
+    const { template_id, fields } = req.body;
+    const user_id = req.session.user.user_id;
+
+    if (!template_id || !fields || !Array.isArray(fields)) {
+        return res.status(400).send('缺少必要的参数');
+    }
+
+    let connection;
+    try {
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // 创建新的 form_entries 记录
+        const [entryResult] = await connection.execute(
+            'INSERT INTO form_entries (template_id, user_id, submitted_at) VALUES (?, ?, CURRENT_TIMESTAMP)',
+            [template_id, user_id]
+        );
+
+        const entry_id = entryResult.insertId;
+
+        // 插入每个字段的值到 field_values 表
+        for (const field of fields) {
+            const { template_fields_id, field_value } = field;
+
+            if (!template_fields_id || field_value === undefined) {
+                console.warn('字段值无效，跳过插入:', field);
+                continue;
+            }
+
+            await connection.execute(
+                'INSERT INTO field_values (entry_id, template_fields_id, field_value) VALUES (?, ?, ?)',
+                [entry_id, template_fields_id, field_value]
+            );
+        }
+
+        await connection.commit();
+        res.status(201).send('申报提交成功');
+    } catch (error) {
+        if (connection) {
+            await connection.rollback();
+        }
+        console.error('提交申报失败:', error);
+        res.status(500).send('系统错误');
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+});
 
 //区管理员面板路由
 app.get('/admindashboard', (req, res) => {
@@ -200,7 +294,7 @@ app.get('/admin/edit-template/:templateId', async (req, res) => {
     } catch (error) {
         console.error('Error fetching template:', error);
         res.status(500).send('获取模板失败');
-    }  
+    }
 });
 // 编辑项目模板Post
 app.post("/admin/edit-template/:templateId", async (req, res) => {
@@ -211,11 +305,6 @@ app.post("/admin/edit-template/:templateId", async (req, res) => {
     try {
         connection = await db.getConnection();
         await connection.beginTransaction();
-
-        console.log("收到的模板 ID:", templateId);
-        console.log("收到的表单名称:", form_name);
-        console.log("收到的表单描述:", form_description);
-        console.log("收到的字段:", fields);
 
         // 更新模板基本信息
         const sanitizedFormName = form_name !== undefined ? form_name : null;
@@ -231,7 +320,6 @@ app.post("/admin/edit-template/:templateId", async (req, res) => {
             "DELETE FROM template_fields WHERE template_id = ?",
             [templateId]
         );
-        console.log("删除字段结果：", deleteResult);
 
         // 插入新的字段
         if (Array.isArray(fields) && fields.length > 0) {
@@ -247,8 +335,6 @@ app.post("/admin/edit-template/:templateId", async (req, res) => {
                     console.error("字段值无效，跳过插入：", { fieldName, fieldType });
                     continue; // 跳过无效字段
                 }
-
-                console.log("准备插入字段：", { fieldName, fieldType, isRequired, fieldOptions });
 
                 await connection.execute(
                     "INSERT INTO template_fields (template_id, template_fields_name, template_fields_type, fields_isRequired, template_fields_options) VALUES (?, ?, ?, ?, ?)",
@@ -301,6 +387,7 @@ app.post('/admin/create-template', async (req, res) => {
         res.status(201).json({ message: 'Form uploaded successfully', formId: formId });
     } catch (error) { res.status(500).json({ message: 'Error uploading form' }); }
 });
+
 // 更换模板方法
 app.post('/admin/replace-templates', async (req, res) => {
     if (req.session.user?.user_role === undefined || req.session.user.user_role !== 2) { return res.status(401).redirect('/login'); }

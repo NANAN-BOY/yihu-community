@@ -6,106 +6,206 @@
     <title>编辑模板</title>
     <link rel="stylesheet" href="/styles/create-form.css">
     <script>
-        let template = <%- JSON.stringify(template) %>;
+        let template = {};
+        let editingFieldIndex = null; // 当前正在编辑的字段索引
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const templateElement = document.getElementById("templateData");
+            if (templateElement) {
+                try {
+                    template = JSON.parse(templateElement.value);
+                    console.log("模板数据已加载：", template);
+                    loadFields(template.fields);
+                } catch (error) {
+                    console.error("模板数据解析失败：", error);
+                }
+            }
+
+            // 绑定取消按钮事件
+            const cancelButton = document.getElementById("cancelButton");
+            if (cancelButton) {
+                cancelButton.addEventListener("click", function () {
+                    if (confirm("确定要放弃编辑吗？")) {
+                        window.location.href = "/admin/manage-templates";
+                    }
+                });
+            }
+        });
+
+        // 加载现有字段并显示到页面上
+        function loadFields(fields) {
+        const fieldList = document.getElementById("fieldList");
+        fieldList.innerHTML = ""; // 清空字段列表
+        fields.forEach((field, index) => {
+            let fieldHtml = "";
+            if (field.template_fields_type === 1) {
+                fieldHtml = `<div class="field" data-field-index="${index}">
+                    <label>${field.template_fields_name} ${field.fields_isRequired ? "*" : ""}</label>
+                    <input type="text" readonly>
+                    <button class="edit-field-btn" type="button" onclick="editField(${index})">编辑</button>
+                    <button class="delete-field-btn" type="button" onclick="deleteField(${index})">删除</button>
+                </div>`;
+            } else if (field.template_fields_type === 2) {
+                fieldHtml = `<div class="field" data-field-index="${index}">
+                    <label>${field.template_fields_name} ${field.fields_isRequired ? "*" : ""}</label>
+                    <textarea readonly></textarea>
+                    <button class="edit-field-btn" type="button" onclick="editField(${index})">编辑</button>
+                    <button class="delete-field-btn" type="button" onclick="deleteField(${index})">删除</button>
+                </div>`;
+            } else if (field.template_fields_type === 3) {
+                const optionsHtml = field.template_fields_options.map((opt) => `<option>${opt}</option>`).join("");
+                fieldHtml = `<div class="field" data-field-index="${index}">
+                    <label>${field.template_fields_name} ${field.fields_isRequired ? "*" : ""}</label>
+                    <select readonly>${optionsHtml}</select>
+                    <button class="edit-field-btn" type="button" onclick="editField(${index})">编辑</button>
+                    <button class="delete-field-btn" type="button" onclick="deleteField(${index})">删除</button>
+                </div>`;
+            } else if (field.template_fields_type === 4) {
+                fieldHtml = `<div class="field" data-field-index="${index}">
+                    <label>${field.template_fields_name} ${field.fields_isRequired ? "*" : ""}</label>
+                    <input type="file" readonly>
+                    <button class="edit-field-btn" type="button" onclick="editField(${index})">编辑</button>
+                    <button class="delete-field-btn" type="button" onclick="deleteField(${index})">删除</button>
+                </div>`;
+            }
+                fieldList.innerHTML += fieldHtml;
+            });
+        }
+
+
+        // 打开模态框
         function showAddModal() {
             document.getElementById("addModal").style.display = "block";
         }
+
+        // 关闭模态框
         function closeAddModal() {
             document.getElementById("addModal").style.display = "none";
+            document.getElementById("fieldName").value = ""; // 清空字段名称
+            document.getElementById("optionsList").innerHTML = ""; // 清空选项列表
+            document.getElementById("isRequired").checked = false; // 重置必填选项
+            document.getElementById("fieldType").value = "1"; // 重置字段类型
+            document.getElementById("optionDiv").style.display = "none"; // 隐藏选项输入框
+            editingFieldIndex = null; // 重置编辑状态
         }
 
-        function addOption() {
-            const optionValue = document.getElementById("singleOption").value;
-            if (!optionValue) {
-                alert("选项内容不能为空！");
-                return;
+        // 编辑字段
+        function editField(index) {
+            editingFieldIndex = index; // 设置当前正在编辑的字段索引
+            const field = template.fields[index];
+            document.getElementById("fieldName").value = field.template_fields_name;
+            document.getElementById("fieldType").value = field.template_fields_type;
+            document.getElementById("isRequired").checked = field.fields_isRequired;
+
+            // 加载字段选项（如果是下拉框类型）
+            if (field.template_fields_type === 3) {
+                const optionsList = document.getElementById("optionsList");
+                optionsList.innerHTML = ""; // 清空选项列表
+                field.template_fields_options.forEach((option) => {
+                    const optionItem = document.createElement("li");
+                    optionItem.textContent = option;
+
+                    // 添加删除选项按钮
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "删除";
+                    deleteButton.style.marginLeft = "10px";
+                    deleteButton.onclick = function () {
+                        optionsList.removeChild(optionItem);
+                    };
+                    optionItem.appendChild(deleteButton);
+
+                    optionsList.appendChild(optionItem);
+                });
+                document.getElementById("optionDiv").style.display = "block";
+            } else {
+                document.getElementById("optionDiv").style.display = "none";
             }
-            const optionsList = document.getElementById("optionsList");
-            const optionItem = document.createElement("li");
-            optionItem.textContent = optionValue;
-            optionsList.appendChild(optionItem);
-            // 清空输入框
-            document.getElementById("singleOption").value = "";
+
+            // 显示模态框
+            showAddModal();
         }
 
-        function addField() {
+        // 保存字段（用于添加或编辑）
+        function saveField() {
+            const fieldName = document.getElementById("fieldName").value.trim();
             const fieldType = document.getElementById("fieldType").value;
-            const fieldName = document.getElementById("fieldName").value;
             const isRequired = document.getElementById("isRequired").checked;
 
             if (!fieldName) {
-                alert("字段名称是必填项！");
+                alert("字段名称不能为空！");
                 return;
             }
 
-            const options = Array.from(document.getElementById("optionsList").children).map(li => li.textContent);
+            // 获取下拉框的选项
+            const options = Array.from(document.getElementById("optionsList").children).map(li => li.firstChild.textContent);
 
-            const field = {
-                fieldName: fieldName,
-                fieldType: fieldType,
-                isRequired: isRequired,
-                options: fieldType === "3" ? options : null
+            const newField = {
+                template_fields_name: fieldName,
+                template_fields_type: parseInt(fieldType),
+                fields_isRequired: isRequired,
+                template_fields_options: fieldType === "3" ? options : []
             };
 
-            const fieldList = document.getElementById("fieldList");
-
-            let fieldHtml;
-            if (fieldType === "1") {
-                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><input type="text" class="preview-input" onclick="return false;" onkeydown="return false;"></div>`;
-            } else if (fieldType === "2") {
-                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><textarea class="preview-input" onclick="return false;" onkeydown="return false;"></textarea></div>`;
-            } else if (fieldType === "3") {
-                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><select class="preview-input" onclick="return false;" onkeydown="return false;">${field.options.map(option => `<option>${option}</option>`).join('')}</select></div>`;
-            } else if (fieldType === "4") {
-                fieldHtml = `<div class="field"><label>${fieldName} ${isRequired ? '*' : ''}</label><input type="file" class="preview-input" onclick="return false;" onkeydown="return false;"></div>`;
+            if (editingFieldIndex !== null) {
+                // 编辑现有字段
+                template.fields[editingFieldIndex] = newField;
+            } else {
+                // 添加新字段
+                template.fields.push(newField);
             }
 
-            fieldList.innerHTML += fieldHtml;
-
-            // 清空表单输入框
-            document.getElementById("fieldName").value = "";
-            document.getElementById("singleOption").value = "";
-            document.getElementById("optionsList").innerHTML = "";
-
-            // 将字段添加到隐藏的数组中
-            const fieldsInput = document.getElementById("fieldsInput");
-            const existingFields = JSON.parse(fieldsInput.value || "[]");
-            existingFields.push(field);
-            fieldsInput.value = JSON.stringify(existingFields);
+            // 重新加载字段列表
+            loadFields(template.fields);
 
             // 关闭模态框
             closeAddModal();
         }
 
+        // 删除字段
+        function deleteField(index) {
+            if (!confirm("确定要删除这个字段吗？")) {
+                return;
+            }
+            template.fields.splice(index, 1); // 删除字段
+            loadFields(template.fields); // 重新加载字段列表
+        }
+
         // 提交表单
         async function submitForm(event) {
-            event.preventDefault();  // 防止默认提交
-            const formName = document.getElementById("formName").value;
-            const formDescription = document.getElementById("description").value;
-            const fieldsInput = document.getElementById("fieldsInput").value;
-            const fields = JSON.parse(fieldsInput);  // 获取隐藏的字段数据
-            // 构建数据
+            event.preventDefault();
+            const formName = document.getElementById("formName").value.trim();
+            const formDescription = document.getElementById("description").value.trim();
+
+            if (!formName) {
+                alert("模板名称不能为空！");
+                return;
+            }
+
             const formData = {
                 form_name: formName,
                 form_description: formDescription,
-                fields: fields
+                fields: template.fields,
             };
-            // 使用 Fetch 提交表单
+
             try {
-                console.log(formData);
                 const response = await fetch(`/admin/edit-template/${template.template_id}`, {
-                    
-                    method: 'POST',
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/json'
+                        "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify(formData),
                 });
-                const data = await response.json();
-                if (response.ok) {alert('表单上传成功');} else {alert('表单上传失败');}
+
+                if (response.ok) {
+                    alert("模板已成功更新！");
+                    window.location.href = "/admin/manage-templates";
+                } else {
+                    alert("更新模板失败，请重试！");
+                }
             } catch (error) {
-                console.error('Error:', error);
-                alert('网络错误，请重试');}
+                console.error("提交失败：", error);
+                alert("网络错误，请稍后重试！");
+            }
         }
     </script>
 </head>
@@ -118,47 +218,21 @@
                 <input type="text" id="formName" name="formName" value="<%= template.template_name %>" required>
             </div>
             <div class="form-group">
-                <label for="description">描述：</label>
+                <label for="description">模板描述：</label>
                 <textarea id="description" name="description"><%= template.template_description %></textarea>
             </div>
-
-            <h2>预览字段</h2>
-            <div id="fieldList">
-                <% template.fields.forEach(function(field) { %>
-                    <div class="field">
-                        <label><%= field.template_fields_name %> <%= field.fields_isRequired ? '*' : '' %></label>
-                        <% if (field.template_fields_type === 1) { %>
-                            <input type="text" class="preview-input" >
-                        <% } else if (field.template_fields_type === 2) { %>
-                            <textarea class="preview-input" ></textarea>
-                        <% } else if (field.template_fields_type === 3) { %>
-                            <select class="preview-input" >
-                                <% field.template_fields_options.forEach(function(option) { %>
-                                    <option><%= option %></option>
-                                <% }) %>
-                            </select>
-                        <% } else if (field.template_fields_type === 4) { %>
-                            <input type="file" class="preview-input" >
-                        <% } %>
-                    </div>
-                <% }) %>
-            </div>
-
-            <!-- 隐藏字段，用于保存字段数组 -->
-            <input type="hidden" id="fieldsInput" name="fields" value='<%= JSON.stringify(template.fields) %>'>
-
+            <h2>字段预览</h2>
+            <div id="fieldList"></div>
+            <input type="hidden" id="templateData" value='<%= JSON.stringify(template) %>'>
             <button type="submit" class="btn">保存更改</button>
-            <button id="cancelButton" class="btn">取消</button>
+            <button type="button" id="cancelButton" class="btn">取消</button>
         </form>
-
-        <!-- 添加按钮 -->
+        <!-- 添加字段按钮和模态框 -->
         <button id="addButton" onclick="showAddModal()">添加字段</button>
-
-        <!-- 添加字段模态框 -->
         <div id="addModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeAddModal()">&times;</span>
-                <h2>添加字段</h2>
+                <h2 id="modalTitle">字段信息</h2>
                 <div class="form-group">
                     <label for="fieldName">字段名称：</label>
                     <input type="text" id="fieldName" required>
@@ -180,37 +254,11 @@
                     <label for="singleOption">选项：</label>
                     <ul id="optionsList"></ul>
                     <input class="optionDivinput" type="text" id="singleOption">
-                    <button type="button" onclick="addOption()">+</button>
+                    <button type="button" onclick="addOption()">添加选项</button>
                 </div>
-                <button type="button" class="btn" onclick="addField()">添加字段</button>
+                <button type="button" class="btn" onclick="saveField()">保存字段</button>
             </div>
         </div>
     </div>
-
-    <script>
-        
-        document.getElementById("fieldType").addEventListener("change", function() {
-            const fieldType = this.value;
-            if (fieldType === "3") {
-                document.getElementById("optionDiv").style.display = "block";
-            } else {
-                document.getElementById("optionDiv").style.display = "none";
-            }
-        });
-        
-        document.getElementById('cancelButton').addEventListener('click', function() {
-            const isConfirmed = confirm('你确定要放弃更改吗？');
-            if (isConfirmed) {
-                window.location.href = '/admin/manage-templates';
-            }
-        });
-
-        // 点击模态框外关闭模态框
-        window.onclick = function(event) {
-            if (event.target == document.getElementById("addModal")) {
-                closeAddModal();
-            }
-        }
-    </script>
 </body>
 </html>

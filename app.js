@@ -203,46 +203,77 @@ app.get('/admin/edit-template/:templateId', async (req, res) => {
     }  
 });
 // 编辑项目模板Post
-app.post('/admin/edit-template/:templateId', async (req, res) => {
-    console.log(req.body);
-    if (req.session.user?.user_role === undefined || req.session.user.user_role !== 2) { 
-        return res.status(401).redirect('/login'); 
-    }
+app.post("/admin/edit-template/:templateId", async (req, res) => {
     const { templateId } = req.params;
     const { form_name, form_description, fields } = req.body;
-    
+
+    let connection;
     try {
-        const connection = await db.getConnection();
+        connection = await db.getConnection();
         await connection.beginTransaction();
 
+        console.log("收到的模板 ID:", templateId);
+        console.log("收到的表单名称:", form_name);
+        console.log("收到的表单描述:", form_description);
+        console.log("收到的字段:", fields);
+
         // 更新模板基本信息
+        const sanitizedFormName = form_name !== undefined ? form_name : null;
+        const sanitizedFormDescription = form_description !== undefined ? form_description : null;
+
         await connection.execute(
-            'UPDATE ProjectTemplate SET template_name = ?, template_description = ? WHERE template_id = ?',
-            [form_name, form_description, templateId]
+            "UPDATE ProjectTemplate SET template_name = ?, template_description = ? WHERE template_id = ?",
+            [sanitizedFormName, sanitizedFormDescription, templateId]
         );
 
         // 删除旧的字段
-        await connection.execute('DELETE FROM template_fields WHERE template_id = ?', [templateId]);
+        const [deleteResult] = await connection.execute(
+            "DELETE FROM template_fields WHERE template_id = ?",
+            [templateId]
+        );
+        console.log("删除字段结果：", deleteResult);
 
         // 插入新的字段
-        for (let field of fields) {
-            const { fieldName, fieldType, isRequired, options } = field;
-            const fieldOptions = options ? JSON.stringify(options) : null;  // 如果选项为空，则传递 null
-            await connection.execute(
-                'INSERT INTO template_fields (template_id, template_fields_name, template_fields_type, fields_isRequired, template_fields_options) VALUES (?, ?, ?, ?, ?)',
-                [templateId, fieldName, fieldType, isRequired, fieldOptions]
-            );
+        if (Array.isArray(fields) && fields.length > 0) {
+            for (let field of fields) {
+                const fieldName = field.template_fields_name || null;
+                const fieldType = field.template_fields_type || null;
+                const isRequired = field.fields_isRequired !== undefined ? field.fields_isRequired : false;
+                const fieldOptions = Array.isArray(field.template_fields_options)
+                    ? JSON.stringify(field.template_fields_options)
+                    : null;
+
+                if (!fieldName || !fieldType) {
+                    console.error("字段值无效，跳过插入：", { fieldName, fieldType });
+                    continue; // 跳过无效字段
+                }
+
+                console.log("准备插入字段：", { fieldName, fieldType, isRequired, fieldOptions });
+
+                await connection.execute(
+                    "INSERT INTO template_fields (template_id, template_fields_name, template_fields_type, fields_isRequired, template_fields_options) VALUES (?, ?, ?, ?, ?)",
+                    [templateId, fieldName, fieldType, isRequired, fieldOptions]
+                );
+            }
+        } else {
+            console.warn("字段数据为空，跳过字段插入");
         }
 
         await connection.commit();
-        res.status(200).json({ message: '模板已成功更新' });
+        res.status(200).json({ message: "模板已成功更新" });
     } catch (error) {
-        await connection.rollback();
-        res.status(500).json({ message: '更新模板失败', error: error.message });
+        if (connection) {
+            await connection.rollback();
+        }
+        console.error("更新模板失败：", error.stack);
+        res.status(500).json({ message: "更新模板失败", error: error.message });
     } finally {
-        connection.release();
+        if (connection) {
+            connection.release();
+        }
     }
 });
+
 
 //创建项目模板Get
 app.get('/admin/create-template', (req, res) => {

@@ -469,8 +469,6 @@ app.post("/admin/edit-template/:templateId", async (req, res) => {
         }
     }
 });
-
-
 //创建项目模板Get
 app.get('/admin/create-template', (req, res) => {
     if (req.session.user?.user_role === undefined || req.session.user.user_role !== 2) { return res.status(401).redirect('/login'); }
@@ -498,7 +496,7 @@ app.post('/admin/create-template', async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Error uploading form' }); }
 });
 
-// 更换模板方法
+// 更换选定模板方法
 app.post('/admin/replace-templates', async (req, res) => {
     if (req.session.user?.user_role === undefined || req.session.user.user_role !== 2) { return res.status(401).redirect('/login'); }
     const { newTemplateId } = req.body; // 获取传入的新模板ID
@@ -517,6 +515,7 @@ app.post('/admin/replace-templates', async (req, res) => {
         await connection.rollback(); res.status(500).json({ message: '更换模板失败', error: error.message });
     } finally { connection.release(); }
 });
+
 //删除模板方法
 app.post('/admin/delete-templates', async (req, res) => {
     if (req.session.user?.user_role === undefined || req.session.user.user_role !== 2) { return res.status(401).redirect('/login'); }
@@ -535,6 +534,42 @@ app.post('/admin/delete-templates', async (req, res) => {
         await connection.rollback(); res.status(500).json({ message: '删除模板失败', error: error.message });
     } finally { connection.release(); }
 });
+
+// 查看所有用户提交的申报
+app.get('/admin/view-all-submissions', async (req, res) => {
+    if (!req.session.user || req.session.user.user_role !== 2) {
+        return res.status(401).redirect('/login'); // 验证管理员权限
+    }
+
+    try {
+        // 查询所有用户提交的申报数据
+        const [submissions] = await db.query(`
+            SELECT 
+                fe.entry_id, 
+                fe.submitted_at, 
+                fe.user_id, 
+                pt.template_name, 
+                u.user_name 
+            FROM form_entries fe
+            JOIN ProjectTemplate pt ON fe.template_id = pt.template_id
+            JOIN User u ON fe.user_id = u.user_id
+            ORDER BY fe.submitted_at DESC
+        `);
+
+        // 检查查询结果
+        console.log('查询结果:', submissions);
+
+        // 渲染页面
+        res.render('admin/project/view-all-submissions', {
+            user_name: req.session.user.user_name,
+            submissions: submissions
+        });
+    } catch (error) {
+        console.error('获取用户申报数据失败:', error);
+        res.status(500).send('系统错误');
+    }
+});
+
 
 
 // 启动服务器

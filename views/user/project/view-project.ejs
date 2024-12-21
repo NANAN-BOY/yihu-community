@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查看项目申报</title>
+    <link rel="stylesheet" href="/styles/project-declaration.css">
+</head>
+<body>
+    <div class="container">
+        <h1>查看项目申报详情</h1>
+
+        <div class="form-group">
+            <label for="templateName">模板名称：</label>
+            <input type="text" id="templateName" name="templateName" value="<%= entry.template_name %>" readonly>
+        </div>
+        <div class="form-group">
+            <label for="submittedAt">提交时间：</label>
+            <input type="text" id="submittedAt" name="submittedAt" value="<%= new Date(entry.submitted_at).toLocaleString() %>" readonly>
+        </div>
+
+        <h2>申报内容</h2>
+        <% if (fieldValues && fieldValues.length > 0) { %>
+            <% fieldValues.forEach(field => { %>
+                <div class="form-group">
+                    <label><%= field.template_fields_name %>：</label>
+                    <input type="text" value="<%= field.field_value %>" readonly>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>暂无申报内容。</p>
+        <% } %>
+    </div>
+</body>
+</html>

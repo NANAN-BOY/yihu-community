@@ -95,6 +95,63 @@ app.get('/userdashboard', (req, res) => {
     if (req.session.user?.user_role === undefined || req.session.user.user_role !== 3) { return res.status(401).redirect('/login'); }
     res.render('user/userdashboard', { user_name: req.session.user.user_name });
 });
+
+//基层组织管理项目路由
+app.get('/user/manage-project', async (req, res) => {
+    if (!req.session.user || req.session.user.user_role !== 3) {
+        return res.status(401).redirect('/login'); // 验证登录和权限
+    }
+
+    try {
+        const [entries] = await db.query(
+            `SELECT fe.entry_id, pt.template_name, fe.submitted_at
+             FROM form_entries fe
+             JOIN ProjectTemplate pt ON fe.template_id = pt.template_id
+             WHERE fe.user_id = ?
+             ORDER BY fe.submitted_at DESC`,
+            [req.session.user.user_id]
+        );
+
+        // 确保传递 entries 给模板
+        res.render('user/manage-project', {
+            user_name: req.session.user.user_name,
+            entries: entries || [], // 如果为空，则传递空数组
+        });
+    } catch (error) {
+        console.error('加载管理页面失败:', error);
+        res.status(500).send('系统错误');
+    }
+});
+
+//获取所有申报记录路由
+app.get('/project-declaration/list', async (req, res) => {
+    if (!req.session.user || req.session.user.user_role !== 3) {
+        return res.status(401).redirect('/login'); // 验证登录和权限
+    }
+
+    try {
+        const user_id = req.session.user.user_id;
+
+        // 查询用户提交的申报记录
+        const [entries] = await db.query(
+            `SELECT fe.entry_id, pt.template_name, fe.submitted_at
+             FROM form_entries fe
+             JOIN ProjectTemplate pt ON fe.template_id = pt.template_id
+             WHERE fe.user_id = ?
+             ORDER BY fe.submitted_at DESC`,
+            [user_id]
+        );
+
+        res.render('user/project/project-declaration-list', {
+            user_name: req.session.user.user_name,
+            entries // 将查询结果传递给前端模板
+        });
+    } catch (error) {
+        console.error('获取申报列表失败:', error);
+        res.status(500).send('系统错误');
+    }
+});
+
 // 基层组织项目申报路由
 app.get('/project-declaration', async (req, res) => {
     if (!req.session.user || req.session.user.user_role !== 3) {
@@ -138,6 +195,7 @@ app.get('/project-declaration', async (req, res) => {
         res.status(500).send('系统错误');
     }
 });
+
 // 提交项目申报表单
 app.post('/project-declaration', async (req, res) => {
     console.log('Received req.body:', req.body);
@@ -200,6 +258,50 @@ app.post('/project-declaration', async (req, res) => {
         if (connection) {
             connection.release();
         }
+    }
+});
+
+//查看单个申报路由
+app.get('/view-project/:entry_id', async (req, res) => {
+    if (!req.session.user || req.session.user.user_role !== 3) {
+        return res.status(401).redirect('/login'); // 验证登录和权限
+    }
+
+    const entry_id = req.params.entry_id;
+
+    try {
+        // 查询申报记录的基本信息
+        const [entryDetails] = await db.query(
+            `SELECT fe.entry_id, pt.template_name, fe.submitted_at
+             FROM form_entries fe
+             JOIN ProjectTemplate pt ON fe.template_id = pt.template_id
+             WHERE fe.entry_id = ? AND fe.user_id = ?`,
+            [entry_id, req.session.user.user_id]
+        );
+
+        if (entryDetails.length === 0) {
+            return res.status(404).send('未找到该申报记录');
+        }
+
+        const entry = entryDetails[0];
+
+        // 查询申报的字段值
+        const [fieldValues] = await db.query(
+            `SELECT tf.template_fields_name, fv.field_value
+             FROM field_values fv
+             JOIN template_fields tf ON fv.template_fields_id = tf.template_fields_id
+             WHERE fv.entry_id = ?`,
+            [entry_id]
+        );
+
+        res.render('user/project/view-project', {
+            user_name: req.session.user.user_name,
+            entry,
+            fieldValues
+        });
+    } catch (error) {
+        console.error('获取申报详情失败:', error);
+        res.status(500).send('系统错误');
     }
 });
 

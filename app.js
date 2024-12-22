@@ -7,6 +7,8 @@ const db = require('./db/db');
 var app = express();
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const upload = multer(); // 用于处理表单数据
 
 
 
@@ -58,33 +60,45 @@ app.post('/register', async (req, res) => {
         res.redirect('/userdashboard');
     } catch (err) { console.error('数据库插入错误:', err); return res.status(500).send('系统错误'); }
 });
-
 // 登录页面
 app.get('/login', (req, res) => {
     res.render('login');
 });
 // 登录路由
-app.post('/login', async (req, res) => {
+app.post('/login', upload.none(), async (req, res) => {
     const { user_id, password } = req.body;
     // 验证请求参数是否存在
-    if (!user_id || !password) { return res.status(400).send('请输入用户ID和密码'); }
+    if (!user_id || !password) {
+        return res.status(400).json({ status: 'error', message: '请输入用户ID和密码' });
+    }
     const sql = 'SELECT user_id, user_name, hash_password, user_role FROM User WHERE user_id = ?';
     try {
         // 使用 async/await 方式查询数据库
         const [results] = await db.query(sql, [user_id]);
-        if (results.length === 0) { return res.status(401).send('账号或密码错误'); }
+        if (results.length === 0) {
+            return res.status(401).json({ status: 'error', message: '账号或密码错误' });
+        }
         const user = results[0];
         // 比较密码
         const isMatch = await bcrypt.compare(password, user.hash_password);
-        if (!isMatch) { return res.status(402).send('账号或密码错误'); }
+        if (!isMatch) {
+            return res.status(402).json({ status: 'error', message: '账号或密码错误' });
+        }
         // 登录成功，存储用户信息到 session
         req.session.user = { user_id: user.user_id, user_name: user.user_name, user_role: user.user_role };
-        // 判断用户角色，跳转到不同的页面
-        if (user.user_role === 3) { return res.redirect('/userdashboard'); }
-        if (user.user_role === 2) { return res.redirect('/admindashboard'); }
+        // 判断用户角色，返回 JSON 格式的成功信息
+        if (user.user_role === 3) {
+            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/userdashboard' });
+        }
+        if (user.user_role === 2) {
+            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/admindashboard' });
+        }
         // 默认跳转到首页
-        res.render('index', { user_name: user.user_name });
-    } catch (err) { res.status(500).send('系统错误'); }
+        return res.json({ status: 'success', message: '登录成功', redirectUrl: '/' });
+    } catch (err) {
+        console.error(err); // 记录系统错误
+        return res.status(500).json({ status: 'error', message: '系统错误' });
+    }
 });
 // 登出路由
 app.get('/logout', (req, res) => {

@@ -42,7 +42,7 @@ aside h1 {color: #ffffff; /* 标题颜色为白色 */}
 aside ul {list-style-type: none; /* 移除默认列表样式 */padding: 0; /* 移除内边距 */}
 aside ul li {margin-bottom: 15px; /* 底部外边距为15像素 */}
 aside ul li a {
-  color: #d6dbdf; /* 文字颜色为淡灰色 */
+  color: #ffffff; /* 文字颜色为淡灰色 */
   text-decoration: none; /* 移除文本下划线 */
   padding: 10px; /* 内边距为10像素 */
   display: block; /* 显示为块级元素 */
@@ -81,7 +81,7 @@ aside ul li a:hover {background-color: #106e4a; /* 鼠标悬停时背景颜色�
   transition: background-color 0.3s; /* 背景颜色过渡时间为0.3秒 */
 }
 .manage-templates table tr:hover{
-  background-color: #4773a5;
+  background-color: #65bb9e;
 }
 
 .manage-templates table th, 
@@ -92,7 +92,7 @@ aside ul li a:hover {background-color: #106e4a; /* 鼠标悬停时背景颜色�
 }
 
 .manage-templates table th {
-  background-color: #2c3e50; /* 表头背景颜色 */
+  background-color: #15442a; /* 表头背景颜色 */
   color: white; /* 表头文字颜色 */
 }
 
@@ -200,4 +200,242 @@ aside ul li a:hover {background-color: #106e4a; /* 鼠标悬停时背景颜色�
 #modal-cancel {
   background-color: #f44336;
   color: white;
+}
+.manage-submissions {            
+  margin: 20px;
+  min-height: 100vh; /* 设置最小高度为视窗高度 */
+  display: flex; /* 使用Flexbox布局 */
+  flex-direction: column; /* 垂直排列子元素 */
+  flex-grow: 1; /* 允许元素扩展以填充剩余空间 */
+}
+
+.manage-submissions table {
+  width: 100%; /* 表格宽度为100% */
+  height: 100%; /* 表格高度为100% */
+  border-collapse: collapse; /* 合并表格边框 */
+  margin-top: 20px; /* 顶部外边距为20像素 */
+}
+.manage-submissions table tr{
+  transition: background-color 0.3s; /* 背景颜色过渡时间为0.3秒 */
+}
+.manage-submissions table tr:hover{
+  background-color: #65bb9e;
+}
+
+.manage-submissions table th, 
+.manage-submissions table td {
+  padding: 12px; /* 内边距为12像素 */
+  border: 1px solid #ddd; /* 边框颜色和样式 */
+  text-align: left; /* 左对齐文本 */
+}
+
+.manage-submissions table th {
+  background-color: #15442a; /* 表头背景颜色 */
+  color: white; /* 表头文字颜色 */
+}
+
+/* 按钮容器样式 */
+.manage-submissions .button-container {
+  display: flex; /* 使用Flexbox布局 */
+  gap: 20px; /* 元素间距20像素 */
+  margin-top: 20px; /* 顶部外边距20像素 */
+}
+
+.manage-submissions .btn {
+  padding: 10px 20px; /* 内边距 */
+  border: none; /* 无边框 */
+  color: white; /* 文字颜色为白色 */
+  background-color: #4CAF50; /* 背景颜色 */
+  font-size: 16px; /* 字体大小 */
+  cursor: pointer; /* 鼠标指针变为手型 */
+  border-radius: 5px; /* 圆角边框 */
+  transition: background-color 0.3s; /* 背景颜色过渡 */
+}
+
+.manage-submissions .enabled {
+  background-color: #bde7cf;
+}
+
+.dashboard {            
+  margin: 20px;
+  min-height: 100vh; /* 设置最小高度为视窗高度 */
+  display: flex; /* 使用Flexbox布局 */
+  flex-direction: column; /* 垂直排列子元素 */
+  flex-grow: 1; /* 允许元素扩展以填充剩余空间 */
+}
+
+.manage-projects {            
+  margin: 20px;
+  min-height: 100vh; /* 设置最小高度为视窗高度 */
+  display: flex; /* 使用Flexbox布局 */
+  flex-direction: column; /* 垂直排列子元素 */
+  flex-grow: 1; /* 允许元素扩展以填充剩余空间 */
+}
+
+.manage-projects table {
+  width: 100%; /* 表格宽度为100% */
+  height: 100%; /* 表格高度为100% */
+  border-collapse: collapse; /* 合并表格边框 */
+  margin-top: 20px; /* 顶部外边距为20像素 */
+}
+.manage-projects table tr{
+  transition: background-color 0.3s; /* 背景颜色过渡时间为0.3秒 */
+}
+.manage-projects table tr:hover{
+  background-color: #65bb9e;
+}
+
+.manage-projects table th, 
+.manage-projects table td {
+  padding: 12px; /* 内边距为12像素 */
+  border: 1px solid #ddd; /* 边框颜色和样式 */
+  text-align: left; /* 左对齐文本 */
+}
+
+.manage-projects table th {
+  background-color: #15442a; /* 表头背景颜色 */
+  color: white; /* 表头文字颜色 */
+}
+
+/* 按钮容器样式 */
+.manage-projects .button-container {
+  display: flex; /* 使用Flexbox布局 */
+  gap: 20px; /* 元素间距20像素 */
+  margin-top: 20px; /* 顶部外边距20像素 */
+}
+
+.manage-projects .btn {
+  padding: 10px 20px; /* 内边距 */
+  border: none; /* 无边框 */
+  color: white; /* 文字颜色为白色 */
+  background-color: #4CAF50; /* 背景颜色 */
+  font-size: 16px; /* 字体大小 */
+  cursor: pointer; /* 鼠标指针变为手型 */
+  border-radius: 5px; /* 圆角边框 */
+  transition: background-color 0.3s; /* 背景颜色过渡 */
+}
+
+.manage-projects .enabled {
+  background-color: #bde7cf;
+}
+
+/* 填报样式区域 */
+.fill-container{
+  font-family: 'Arial', sans-serif;
+  background-color: #ffffff;
+  color: #333;
+  max-width: 900px;
+  margin: 20px auto;
+  border: 1px solid #bde7cf;
+  border-radius: 10px;
+  padding: 20px;
+}
+.fill-container h1{ 
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #000000;
+}
+.fill-container .form-group{
+  margin-bottom: 15px;
+  margin-right: 4%;
+}
+
+.fill-container label {
+  font-size: 16px;
+  margin-bottom: 5px;
+  display: block;
+  color: #5b6e75;
+}
+.fill-container input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.fill-container textarea {
+  height: 100px;
+}
+.fill-container button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.fill-container button:hover {
+  background-color: #45a049;
+}
+/* 表单项 - 必填框 */
+.fill-container .isRequired{
+  display: flex;
+  margin-bottom: 10px;
+}
+.fill-container .isRequired label{
+  width:50px;
+  font-size: 16px;
+  display: flex;
+  color: #5b6e75;
+  align-items: center;
+}
+.fill-container .isRequired input{
+  width: 30px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+/* 提示框 */
+#error-message {
+  color: red;
+  font-size: 14px;
+}
+/* 模态框样式 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  border-radius: 5px;
+  transition: transform 0.3s;
+  transform: scale(1);
+}
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 预览输入框样式 */
+.preview-input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  margin: 5px 0;
+}
+.optionDivinput{
+  width: 50%;
 }

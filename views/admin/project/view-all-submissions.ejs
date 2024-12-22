@@ -13,8 +13,7 @@
             <li><a href="/admindashboard">首页</a></li>
             <li><a href="/admin/manage-templates">管理项目填报模板</a></li>
             <li><a class="onclick" href="/admin/view-all-submissions">查看所有申报</a></li>
-            <li><a href="#">用户管理</a></li>
-            <li><a href="#">设置</a></li>
+            <li><a href="/logout">安全登出</a></li>
         </ul>
     </aside>
     <div class="container">
@@ -30,7 +29,7 @@
                         <th>操作</th>
                     </tr>
                 </thead>
-                <tbody id="submissionTableBody">
+                <tbody class="field" id="submissionTableBody">
                     <% if (submissions.length > 0) { %>
                         <% submissions.forEach(submission => { %>
                             <tr id="submission-<%= submission.entry_id %>">
@@ -47,7 +46,7 @@
                         <% }) %>
                     <% } else { %>
                         <tr>
-                            <td colspan="5">暂无用户提交的申报记录</td>
+                            <td colspan="5">暂无用户提交申报</td>
                         </tr>
                     <% } %>
                 </tbody>

@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>创建表单</title>
-    <link rel="stylesheet" href="/styles/create-form.css"> <!-- 引用外部样式表 -->
+    <link rel="stylesheet" href="/stylesheets/style.css" />
     <script>
-        function showAddModal() {document.getElementById("addModal").style.display = "block";}
+        function showAddModal() {
+            event.preventDefault();
+            document.getElementById("addModal").style.display = "block";}
         function closeAddModal() {document.getElementById("addModal").style.display = "none";}
         function addOption() {const optionValue = document.getElementById("singleOption").value;
             if (!optionValue) {alert("选项内容不能为空！");return;}
@@ -77,13 +79,15 @@
                     body: JSON.stringify(formData)
                 });
                 const data = await response.json();
-                if (response.ok) {alert('表单上传成功');} else {alert('表单上传失败');}
+                if (response.ok) {alert('表单上传成功');
+                window.location.href = '/admin/manage-templates';
+                } else {alert('表单上传失败');}
             } catch (error) {alert('网络错误，请重试');}
         }
     </script>
 </head>
 <body>
-    <div class="container">
+    <div class="fill-container">
         <h1>创建新模板</h1>
         <form id="createForm" onsubmit="submitForm(event)">
             <div class="form-group">
@@ -98,11 +102,11 @@
             <div id="fieldList"></div>
             <!-- 隐藏字段，用于保存字段数组 -->
             <input type="hidden" id="fieldsInput" name="fields" value="[]">
+            <button id="addButton" onclick="showAddModal()">添加字段</button>
             <button type="submit" class="btn">保存模板</button>
             <button id="discardButton" class="btn">放弃保存</button>
         </form>
         <!-- 添加按钮 -->
-        <button id="addButton" onclick="showAddModal()">添加字段</button>
         <!-- 添加字段模态框 -->
         <div id="addModal" class="modal">
             <div class="modal-content">
@@ -139,6 +143,7 @@
     <script>
         // 根据字段类型显示额外的选项输入框（如select的选项）
         document.getElementById("fieldType").addEventListener("change", function() {
+
             const fieldType = this.value;
             if (fieldType === "3") {
                 document.getElementById("optionDiv").style.display = "block";

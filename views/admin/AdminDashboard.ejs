@@ -11,14 +11,16 @@
         <aside>
             <h1>智能管理平台Beta</h1>
             <ul>
-                <li><a class="onclick"  href="/admindashboard">首页</a></li>
+                <li><a class="onclick" href="/admindashboard">首页</a></li>
                 <li><a href="/admin/manage-templates">管理项目填报模板</a></li>
+                <li><a href="/admin/view-all-submissions">查看所有申报</a></li>
                 <li><a href="/logout">安全登出</a></li>
             </ul>
         </aside>
 
         <!-- 页面内容容器 -->
         <div class="container">
+        <div class="dashboard">
             <h1>欢迎, <%= user_name %>！</h1>
             <div>
                 <h2>功能：</h2>
@@ -29,6 +31,7 @@
                     <!-- 可以根据需求添加更多功能 -->
                 </ul>
             </div>
+        </div>
         </div>
 </body>
 </html>

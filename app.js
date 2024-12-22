@@ -496,6 +496,52 @@ app.post('/admin/create-template', async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Error uploading form' }); }
 });
 
+// 区管理员查看单个申报路由
+app.get('/admin/view-project/:entry_id', async (req, res) => {
+    if (!req.session.user || req.session.user.user_role !== 2) {
+        return res.status(401).redirect('/login'); // 验证管理员权限
+    }
+
+    const entry_id = req.params.entry_id;
+
+    try {
+        // 查询申报记录的基本信息，包括用户信息
+        const [entryDetails] = await db.query(
+            `SELECT fe.entry_id, pt.template_name, fe.submitted_at, u.user_name
+             FROM form_entries fe
+             JOIN ProjectTemplate pt ON fe.template_id = pt.template_id
+             JOIN User u ON fe.user_id = u.user_id
+             WHERE fe.entry_id = ?`,
+            [entry_id]
+        );
+
+        if (entryDetails.length === 0) {
+            return res.status(404).send('未找到该申报记录');
+        }
+
+        const entry = entryDetails[0];
+
+        // 查询申报的字段值
+        const [fieldValues] = await db.query(
+            `SELECT tf.template_fields_name, fv.field_value
+             FROM field_values fv
+             JOIN template_fields tf ON fv.template_fields_id = tf.template_fields_id
+             WHERE fv.entry_id = ?`,
+            [entry_id]
+        );
+
+        res.render('admin/view-project', {
+            user_name: req.session.user.user_name,
+            entry,
+            fieldValues
+        });
+    } catch (error) {
+        console.error('获取申报详情失败:', error);
+        res.status(500).send('系统错误');
+    }
+});
+
+
 // 更换选定模板方法
 app.post('/admin/replace-templates', async (req, res) => {
     if (req.session.user?.user_role === undefined || req.session.user.user_role !== 2) { return res.status(401).redirect('/login'); }

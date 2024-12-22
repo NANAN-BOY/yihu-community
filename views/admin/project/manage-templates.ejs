@@ -12,9 +12,8 @@
         <ul>
             <li><a href="/admindashboard">首页</a></li>
             <li><a class="onclick" href="/admin/manage-templates">管理项目填报模板</a></li>
-            <li><a href="/admin/view-all-submissions">查看用户申报</a></li>
-            <li><a href="#">报告生成</a></li>
-            <li><a href="#">设置</a></li>
+            <li><a href="/admin/view-all-submissions">查看所有申报</a></li>
+            <li><a href="/logout">安全登出</a></li>
         </ul>
     </aside>
     <!-- 主容器 -->
@@ -28,32 +27,39 @@
                 <a href="/admin/create-template" class="btn create">创建模板</a>
             </div>
             <!-- 模板列表 -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>模板ID</th>
-                        <th>模板名称</th>
-                        <th>模板描述</th>
-                        <th>启用状态</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="templateTableBody">
-                    <% templates.sort((a, b) => b.template_enable - a.template_enable).forEach(template => { %>
-                        <tr id="template-<%= template.template_id %>" class="<%= template.template_enable === 1 ? 'enabled' : '' %>">
-                            <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_id %></td>
-                            <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_name %></td>
-                            <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_description || '无描述' %></td>
-                            <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_enable === 1 ? '启用' : '禁用' %></td>
-                            <td>
-                                <button class="btn enable" onclick="enableTemplate(<%= template.template_id %>, '<%= template.template_name %>')">启用模板</button>
-                                <button class="btn edit" onclick="editTemplate(<%= template.template_id %>)">编辑模板</button>
-                                <button class="btn delete" onclick="deleteTemplate(<%= template.template_id %>, '<%= template.template_name %>')">删除模板</button>
-                            </td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+<table>
+    <thead>
+        <tr>
+            <th>模板ID</th>
+            <th>模板名称</th>
+            <th>模板描述</th>
+            <th>启用状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody id="templateTableBody">
+        <% if (templates.length === 0) { %>
+            <tr>
+                <td colspan="5" style="text-align: center;">没有可用模板，请先创建！</td>
+            </tr>
+        <% } else { %>
+            <% templates.sort((a, b) => b.template_enable - a.template_enable).forEach(template => { %>
+                <tr id="template-<%= template.template_id %>" class="<%= template.template_enable === 1 ? 'enabled' : '' %>">
+                    <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_id %></td>
+                    <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_name %></td>
+                    <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_description || '无描述' %></td>
+                    <td onclick="viewTemplate(<%= template.template_id %>)"><%= template.template_enable === 1 ? '启用' : '禁用' %></td>
+                    <td>
+                        <button class="btn enable" onclick="enableTemplate(<%= template.template_id %>, '<%= template.template_name %>')">启用模板</button>
+                        <button class="btn edit" onclick="editTemplate(<%= template.template_id %>)">编辑模板</button>
+                        <button class="btn delete" onclick="deleteTemplate(<%= template.template_id %>, '<%= template.template_name %>')">删除模板</button>
+                    </td>
+                </tr>
+            <% }) %>
+        <% } %>
+    </tbody>
+</table>
+
         </div>
     </div>
 

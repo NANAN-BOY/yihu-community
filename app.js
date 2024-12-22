@@ -6,6 +6,7 @@ var indexRouter = require('./routes/indexRouter.js');
 const db = require('./db/db');
 var app = express();
 const session = require('express-session');
+const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const upload = multer(); // 用于处理表单数据
@@ -18,6 +19,18 @@ const Docxtemplater = require('docxtemplater'); // 导入 Docxtemplater
 // 设置视图引擎为 ejs
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(cors());
+const corsOptions = {
+    origin: (origin, callback) => {
+      // 允许来自任何来源，包括 IP 地址
+        callback(null, true);  // 允许跨域请求
+    },
+    methods: 'GET,POST,PUT,DELETE,OPTIONS',  // 允许的方法
+    allowedHeaders: 'Content-Type,Authorization',  // 允许的请求头
+    credentials: false,  // 不需要凭证（如 Cookies）
+  };
+  
+  app.use(cors(corsOptions));
 
 // 设置静态文件目录
 app.use(express.static(path.join(__dirname, 'public')));

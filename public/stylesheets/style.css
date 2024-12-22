@@ -27,8 +27,8 @@ body {
 /* 左侧边栏样式 */
 aside {
   width: 200px; /* 侧边栏宽度 */
-  background-color: #0d233b; /* 深蓝色背景 */
-  color: white; /* 文字颜色为白色 */
+  background-color: #1CB278; /* 深蓝色背景 */
+  color: rgb(0, 0, 0); /* 文字颜色为白色 */
   padding: 20px; /* 内边距为20像素 */
   height: 100vh; /* 高度为视窗高度 */
   position: fixed; /* 固定位置 */
@@ -51,9 +51,9 @@ aside ul li a {
 }
 aside .onclick{
   background-color: #ffffff;
-  color: #080808;
+  color: #000000;
 }
-aside ul li a:hover {background-color: #34495e; /* 鼠标悬停时背景颜色为深灰色 */}
+aside ul li a:hover {background-color: #106e4a; /* 鼠标悬停时背景颜色为深灰色 */}
 
 /* 主内容区域样式 */
 .container {

@@ -1,136 +1,158 @@
 <!DOCTYPE html>
-<html lang="zh">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录</title>
-    <link rel="stylesheet" href="/stylesheets/style.css" />
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>智能管理系统Beta</title>
+    <link href="stylesheets/htgl.css" rel="stylesheet" />
     <style>
-      /* 设置基本样式 */
-      body {
-        margin: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f7f7f7;
-        display: flex;
-        height: 100vh;
-        justify-content: center;
-        align-items: center;
-      }
-
-      /* 登录页面容器 */
-      .login-container {
-        display: flex;
-        width: 80%;
-        max-width: 1200px;
-        min-height: 500px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        background-color: #ffffff;
-      }
-
-      /* 左侧艺术字体区域 */
-      .welcome-section {
-        flex: 1;
-        background-color: #16a085; /* 同页面其他风格的绿色 */
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 40px;
-      }
-
-      .welcome-section h2 {
-        font-family: 'Brush Script MT', cursive, sans-serif; /* 艺术字体 */
-        font-size: 3rem;
-        margin: 0;
-        line-height: 1.2;
-      }
-
-      /* 右侧登录区域 */
-      .login-form {
-        flex: 1;
-        padding: 40px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .login-form h1 {
-        text-align: center;
-        color: #34495e;
-        font-size: 2rem;
-        margin-bottom: 30px;
-      }
-
-      /* 表单标签和输入框样式 */
-      .login-form label {
-        font-size: 1.1rem;
-        margin-bottom: 5px;
-        color: #34495e;
-      }
-
-      .login-form input {
-        padding: 10px;
-        margin-bottom: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 1rem;
-        width: 100%;
-      }
-
-      .login-form button {
-        padding: 12px;
-        background-color: #16a085; /* 与左侧一致的绿色 */
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-
-      .login-form button:hover {
-        background-color: #1abc9c; /* 鼠标悬停时颜色变化 */
-      }
-
-      /* 响应式布局 */
-      @media (max-width: 768px) {
-        .login-container {
-          flex-direction: column;
+        .outer-layer {
+            background: #F2F4F3;
         }
 
-        .welcome-section h2 {
-          font-size: 2rem;
+        .login_header {
+            font-size: 0;
+            height: 56px;
+            background-image: url("images/htgl-logo.png");
+            background-image: -webkit-image-set(url("images/htgl-logo.png") 1x, url("images/htgl-logo-2x.png") 2x);
+            background-repeat: no-repeat;
+            background-position: center center;
         }
 
-        .login-form h1 {
-          font-size: 1.5rem;
+        .content_left {
+            background: #1CB278 url("images/htgl-bg.png") no-repeat center center;
         }
-      }
+
+        .btn_login {
+            background-color: #1CB278;
+            border-color: #1CB278;
+        }
+
+        .btn_login:hover {
+            background-color: #3cc18a;
+            border-color: #3cc18a;
+        }
+
+        .btn_login:active {
+            background-color: #13996a;
+            border-color: #13996a;
+        }
+
+        .input_text:focus {
+            border-color: #1CB278;
+        }
+
+        .uk_box {
+            border: 1px solid #1CB278;
+            background: #F7fbf9;
+        }
+
+        .uk_close {
+            background: #1CB278;
+        }
+
+        .uk_close:hover {
+            background-color: #3cc18a;
+        }
+
+        .uk_close:active {
+            background-color: #13996a;
+        }
     </style>
-  </head>
-  <body>
-    <div class="login-container">
-      <!-- 左侧艺术字体欢迎区域 -->
-      <div class="welcome-section">
-        <h2>欢迎使用智能管理系统Beta</h2>
-      </div>
+</head>
 
-      <!-- 右侧登录表单 -->
-      <div class="login-form">
-        <h1>登录</h1>
-        <form action="/login" method="POST">
-          <label for="user_id">用户ID:</label>
-          <input type="text" id="user_id" name="user_id" required><br>
+<body id="cas">
 
-          <label for="password">密码:</label>
-          <input type="password" id="password" name="password" required><br>
+    <style>
+        .errors {
+            word-wrap: break-word;
+        }
+        #feedbackMessage{
+            color: red;
+        }
+    </style>
 
-          <button type="submit">登录</button>
-        </form>
-      </div>
+    <div class="outer-layer">
+        <div class="outer-layer-content">
+            <div class="content_box">
+              <div class="content_left"></div>
+              <div class="content_right">
+                <h2>智能管理系统Beta</h2>
+                <div class="cr_top">
+                  <form id="fm1" action="/login" method="POST" onsubmit="handleSubmit(event)">
+                    <h1>组织ID</h1>
+                    <div class="ct_input">
+                      <span class="ct_img_yhm">&nbsp;</span>
+                      <input id="user_id" name="user_id" class="input_text" tabindex="1" accesskey="n" type="text" value="" size="25" required />
+                    </div>
+                    <h1>密码</h1>
+                    <div class="ct_input">
+                      <span class="ct_img_mm">&nbsp;</span>
+                      <input id="password" name="password" class="input_text" tabindex="2" accesskey="p" type="password" value="" size="25" required />
+                    </div>
+                    <div class="ct_input sub-box">
+                      <input type="hidden" name="lt" value="LT-860058-V72K6wGkWLhHe1l5B9avGyqHtxhodt-cas" />
+                      <input type="hidden" name="execution" value="" />
+                      <input type="hidden" name="_eventId" value="submit" />
+                      <input class="btn_login" accesskey="l" tabindex="4" type="submit" value="登录" />
+                    </div>
+                    <div class="account-oprate">
+                      <a href="/register">申请账号</a>
+                      <a href="javascript:;">找回密码</a>
+                    </div>
+                  </form>
+                  <!-- 用于显示错误或成功信息的地方 -->
+                  <div id="feedbackMessage" class="error-message"></div>
+                </div>
+              </div>
+            </div>
+            <div class="login_footer">
+                <!-- Copyright &copy; 2003-2024&ensp;<a href="https:" target="_blank">XXXX网</a>&ensp;All Rights Reserved -->
+            </div>
+        </div>
     </div>
-  </body>
+    <script>
+        // 处理表单提交
+        function handleSubmit(event) {
+          event.preventDefault(); // 防止表单默认提交，使用 AJAX 提交
+  
+          const user_id = document.getElementById('user_id').value;
+          const password = document.getElementById('password').value;
+  
+          // 创建一个 FormData 对象来发送表单数据
+          const formData = new FormData();
+          formData.append('user_id', user_id);
+          formData.append('password', password);
+
+          // 使用 Fetch API 发送 POST 请求
+          fetch('/login', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json()) 
+          .then(data => {
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            
+            if (data.status === 'error') {
+              // 显示错误信息
+              feedbackMessage.textContent = data.message;
+              feedbackMessage.className = 'error-message';
+            } else if (data.status === 'success') {
+              // 显示成功信息（如果需要）
+              feedbackMessage.textContent = '登录成功！';
+              feedbackMessage.className = 'success-message';
+              if (data.redirectUrl) {
+                 window.location.href = data.redirectUrl;
+                 }
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('feedbackMessage').textContent = '提交失败，请稍后重试。';
+          });
+        }
+      </script>
+</body>
+
 </html>

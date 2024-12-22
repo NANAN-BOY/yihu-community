@@ -10,7 +10,10 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const upload = multer(); // 用于处理表单数据
 
-
+const { Document, Packer, Paragraph, TextRun } = require("docx");//用于生成文档
+const fs = require('fs'); // 导入文件系统模块
+const PizZip = require('pizzip'); // 导入 PizZip
+const Docxtemplater = require('docxtemplater'); // 导入 Docxtemplater
 
 // 设置视图引擎为 ejs
 app.set('view engine', 'ejs');
@@ -616,9 +619,6 @@ app.get('/admin/view-all-submissions', async (req, res) => {
             ORDER BY fe.submitted_at DESC
         `);
 
-        // 检查查询结果
-        console.log('查询结果:', submissions);
-
         // 渲染页面
         res.render('admin/project/view-all-submissions', {
             user_name: req.session.user.user_name,
@@ -630,7 +630,78 @@ app.get('/admin/view-all-submissions', async (req, res) => {
     }
 });
 
+// 路由：生成申报内容 Word 文件
+app.get("/generate-word/:entryId", async (req, res) => {
+    const entryId = req.params.entryId;
 
+    try {
+        // 查询数据库获取字段数据
+        const [fieldValues] = await db.query(
+            `SELECT tf.template_fields_name, fv.field_value
+             FROM field_values fv
+             JOIN template_fields tf ON fv.template_fields_id = tf.template_fields_id
+             WHERE fv.entry_id = ?`,
+            [entryId]
+        );
+
+        if (fieldValues.length === 0) {
+            return res.status(404).send("未找到申报内容");
+        }
+
+        // 将字段值映射为对象
+        const fields = {};
+        fieldValues.forEach((field) => {
+            fields[field.template_fields_name] = field.field_value || "暂无内容";
+        });
+
+        // 加载模板路径
+        const templatePath = path.resolve(__dirname, "template.docx");
+        console.log("Template Path:", templatePath);
+
+        if (!fs.existsSync(templatePath)) {
+            console.error("模板文件不存在！");
+            return res.status(500).send("模板文件未找到");
+        }
+
+        // 读取模板文件
+        const templateContent = fs.readFileSync(templatePath, "binary");
+
+        // 加载模板
+        const zip = new PizZip(templateContent);
+        const doc = new Docxtemplater(zip, {
+            paragraphLoop: true,
+            linebreaks: true,
+            delimiters: {
+              start: "<<<",
+              end: ">>>"
+            }
+          });
+          
+
+        // 渲染模板
+        doc.render(fields);
+
+        // 生成 Word 文件
+        const buffer = doc.getZip().generate({
+            type: "nodebuffer",
+            compression: "DEFLATE",
+        });
+
+        // 设置下载响应
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=entry_${entryId}.docx`
+        );
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        );
+        res.send(buffer);
+    } catch (err) {
+        console.error("生成 Word 文件失败:", err);
+        res.status(500).send("生成 Word 文件失败");
+    }
+});
 
 // 启动服务器
 app.listen(3000, () => {

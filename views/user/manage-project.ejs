@@ -10,7 +10,7 @@
         <aside>
             <h1>智能管理平台Beta</h1>
             <ul>
-                <li><a href="/userdashboard">首页</a></li>
+                <!-- <li><a href="/userdashboard">首页</a></li> -->
                 <li><a class="onclick" href="/user/manage-project">项目管理</a></li>
                 <li><a href="/logout">安全登出</a></li>
             </ul>
@@ -25,7 +25,7 @@
                 <thead>
                     <tr>
                         <th>申报ID</th>
-                        <th>模板名称</th>
+                        <!-- <th>模板名称</th> -->
                         <th>提交时间</th>
                         <th>操作</th>
                     </tr>
@@ -35,7 +35,7 @@
                         <% entries.forEach(entry => { %>
                             <tr id="project-<%= entry.entry_id %>">
                                 <td onclick="viewProject(<%= entry.entry_id %>)"><%= entry.entry_id %></td>
-                                <td onclick="viewProject(<%= entry.entry_id %>)"><%= entry.template_name %></td>
+                                <!-- <td onclick="viewProject(<%= entry.entry_id %>)"><%= entry.template_name %></td> -->
                                 <td onclick="viewProject(<%= entry.entry_id %>)">
                                     <%= entry.submitted_at ? new Date(entry.submitted_at).toLocaleString() : '暂无时间' %>
                                 </td>

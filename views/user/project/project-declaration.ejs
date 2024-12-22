@@ -12,18 +12,18 @@
 
         <% if (template) { %>
             <form action="/project-declaration" method="POST">
-                <!-- <input type="hidden" name="template_id" value="<%= template.template_id %>" />
+                <input type="hidden" name="template_id" value="<%= template.template_id %>" />
 
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     <label for="formName">模板名称：</label>
                     <input type="text" id="formName" name="formName" value="<%= template.template_name || '无标题' %>" readonly>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     <label for="description">描述：</label>
                     <textarea id="description" name="description" readonly><%= template.template_description || '无描述' %></textarea>
                 </div>
-
-                <h2>填写字段</h2> -->
+                
+                <h2 style="display: none;">填写字段</h2>
                 <% fields.forEach(field => { %>
                     <div class="form-group">
                         <label>

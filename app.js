@@ -59,8 +59,8 @@ app.post('/register', async (req, res) => {
         const user_id = result.insertId;  // 获取新用户的 user_id
         // 注册成功，存储用户信息到 session
         req.session.user = { user_id, user_name, user_role };
-        // 注册成功后跳转到主页
-        res.redirect('/userdashboard');
+        // 重定向
+         res.redirect('/user/manage-project');
     } catch (err) { console.error('数据库插入错误:', err); return res.status(500).send('系统错误'); }
 });
 // 登录页面
@@ -91,10 +91,10 @@ app.post('/login', upload.none(), async (req, res) => {
         req.session.user = { user_id: user.user_id, user_name: user.user_name, user_role: user.user_role };
         // 判断用户角色，返回 JSON 格式的成功信息
         if (user.user_role === 3) {
-            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/userdashboard' });
+            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/user/manage-project' });
         }
         if (user.user_role === 2) {
-            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/admindashboard' });
+            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/admin/manage-templates' });
         }
         // 默认跳转到首页
         return res.json({ status: 'success', message: '登录成功', redirectUrl: '/' });
@@ -264,7 +264,9 @@ app.post('/project-declaration', async (req, res) => {
         }
 
         await connection.commit();
-        res.status(201).send('申报提交成功');
+        重定向到项目申报列表页面
+        res.redirect('/project-declaration/list');
+        // res.status(201).send('申报提交成功');
     } catch (error) {
         if (connection) {
             await connection.rollback();
@@ -511,6 +513,121 @@ app.post('/admin/create-template', async (req, res) => {
         res.status(201).json({ message: 'Form uploaded successfully', formId: formId });
     } catch (error) { res.status(500).json({ message: 'Error uploading form' }); }
 });
+// 配置 multer 存储设置
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      // 设置文件存储路径
+      cb(null, './uploads/');
+    },
+    filename: (req, file, cb) => {
+      // 设置上传文件的名称，避免重名
+      cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const uploadfile = multer({ storage: storage });
+// 上传模板文件并验证字段
+// 获取模板字段
+async function getRequiredFields(templateId) {
+    const [rows] = await db.query(
+        'SELECT template_fields_name FROM template_fields WHERE template_id = ?',
+        [templateId]
+    );
+    return rows.map(row => row.template_fields_name);
+}
+
+// 验证模板字段
+app.post('/verify-template', uploadfile.single('file'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: '没有文件上传' });
+    }
+
+    const templateId = req.body.template_id;
+    if (!templateId) {
+        return res.status(400).json({ message: '没有模板ID' });
+    }
+
+    // 获取数据库中该模板需要的字段
+    let requiredFields;
+    try {
+        requiredFields = await getRequiredFields(templateId);
+    } catch (err) {
+        return res.status(500).json({ message: '查询数据库失败', error: err.message });
+    }
+
+    // 读取上传的文件
+    const filePath = path.join(__dirname, 'uploads', req.file.filename);
+    fs.readFile(filePath, 'binary', async (err, content) => {
+        if (err) {
+            return res.status(500).json({ message: '读取文件失败', error: err.message });
+        }
+
+        try {
+            // 解析 .docx 文件
+            const zip = new PizZip(content);
+            const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+            // 获取模板中的文本
+            const fullText = doc.getFullText();
+            console.log(fullText);
+            // 使用正则表达式匹配所有变量 <<<字段名>>>
+            const regex = /<<<(.*?)>>>/g;
+            const tags = [];
+            let match;
+            while ((match = regex.exec(fullText)) !== null) {
+                tags.push(match[1].trim());
+            }
+
+            // 检查字段是否存在
+            const missingFields = requiredFields.filter(field => !tags.includes(field));
+
+            if (missingFields.length > 0) {
+                return res.status(400).json({
+                    message: '模板文件缺少字段',
+                    missingFields: missingFields
+                });
+            }
+
+            // 如果没有缺少字段，保存文件并将文件名存入数据库
+            const templateFileName = req.file.filename;
+
+            // 将文件名存入数据库
+        try {
+          // 使用 await 执行数据库查询
+               const [result] = await db.execute(
+        'UPDATE projecttemplate SET template_file = ? WHERE template_id = ?',
+              [templateFileName, templateId]
+          );
+
+          // 如果没有更新任何行，说明没有找到对应的模板
+         if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    message: '未找到对应的模板，更新失败。',
+                });
+             }
+
+              // 如果更新成功，返回响应
+                 res.status(200).json({
+                    message: '模板验证通过，文件保存成功并已存入数据库。',
+                    file: req.file
+              });
+            } catch (err) {
+      // 错误处理
+    console.error('保存文件名到数据库失败:', err);
+    res.status(500).json({
+        message: '保存文件名失败',
+        error: err.message
+    });
+}
+        } catch (error) {
+            console.error('文件解析失败:', error);
+            res.status(500).json({ message: '文件解析失败', error: error.message });
+        }
+    });
+});
+
+
+
+  
 
 // 区管理员查看单个申报路由
 app.get('/admin/view-project/:entry_id', async (req, res) => {
@@ -631,7 +748,6 @@ app.get('/admin/view-all-submissions', async (req, res) => {
 // 路由：生成申报内容 Word 文件
 app.get("/generate-word/:entryId", async (req, res) => {
     const entryId = req.params.entryId;
-
     try {
         // 查询数据库获取字段数据
         const [fieldValues] = await db.query(
@@ -641,29 +757,30 @@ app.get("/generate-word/:entryId", async (req, res) => {
              WHERE fv.entry_id = ?`,
             [entryId]
         );
-
         if (fieldValues.length === 0) {
             return res.status(404).send("未找到申报内容");
         }
-
         // 将字段值映射为对象
         const fields = {};
         fieldValues.forEach((field) => {
             fields[field.template_fields_name] = field.field_value || "暂无内容";
         });
-
+        const [result] = await db.execute(
+            `SELECT pt.template_file
+             FROM form_entries fe
+             JOIN ProjectTemplate pt ON fe.template_id = pt.template_id
+             WHERE fe.entry_id = ?`,
+            [entryId]
+        );
         // 加载模板路径
-        const templatePath = path.resolve(__dirname, "template.docx");
+        const templatePath = path.resolve(__dirname, 'uploads', result[0].template_file);
         console.log("Template Path:", templatePath);
-
         if (!fs.existsSync(templatePath)) {
             console.error("模板文件不存在！");
             return res.status(500).send("模板文件未找到");
         }
-
         // 读取模板文件
         const templateContent = fs.readFileSync(templatePath, "binary");
-
         // 加载模板
         const zip = new PizZip(templateContent);
         const doc = new Docxtemplater(zip, {
@@ -674,17 +791,13 @@ app.get("/generate-word/:entryId", async (req, res) => {
               end: ">>>"
             }
           });
-          
-
         // 渲染模板
         doc.render(fields);
-
         // 生成 Word 文件
         const buffer = doc.getZip().generate({
             type: "nodebuffer",
             compression: "DEFLATE",
         });
-
         // 设置下载响应
         res.setHeader(
             "Content-Disposition",

@@ -10,7 +10,7 @@
     <aside>
         <h1>智能管理平台Beta</h1>
         <ul>
-            <li><a href="/admindashboard">首页</a></li>
+            <!-- <li><a href="/admindashboard">首页</a></li> -->
             <li><a href="/admin/manage-templates">管理项目填报模板</a></li>
             <li><a class="onclick" href="/admin/view-all-submissions">查看所有申报</a></li>
             <li><a href="/logout">安全登出</a></li>
@@ -41,6 +41,7 @@
                                 </td>
                                 <td>
                                     <button class="btn view" onclick="viewSubmission(<%= submission.entry_id %>)">查看详情</button>
+                                    <button class="btn view" onclick="outPutFile(<%= submission.entry_id %>)">导出文件</button>
                                 </td>
                             </tr>
                         <% }) %>
@@ -58,6 +59,9 @@
         // 查看单个申报详情
         function viewSubmission(entryId) {
             window.location.href = '/admin/view-project/' + entryId;
+        }
+        function outPutFile(entryId) {
+            window.location.href = '/generate-word/' + entryId;
         }
     </script>
 </body>

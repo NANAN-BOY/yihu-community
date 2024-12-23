@@ -277,8 +277,7 @@ app.post('/project-declaration', async (req, res) => {
         }
 
         await connection.commit();
-        重定向到项目申报列表页面
-        res.redirect('/project-declaration/list');
+        res.redirect('/user/manage-project');
         // res.status(201).send('申报提交成功');
     } catch (error) {
         if (connection) {
@@ -548,7 +547,7 @@ async function getRequiredFields(templateId) {
     return rows.map(row => row.template_fields_name);
 }
 
-// 验证模板字段
+// 上传并验证模板字段
 app.post('/verify-template', uploadfile.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: '没有文件上传' });
@@ -607,7 +606,7 @@ app.post('/verify-template', uploadfile.single('file'), async (req, res) => {
         try {
           // 使用 await 执行数据库查询
                const [result] = await db.execute(
-        'UPDATE projecttemplate SET template_file = ? WHERE template_id = ?',
+        'UPDATE ProjectTemplate SET template_file = ? WHERE template_id = ?',
               [templateFileName, templateId]
           );
 

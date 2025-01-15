@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>智能管理系统Beta</title>
+    <link href="stylesheets/htgl.css" rel="stylesheet" />
+    <style>
+        .outer-layer {
+            background: #F2F4F3;
+        }
+
+        .login_header {
+            font-size: 0;
+            height: 56px;
+            background-image: url("images/htgl-logo.png");
+            background-image: -webkit-image-set(url("images/htgl-logo.png") 1x, url("images/htgl-logo-2x.png") 2x);
+            background-repeat: no-repeat;
+            background-position: center center;
+        }
+
+        .content_left {
+            background: #1CB278 url("images/htgl-bg.png") no-repeat center center;
+        }
+
+        .btn_login {
+            background-color: #1CB278;
+            border-color: #1CB278;
+        }
+
+        .btn_login:hover {
+            background-color: #3cc18a;
+            border-color: #3cc18a;
+        }
+
+        .btn_login:active {
+            background-color: #13996a;
+            border-color: #13996a;
+        }
+
+        .input_text:focus {
+            border-color: #1CB278;
+        }
+
+        .uk_box {
+            border: 1px solid #1CB278;
+            background: #F7fbf9;
+        }
+
+        .uk_close {
+            background: #1CB278;
+        }
+
+        .uk_close:hover {
+            background-color: #3cc18a;
+        }
+
+        .uk_close:active {
+            background-color: #13996a;
+        }
+    </style>
+</head>
+
+<body id="cas">
+
+    <style>
+        .errors {
+            word-wrap: break-word;
+        }
+        #feedbackMessage{
+            color: red;
+        }
+    </style>
+
+    <div class="outer-layer">
+        <div class="outer-layer-content">
+            <div class="content_box">
+              <div class="content_left"></div>
+              <div class="content_right">
+                <h2>智能管理系统Beta</h2>
+                <div class="cr_top">
+                  <form id="fm1" action="/login" method="POST" onsubmit="handleSubmit(event)">
+                    <h1>手机号</h1>
+                    <div class="ct_input">
+                      <span class="ct_img_yhm">&nbsp;</span>
+                      <input id="user_phoneNumber" name="user_phoneNumber" class="input_text" tabindex="1" accesskey="n" type="tel" value="" size="25" required />
+                    </div>
+                    <h1>密码</h1>
+                    <div class="ct_input">
+                      <span class="ct_img_mm">&nbsp;</span>
+                      <input id="user_password" name="user_password" class="input_text" tabindex="2" accesskey="p" type="password" value="" size="25" required />
+                    </div>
+                    <div class="ct_input sub-box">
+                      <input type="hidden" name="lt" value="LT-860058-V72K6wGkWLhHe1l5B9avGyqHtxhodt-cas" />
+                      <input type="hidden" name="execution" value="" />
+                      <input type="hidden" name="_eventId" value="submit" />
+                      <input class="btn_login" accesskey="l" tabindex="4" type="submit" value="登录" />
+                    </div>
+                    <div class="account-oprate">
+                      <a href="/register">申请账号</a>
+                      <a href="javascript:;">找回密码</a>
+                    </div>
+                  </form>
+                  <!-- 用于显示错误或成功信息的地方 -->
+                  <div id="feedbackMessage" class="error-message"></div>
+                </div>
+              </div>
+            </div>
+            <div class="login_footer">
+            </div>
+        </div>
+    </div>
+    <script>
+        // 处理表单提交
+        function handleSubmit(event) {
+          event.preventDefault(); // 防止表单默认提交，使用 AJAX 提交
+  
+          const user_phoneNumber = document.getElementById('user_phoneNumber').value;
+          const user_password = document.getElementById('user_password').value;
+  
+          // 创建一个 FormData 对象来发送表单数据
+          const formData = new FormData();
+          formData.append('user_phoneNumber', user_phoneNumber);
+          formData.append('user_password', user_password);
+          for (let [key, value] of formData.entries()) {
+    console.log(key + ": " + value); // 输出所有 key-value 对
+  }
+          // 使用 Fetch API 发送 POST 请求
+          fetch('/login', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json()) 
+          .then(data => {
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            
+            if (data.status === 'error') {
+              // 显示错误信息
+              feedbackMessage.textContent = data.message;
+              feedbackMessage.className = 'error-message';
+            } else if (data.status === 'success') {
+              // 显示成功信息（如果需要）
+              feedbackMessage.textContent = '登录成功！';
+              feedbackMessage.className = 'success-message';
+              if (data.redirectUrl) {
+                 window.location.href = data.redirectUrl;
+                 }
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('feedbackMessage').textContent = '提交失败，请稍后重试。';
+          });
+        }
+      </script>
+</body>
+
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <title>查看所有用户提交的申报</title>
+</head>
+<body>
+    <aside>
+        <h1>智能管理平台Beta</h1>
+        <ul>
+            <!-- <li><a href="/admindashboard">首页</a></li> -->
+            <li><a href="/admin/manage-templates">管理项目填报模板</a></li>
+            <li><a class="onclick" href="/admin/view-all-submissions">查看所有申报</a></li>
+            <li><a href="/logout">安全登出</a></li>
+        </ul>
+    </aside>
+    <div class="container">
+        <div class="manage-submissions">
+            <h1>所有用户提交的申报</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>申报ID</th>
+                        <th>用户名称</th>
+                        <th>模板名称</th>
+                        <th>提交时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody class="field" id="submissionTableBody">
+                    <% if (submissions.length > 0) { %>
+                        <% submissions.forEach(submission => { %>
+                            <tr id="submission-<%= submission.entry_id %>">
+                                <td onclick="viewSubmission(<%= submission.entry_id %>)"><%= submission.entry_id %></td>
+                                <td onclick="viewSubmission(<%= submission.entry_id %>)"><%= submission.user_name %></td>
+                                <td onclick="viewSubmission(<%= submission.entry_id %>)"><%= submission.template_name %></td>
+                                <td onclick="viewSubmission(<%= submission.entry_id %>)">
+                                    <%= submission.submitted_at ? new Date(submission.submitted_at).toLocaleString() : '暂无时间' %>
+                                </td>
+                                <td>
+                                    <button class="btn view" onclick="viewSubmission(<%= submission.entry_id %>)">查看详情</button>
+                                    <button class="btn view" onclick="outPutFile(<%= submission.entry_id %>)">导出文件</button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5">暂无用户提交申报</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 查看单个申报详情
+        function viewSubmission(entryId) {
+            window.location.href = '/admin/view-project/' + entryId;
+        }
+        function outPutFile(entryId) {
+            window.location.href = '/generate-word/' + entryId;
+        }
+    </script>
+</body>
+</html>

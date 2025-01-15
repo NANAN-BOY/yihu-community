@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目申报</title>
+    <link rel="stylesheet" href="/styles/project-declaration.css">
+</head>
+<body>
+    <div class="container">
+        <h1>项目申报</h1>
+
+        <% if (template) { %>
+            <form action="/project-declaration" method="POST">
+                <input type="hidden" name="template_id" value="<%= template.template_id %>" />
+
+                <div class="form-group" style="display: none;">
+                    <label for="formName">模板名称：</label>
+                    <input type="text" id="formName" name="formName" value="<%= template.template_name || '无标题' %>" readonly>
+                </div>
+                <div class="form-group" style="display: none;">
+                    <label for="description">描述：</label>
+                    <textarea id="description" name="description" readonly><%= template.template_description || '无描述' %></textarea>
+                </div>
+                
+                <h2 style="display: none;">填写字段</h2>
+                <% fields.forEach(field => { %>
+                    <div class="form-group">
+                        <label>
+                            <%= field.template_fields_name %><%= field.fields_isRequired ? ' *' : '' %>
+                        </label>
+                        <% if (field.template_fields_type === 1) { %>
+                            <!-- 文本输入框 -->
+                            <input
+                                type="text"
+                                name="fields[<%= field.template_fields_id %>][field_value]"
+                                placeholder="请输入内容"
+                                required="<%= field.fields_isRequired %>"
+                            >
+                        <% } else if (field.template_fields_type === 2) { %>
+                            <!-- 多行文本框 -->
+                            <textarea name="fields[<%= field.template_fields_id %>][field_value]" placeholder="请输入内容" required="<%= field.fields_isRequired %>"></textarea>
+                            <% } else if (field.template_fields_type === 3) { %>
+                            <!-- 下拉框 -->
+                            <select name="fields[<%= field.template_fields_id %>][field_value]" required="<%= field.fields_isRequired %>">
+                              <option value="">请选择</option>
+                              <% if (Array.isArray(field.template_fields_options)) { %>
+                              <% field.template_fields_options.forEach(option => { %>
+                              <option value="<%= option %>"><%= option %></option>
+                              <% }) %>
+                              <% } else { %>
+                              <option value="">无可用选项</option>
+                              <% } %>
+                            </select>
+                            <% } else if (field.template_fields_type === 4) { %>
+                            <!-- 文件上传 -->
+                            <input
+                                type="file"
+                                name="fields[<%= field.template_fields_id %>][field_value]"
+                                required="<%= field.fields_isRequired %>"
+                            >
+                        <% } %>
+                    </div>
+                <% }) %>
+
+                <button type="submit">提交申报</button>
+            </form>
+        <% } else { %>
+            <p>当前没有启用的模板。</p>
+        <% } %>
+    </div>
+</body>
+</html>

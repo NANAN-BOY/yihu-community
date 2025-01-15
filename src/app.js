@@ -51,31 +51,9 @@ app.use(bodyParser.json());
 app.use('/', formRouter);
 app.use('/', indexRouter);
 
-// 注册页面
-app.get('/register', (req, res) => {
-    res.render('register');
-});
-// 注册路由
-app.post('/register', async (req, res) => {
-    const { user_name, password } = req.body;
-    // 检查是否提供了必要的参数
-    if (!user_name || !password) { return res.status(400).send('请输入所有必填字段'); }
-    // 初始角色为 3 （普通组织）
-    const user_role = 3;
-    // 对密码进行加密
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // 插入新用户到数据库
-    const insertSql = 'INSERT INTO User (user_name, hash_password, user_role) VALUES (?, ?, ?)';
-    try {
-        // 使用 promisePool 执行插入操作
-        const [result] = await db.query(insertSql, [user_name, hashedPassword, user_role]);
-        const user_id = result.insertId;  // 获取新用户的 user_id
-        // 注册成功，存储用户信息到 session
-        req.session.user = { user_id, user_name, user_role };
-        // 重定向
-         res.redirect('/user/manage-project');
-    } catch (err) { console.error('数据库插入错误:', err); return res.status(500).send('系统错误'); }
-});
+
+// 使用注册路由
+app.use(authRoutes);  // 将路由引入
 // 登录页面
 app.get('/login', (req, res) => {
     res.render('login');

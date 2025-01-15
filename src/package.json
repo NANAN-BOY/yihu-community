@@ -13,6 +13,7 @@
     "debug": "~2.6.9",
     "docx": "^9.1.0",
     "docxtemplater": "^3.55.8",
+    "dotenv": "^16.4.7",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "express-session": "^1.18.1",

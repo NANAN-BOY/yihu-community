@@ -1,10 +1,8 @@
-var express = require('express');
-var path = require('path');
-var bodyParser = require('body-parser');
-var formRouter = require('./routes/formRouter');  // 引入表单路由
-var indexRouter = require('./routes/indexRouter.js');
+const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
 const db = require('./db/db');
-var app = express();
+const app = express();
 const session = require('express-session');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -20,6 +18,7 @@ const Docxtemplater = require('docxtemplater'); // 导入 Docxtemplater
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(cors());
+app.use(upload.none());
 const corsOptions = {
     origin: (origin, callback) => {
       // 允许来自任何来源，包括 IP 地址
@@ -37,7 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 配置 session
 app.use(session({
-    secret: 'your-secret-key', // 用于加密 session ID 的密钥
+    secret: 'ashgydtgfuhjoifdu8ygsfwvebfrhui', // 用于加密 session ID 的密钥
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false } // 如果使用 HTTPS，则将 secure 设置为 true
@@ -47,53 +46,15 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// 使用路由
-app.use('/', formRouter);
-app.use('/', indexRouter);
 
-
-// 使用注册路由
-app.use(authRoutes);  // 将路由引入
-// 登录页面
-app.get('/login', (req, res) => {
-    res.render('login');
-});
+// 注册路由
+const registerRoutes = require('./routes/user/auth/register');
+app.use(registerRoutes);
 // 登录路由
-app.post('/login', upload.none(), async (req, res) => {
-    const { user_id, password } = req.body;
-    // 验证请求参数是否存在
-    if (!user_id || !password) {
-        return res.status(400).json({ status: 'error', message: '请输入用户ID和密码' });
-    }
-    const sql = 'SELECT user_id, user_name, hash_password, user_role FROM User WHERE user_id = ?';
-    try {
-        // 使用 async/await 方式查询数据库
-        const [results] = await db.query(sql, [user_id]);
-        if (results.length === 0) {
-            return res.status(401).json({ status: 'error', message: '账号或密码错误' });
-        }
-        const user = results[0];
-        // 比较密码
-        const isMatch = await bcrypt.compare(password, user.hash_password);
-        if (!isMatch) {
-            return res.status(402).json({ status: 'error', message: '账号或密码错误' });
-        }
-        // 登录成功，存储用户信息到 session
-        req.session.user = { user_id: user.user_id, user_name: user.user_name, user_role: user.user_role };
-        // 判断用户角色，返回 JSON 格式的成功信息
-        if (user.user_role === 3) {
-            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/user/manage-project' });
-        }
-        if (user.user_role === 2) {
-            return res.json({ status: 'success', message: '登录成功', redirectUrl: '/admin/manage-templates' });
-        }
-        // 默认跳转到首页
-        return res.json({ status: 'success', message: '登录成功', redirectUrl: '/' });
-    } catch (err) {
-        console.error(err); // 记录系统错误
-        return res.status(500).json({ status: 'error', message: '系统错误' });
-    }
-});
+const loginRoutes = require('./routes/user/auth/login');
+app.use(loginRoutes);
+
+
 // 登出路由
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => { if (err) { return res.status(500).send('登出失败'); } res.redirect('/login'); });// 登出后跳转到登录页面

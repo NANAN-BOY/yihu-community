@@ -1,6 +1,6 @@
 // formController.js
-const pool = require('../db/db'); // 引入数据库连接池
-const db = require('../db/db');  // 从 db/db.js 导入连接池模块
+const pool = require('../src/db/db'); // 引入数据库连接池
+const db = require('../src/db/db');  // 从 db/db.js 导入连接池模块
 
 
 // 上传表单并保存数据到数据库

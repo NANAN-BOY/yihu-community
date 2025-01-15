@@ -1,7 +1,7 @@
 // routes/formRouter.js
 var express = require('express');
 var router = express.Router();
-const db = require('../db/db');  // 从 db/db.js 导入 Promise 版本的连接池模块
+const db = require('../src/db/db');  // 从 db/db.js 导入 Promise 版本的连接池模块
 
 const { uploadForm } = require('../controllers/formController');
 

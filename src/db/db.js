@@ -2,10 +2,10 @@ const mysql = require('mysql2');
 
 // 创建连接池
 const pool = mysql.createPool({
-    host: '123.249.11.153',
-    user: 'form',
+    host: 'localhost',
+    user: 'root',
     password: 'Qwertyuiop123',  // 根据实际配置修改密码
-    database: 'form',
+    database: 'project',
     waitForConnections: true,
     connectionLimit: 10,  // 最大连接数
     queueLimit: 0  // 队列长度限制（0表示无限制）

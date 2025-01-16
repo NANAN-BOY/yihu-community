@@ -31,6 +31,19 @@ const createProjectTemplate = async (req, res) => {
         res.status(500).json({ message: 'Error uploading form', error: error.message });
     }
 };
+const getProjectTemplateList = async (req, res) => {
+    try {
+        // 查询模板列表，不包含字段数据
+        const [templates] = await db.execute(
+            'SELECT template_id, template_name, template_description, template_enable, template_type, template_create_user, template_create_at, templateArchive_enable FROM Template'
+        );
 
+        // 返回模板列表
+        res.status(200).json({ templates });
+    } catch (error) {
+        console.error('Error fetching templates:', error);
+        res.status(500).json({ message: 'Error fetching templates', error: error.message });
+    }
+};
 
-module.exports = { createProjectTemplate };
+module.exports = { createProjectTemplate, getProjectTemplateList };

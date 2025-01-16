@@ -13,7 +13,6 @@
 
       <!-- 左侧菜单 -->
       <el-col :span="isMobile ? 24 : 20" style="display: flex; align-items: center; justify-content: flex-start;">
-        <!-- 在手机端时，居中显示“智能管理系统” -->
         <span v-if="!isMobile" style="margin-left: 10px;">智能管理系统</span>
         <span v-if="isMobile" style="width: 100%; text-align: center;">智能管理系统</span>
       </el-col>
@@ -25,14 +24,31 @@
     </div>
   </el-header>
 
-  <el-container style="height: 100vh;">
+  <el-container style="height: auto;">
     <!-- 左侧侧边栏 -->
-    <el-aside :width="sidebarWidth" style="background-color: #f4f4f4;">
+    <el-aside :width="sidebarWidth" style="background-color: #ffffff;">
       <el-menu default-active="1" class="el-menu-vertical-demo" @select="handleSelect">
-        <el-menu-item v-if="currentUserRole === 2" index="1">项目管理</el-menu-item> <!-- 只有角色2有权限 -->
-        <el-menu-item v-if="currentUserRole === 2" index="2">专家库管理</el-menu-item>
-        <el-menu-item v-if="currentUserRole === 2" index="3">模板管理</el-menu-item>
-        <el-menu-item v-if="currentUserRole === 2" index="4">社会组织管理</el-menu-item> <!-- 角色3可以访问此项 -->
+        <!-- 角色2相关菜单项 -->
+        <el-menu-item v-if="currentUserRole === 2" index="1">
+          <el-icon><Document /></el-icon>
+          <span>项目管理</span>
+        </el-menu-item>
+
+        <el-menu-item v-if="currentUserRole === 2" index="2">
+          <el-icon><Avatar /></el-icon>
+          <span>专家库管理</span>
+        </el-menu-item>
+
+        <el-sub-menu v-if="currentUserRole === 2" index="3">
+          <template #title><el-icon><Tickets /></el-icon>模板管理</template>
+          <el-menu-item index="3-1">项目申报模板</el-menu-item>
+          <el-menu-item index="3-2">活动细节模板</el-menu-item>
+        </el-sub-menu>
+
+        <el-menu-item v-if="currentUserRole === 2" index="4">
+          <el-icon><UserFilled /></el-icon>
+          <span>社会组织管理</span>
+        </el-menu-item>
 
         <!-- 手机端下，登出按钮也显示在侧边栏 -->
         <el-menu-item v-if="isMobile" index="5" @click="handleLogout">
@@ -53,11 +69,26 @@
   <!-- 手机端侧边栏 -->
   <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
     <el-menu default-active="1" class="el-menu-vertical-demo" @select="handleSelect">
-      <!-- 判断当前角色是否为2 -->
-      <el-menu-item v-if="currentUserRole === 2" index="1">项目管理</el-menu-item>
-      <el-menu-item v-if="currentUserRole === 2" index="2">专家库管理</el-menu-item>
-      <el-menu-item v-if="currentUserRole === 2" index="3">模板管理</el-menu-item>
-      <el-menu-item v-if="currentUserRole === 2" index="4">社会组织管理</el-menu-item>
+      <el-menu-item v-if="currentUserRole === 2" index="1">
+        <el-icon><Document /></el-icon>
+        <span>项目管理</span>
+      </el-menu-item>
+
+      <el-menu-item v-if="currentUserRole === 2" index="2">
+        <el-icon><Avatar /></el-icon>
+        <span>专家库管理</span>
+      </el-menu-item>
+
+      <el-sub-menu v-if="currentUserRole === 2" index="3">
+        <template #title><el-icon><Tickets /></el-icon>模板管理</template>
+        <el-menu-item index="3-1">项目申报模板</el-menu-item>
+        <el-menu-item index="3-2">活动细节模板</el-menu-item>
+      </el-sub-menu>
+
+      <el-menu-item v-if="currentUserRole === 2" index="4">
+        <el-icon><UserFilled /></el-icon>
+        <span>社会组织管理</span>
+      </el-menu-item>
 
       <!-- 手机端下，登出按钮 -->
       <el-menu-item index="5" @click="handleLogout">
@@ -73,9 +104,12 @@ import { useRouter } from 'vue-router';
 import store from '../store'; // 假设你已经配置了 Vuex 存储
 import ProjectManagement from '../components/user2component/ProjectManagement.vue'; // 导入项目管理组件
 import ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement.vue'; // 导入专家库管理组件
-import TemplateManagement from '../components/user2component/TemplateManagement.vue'; // 导入模板管理组件
+import ProjectTemplateManagement from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue'; // 导入项目申报模板模板管理组件
+import ActivityTemplateManagement from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue'; // 导入活动细节模板模板管理组件
 import SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement.vue';
-import {Expand} from "@element-plus/icons-vue"; // 导入社会组织管理组件
+import {Avatar, Document, Expand, List, Tickets, UserFilled} from "@element-plus/icons-vue"; // 导入社会组织管理组件
+import {Location, Menu as IconMenu, Setting} from '@element-plus/icons-vue';
+import {ElNotification} from "element-plus";
 
 const router = useRouter();
 const drawerVisible = ref(false); // 控制手机端侧边栏的显示
@@ -87,7 +121,19 @@ const currentUserRole = ref(2); // 当前用户角色（例如：角色 2）
 
 // 处理菜单项选择
 const handleSelect = (index) => {
-  console.log('选择的菜单项:', index);
+  const navbarState = store.getters.isNavbarLocked;
+  const lockReason = store.getters.navbarLockReason;
+  // 检查导航栏是否锁定
+  if (navbarState) {
+    ElNotification({
+      title: '警告',
+      message: `您正在进行“${lockReason || '重要'}”操作，切换页面可能会导致操作丢失，请先保存或放弃。`,
+      type: 'warning',
+      duration: 3000,
+    });
+    return; // 阻止导航切换
+  }
+  // 根据索引设置当前组件
   switch (index) {
     case '1':
       currentComponent.value = ProjectManagement;
@@ -95,8 +141,11 @@ const handleSelect = (index) => {
     case '2':
       currentComponent.value = ExpertLibraryManagement;
       break;
-    case '3':
-      currentComponent.value = TemplateManagement;
+    case '3-1':
+      currentComponent.value = ProjectTemplateManagement;
+      break;
+    case '3-2':
+      currentComponent.value = ActivityTemplateManagement;
       break;
     case '4':
       currentComponent.value = SocialOrganizationManagement;
@@ -110,9 +159,7 @@ const handleSelect = (index) => {
   }
 };
 
-
 const handleLogout = () => {
-  console.log('正在退出登录...');
   store.dispatch('logout'); // 调用 Vuex 中的 logout 动作，清除用户信息和 token
   router.push('/login');
 };

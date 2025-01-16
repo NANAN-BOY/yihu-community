@@ -8,32 +8,44 @@
 <script setup>
 import { onMounted, ref, computed, getCurrentInstance } from 'vue';
 import axios from 'axios';
-import { useStore } from 'vuex';
-
-const store = useStore(); // 使用 Vuex store
+import store from './store';
+import {ElNotification} from "element-plus";
+import router from "./router";
 
 const restoreLoginStatus = async () => {
-  const token = localStorage.getItem('token'); // 从 localStorage 获取 token
-  if (token) {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/restore-login`, {
+      console.log('fetchUserInfo');
+      const response = await fetch('http://localhost:3001/api/user-info', {
+        method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`, // 使用 token 进行身份验证
+          'Authorization': `Bearer ${store.state.token}`,
         },
       });
-      const userInfo = response.data;
-      // 使用 Vuex 存储用户信息
-      await store.dispatch('login', token);
-      await store.dispatch('getUserInfo', {
-        user_id: userInfo.user.user_id,
-      });
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        // 清除本地 token
-        localStorage.removeItem('token');
+
+      if (!response.ok) {
+        throw new Error('身份已过期'); // 如果响应失败，抛出错误
       }
+
+      const data = await response.json();
+
+      if (!data.user || typeof data.user !== 'object') {
+        throw new Error('身份已过期'); // 如果用户信息无效，抛出错误
+      }
+
+      commit('SET_USER', data.user); // 设置用户信息
+
+    } catch (error) {
+      // 使用 ElNotification 显示错误信息
+      ElNotification({
+        title: '身份已过期',
+        message: '请重新登录。',
+        type: 'error',
+        duration: 3000, // 自动关闭时间
+      });
+      // 清除 token 和用户信息，跳转到登录页
+      //登出
+      await router.push('/login');
     }
-  }
 };
 
 // 在组件加载时调用
@@ -49,6 +61,7 @@ onMounted(() => {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+  background-color: #f4f4f4;
 }
 
 html, body {
@@ -58,11 +71,6 @@ html, body {
     font-family: 'Arial', sans-serif;
 }
 
-.router-view {
-    flex: 1; /* 确保内容区域扩展填满屏幕 */
-    width: 100%;
-    padding-top: 100px; /* 避免内容遮挡导航栏 */
-}
 
 button {
     margin: 20px; /* 按钮与其他元素间的间距 */

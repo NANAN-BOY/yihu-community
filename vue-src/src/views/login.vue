@@ -61,14 +61,12 @@
 <script setup>
 import { ref } from 'vue';
 import { useStore } from 'vuex';  // 导入 Vuex store
-import { ElMessage } from 'element-plus';  // 导入 Element Plus 消息组件
+import { ElNotification } from 'element-plus';  // 导入 Element Plus 消息组件
 import { useRouter } from 'vue-router';
 
 // 定义响应式变量
 const userPhoneNumber = ref('');  // 用户手机号
 const userPassword = ref('');  // 用户密码
-const feedbackMessage = ref('');  // 反馈信息
-const feedbackMessageClass = ref('');  // 反馈信息的 CSS 类（根据成功或失败）
 const loading = ref(false);  // 控制登录按钮加载状态
 const router = useRouter();
 
@@ -77,7 +75,6 @@ const store = useStore();  // 获取 Vuex store 实例
 // 处理表单提交
 const handleSubmit = async () => {
   loading.value = true;  // 开始加载状态
-  feedbackMessage.value = '';  // 清空反馈信息
 
   try {
     // 创建请求体（JSON 格式）
@@ -98,15 +95,21 @@ const handleSubmit = async () => {
     const data = await response.json();
 
     if (data.status === 'error') {
-      // 显示错误信息
-      ElMessage.error(data.message);
-      feedbackMessage.value = data.message;
-      feedbackMessageClass.value = 'error-message';
+      // 使用 ElNotification 显示错误信息
+      ElNotification({
+        title: '登录失败',
+        message: data.message,
+        type: 'error',
+        duration: 3000, // 自动关闭时间
+      });
     } else if (data.status === 'success') {
-      // 显示成功信息
-      ElMessage.success('登录成功！');
-      feedbackMessage.value = '登录成功！';
-      feedbackMessageClass.value = 'success-message';
+      // 使用 ElNotification 显示成功信息
+      ElNotification({
+        title: '登录成功',
+        message: '欢迎回来！',
+        type: 'success',
+        duration: 3000, // 自动关闭时间
+      });
 
       // 将 token 和用户信息存入 Vuex
       await store.dispatch('setToken', data.token);
@@ -124,14 +127,19 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     console.error('Error:', error);
-    ElMessage.error('提交失败，请稍后重试。');
-    feedbackMessage.value = '提交失败，请稍后重试。';
-    feedbackMessageClass.value = 'error-message';
+    // 显示错误通知
+    ElNotification({
+      title: '提交失败',
+      message: '请稍后重试。',
+      type: 'error',
+      duration: 3000,
+    });
   } finally {
     loading.value = false;  // 请求完成后停止加载
   }
 };
 </script>
+
 <style scoped>
 /* Global styles */
 body {
@@ -175,13 +183,6 @@ h2 {
   margin-bottom: 30px;
   font-size: 26px; /* Slightly larger for better readability */
   color: #333;
-}
-
-h1 {
-  font-size: 18px;
-  margin-bottom: 10px;
-  color: #333;
-  font-weight: bold;
 }
 
 .ct_input {

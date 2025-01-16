@@ -1,6 +1,6 @@
 import { createStore } from 'vuex';
 import router from './router';
-import {ElMessage} from "element-plus";  // 确保导入 router 对象
+import { ElNotification } from 'element-plus'; // 导入 ElNotification
 
 const store = createStore({
   state: {
@@ -13,18 +13,24 @@ const store = createStore({
       user_role: '',                // 用户角色
       user_accountStatus: '',       // 用户账号状态
     },
+    navbar: {
+      isLocked: false,               // 导航栏是否锁定
+      lockReason: '',                // 锁定原因
+    },
   },
   getters: {
-    token: state => state.token,  // 获取 token
-    isAuthenticated: state => !!state.token,  // 检查用户是否已认证
-    userInfo: state => state.user,  // 获取用户信息
+    token: state => state.token,      // 获取 token
+    isAuthenticated: state => !!state.token, // 检查用户是否已认证
+    userInfo: state => state.user,   // 获取用户信息
+    isNavbarLocked: state => state.navbar.isLocked, // 导航栏是否锁定
+    navbarLockReason: state => state.navbar.lockReason, // 获取锁定原因
   },
   mutations: {
     SET_TOKEN(state, token) {
-      state.token = token;  // 设置 token
+      state.token = token; // 设置 token
     },
     SET_USER(state, userData) {
-      state.user = { ...state.user, ...userData };  // 更新用户信息
+      state.user = { ...state.user, ...userData }; // 更新用户信息
     },
     LOGOUT(state) {
       state.user = {
@@ -34,49 +40,42 @@ const store = createStore({
         user_role: '',
         user_accountStatus: '',
       };
-      state.token = '';  // 清除 token
+      state.token = ''; // 清除 token
+      localStorage.removeItem('token');
+      state.navbar.isLocked = false; // 解锁导航栏
+    },
+    SET_NAVBAR_LOCK(state, payload) {
+      state.navbar.isLocked = payload.isLocked; // 设置导航栏锁定状态
+      state.navbar.lockReason = payload.lockReason || ''; // 设置锁定原因
     },
   },
   actions: {
     setToken({ commit }, token) {
-      commit('SET_TOKEN', token);  // 提交设置 token 的 mutation
+      commit('SET_TOKEN', token); // 提交设置 token 的 mutation
       localStorage.setItem('token', token); // 将 token 存储到 localStorage
     },
     setUser({ commit }, userData) {
-      commit('SET_USER', userData);  // 提交设置用户信息的 mutation
+      commit('SET_USER', userData); // 提交设置用户信息的 mutation
     },
     logout({ commit }) {
-      localStorage.removeItem('token');  // 从本地存储移除 token
-      commit('LOGOUT');  // 提交注销的 mutation
+      localStorage.removeItem('token'); // 从本地存储移除 token
+      commit('LOGOUT'); // 提交注销的 mutation
+      // 使用 ElNotification 显示成功的登出消息
+      ElNotification({
+        title: '成功安全登出',
+        message: '您已成功登出。',
+        type: 'success',
+        duration: 3000, // 自动关闭时间
+      });
       router.push('/login'); // 跳转到登录页
-      ElMessage.success('成功安全登出！');
     },
-    // 获取用户信息
-    async fetchUserInfo({ commit, state }) {
-      try {
-        const response = await fetch('http://localhost:3001/api/user-info', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${state.token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('身份已过期');  // 如果响应失败，抛出错误
-        }
-
-        const data = await response.json();
-        if (data.user) {
-          commit('SET_USER', data.user); // 设置用户信息
-        }
-      } catch (error) {
-        console.error('获取用户信息失败', error);
-        // 提示身份过期
-        ElMessage.error('身份已过期，请重新登录');
-        // 清除 token 和用户信息，跳转到登录页
-        commit('LOGOUT');
-        await router.push('/login');
-      }
+    // 锁定导航栏
+    lockNavbar({ commit }, reason) {
+      commit('SET_NAVBAR_LOCK', { isLocked: true, lockReason: reason });
+    },
+    // 解锁导航栏
+    unlockNavbar({ commit }) {
+      commit('SET_NAVBAR_LOCK', { isLocked: false, lockReason: '' });
     },
   },
 });

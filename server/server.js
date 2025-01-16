@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
-const mallRoutes = require('./routes/mallRoutes');
+const mallRoutes = require('./routes/templateRoutes');
 const behaviorRouters = require('./routes/behaviorRouters');
 const pool = require('./db/pool'); // 引入连接池
 

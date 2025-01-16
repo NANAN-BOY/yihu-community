@@ -1,0 +1,36 @@
+const path = require('path');
+const fs = require('fs');
+const {NEWDATE} = require("mysql/lib/protocol/constants/types");
+const db = require('../db/pool');
+
+const createProjectTemplate = async (req, res) => {
+    try {
+        const { template_name, template_description, template_create_user, TemplateFields } = req.body;
+        // 保存模板到数据库
+        const [templateResult] = await db.execute(
+            'INSERT INTO Template (template_name, template_description, template_enable, template_type, template_create_user, template_create_at, templateArchive_enable) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)',
+            [template_name, template_description, 0, 1, template_create_user, 0]
+        );
+        // 获取插入后的模板 ID
+        const template_Id = templateResult.insertId;
+        // 插入表单字段
+        for (let TemplateField of TemplateFields) {
+            const { templateFields_name, templateFields_type, templateFields_isRequired, options } = TemplateField;
+            const fieldOptions = options ? JSON.stringify(options) : null;  // 如果选项为空，则传递 null
+
+            // 插入字段数据到数据库
+            await db.execute(
+                'INSERT INTO TemplateFields (template_id, templateFields_name, templateFields_type, templateFields_isRequired, templateFields_options) VALUES (?, ?, ?, ?, ?)',
+                [template_Id, templateFields_name, templateFields_type, templateFields_isRequired, fieldOptions]
+            );
+        }
+        // 返回成功的响应，包含模板 ID
+        res.status(201).json({ message: 'Form uploaded successfully', templateId: template_Id });
+    } catch (error) {
+        console.error('Error uploading form:', error);
+        res.status(500).json({ message: 'Error uploading form', error: error.message });
+    }
+};
+
+
+module.exports = { createProjectTemplate };

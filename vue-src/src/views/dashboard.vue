@@ -74,7 +74,8 @@ import store from '../store'; // 假设你已经配置了 Vuex 存储
 import ProjectManagement from '../components/user2component/ProjectManagement.vue'; // 导入项目管理组件
 import ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement.vue'; // 导入专家库管理组件
 import TemplateManagement from '../components/user2component/TemplateManagement.vue'; // 导入模板管理组件
-import SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement.vue'; // 导入社会组织管理组件
+import SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement.vue';
+import {Expand} from "@element-plus/icons-vue"; // 导入社会组织管理组件
 
 const router = useRouter();
 const drawerVisible = ref(false); // 控制手机端侧边栏的显示

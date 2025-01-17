@@ -1,6 +1,6 @@
 <template>
   <!-- 顶部导航栏 -->
-  <el-header style="background-color: #409EFF; color: white; padding: 0; display: flex; align-items: center;">
+  <el-header style="background-color: #3ec474; color: white; padding: 0; display: flex; align-items: center;">
     <div class="header-content" style="width: 100%; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;">
       <!-- 手机端三道杠按钮 -->
       <el-button

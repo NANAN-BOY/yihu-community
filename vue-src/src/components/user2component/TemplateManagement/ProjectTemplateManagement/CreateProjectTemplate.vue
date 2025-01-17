@@ -99,7 +99,7 @@ const submitForm = () => {
   };
 
   // 调用后端接口提交数据
-  fetch('http://localhost:3001/api/template/createProjectTemplate', {
+  fetch(`${import.meta.env.VITE_BACKEND_IP}/api/template/createProjectTemplate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

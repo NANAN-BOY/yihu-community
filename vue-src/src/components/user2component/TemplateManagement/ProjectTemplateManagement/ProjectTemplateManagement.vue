@@ -1,8 +1,19 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { ElMessage, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput } from 'element-plus';
-import { Search } from '@element-plus/icons-vue';
+import {
+  ElMessage,
+  ElButton,
+  ElTable,
+  ElTableColumn,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem,
+  ElInput,
+  ElMessageBox
+} from 'element-plus';
+import {ArrowDown, Search} from '@element-plus/icons-vue';
 import store from '../../../../store';
+import CreateProjectTemplate from "./CreateProjectTemplate.vue";
 
 // 控制是否显示 Create 组件
 const showCreateComponent = ref(false);
@@ -24,7 +35,7 @@ const formatDate = (dateString) => {
 // 请求模板列表
 const getTemplateList = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/template/getProjectTemplateList');
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/template/getProjectTemplateList`);
     if (!response.ok) throw new Error('Network response was not ok');
     const data = await response.json();
     if (data.templates) {
@@ -96,7 +107,6 @@ const archiveTemplate = (templateId) => {
 };
 
 </script>
-
 <template>
   <div v-if="!showCreateComponent">
     <!-- 面包屑导航 -->
@@ -111,29 +121,31 @@ const archiveTemplate = (templateId) => {
     </el-button>
     <br /><br />
 
-    <!-- 模板列表 -->
-    <div v-for="(template, index) in filteredData" :key="index" class="template-card">
-      <div class="template-header">
-        <span class="template-title">{{ template.template_name }}</span>
-        <div class="template-actions">
-          <el-dropdown>
-            <span class="el-dropdown-link">
-              <el-icon class="el-icon--right">
-                <arrow-down />
-              </el-icon>
-              ...
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="enableTemplate(template.template_id)">启用模板</el-dropdown-item>
-                <el-dropdown-item @click="archiveTemplate(template.template_id)">归档模板</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+    <!-- 模板列表，添加了滚动样式 -->
+    <div class="template-list">
+      <div v-for="(template, index) in filteredData" :key="index" class="template-card">
+        <div class="template-header">
+          <span class="template-title">{{ template.template_name }}</span>
+          <div class="template-actions">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                <el-icon class="el-icon--right">
+                  <arrow-down />
+                </el-icon>
+                ...
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="enableTemplate(template.template_id)">启用模板</el-dropdown-item>
+                  <el-dropdown-item @click="archiveTemplate(template.template_id)">归档模板</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </div>
+        <div class="template-description">{{ template.template_description.length > 10 ? template.template_description.slice(0, 10) + '...' : template.template_description }}</div>
+        <div class="template-created-at">{{ template.formattedCreateAt }}</div>
       </div>
-      <div class="template-description">{{ template.template_description.length > 10 ? template.template_description.slice(0, 10) + '...' : template.template_description }}</div>
-      <div class="template-created-at">{{ template.formattedCreateAt }}</div>
     </div>
   </div>
 
@@ -191,10 +203,21 @@ const archiveTemplate = (templateId) => {
   margin-top: 5px;
 }
 
+/* 设置列表容器的滚动 */
+.template-list {
+  max-height: 80vh;  /* 可以根据需要调整高度 */
+  overflow-y: auto;   /* 启用垂直滚动 */
+  padding-right: 10px; /* 防止右侧滚动条遮挡内容 */
+}
+
 /* 针对小屏幕优化 */
 @media (max-width: 768px) {
   .template-card {
     padding: 12px;
+  }
+
+  .template-list {
+    max-height: 80vh;  /* 小屏幕时限制滚动区域的高度 */
   }
 }
 </style>

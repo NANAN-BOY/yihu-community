@@ -84,7 +84,7 @@ const handleSubmit = async () => {
     };
 
     // 使用 Fetch API 发送 POST 请求
-    const response = await fetch('http://localhost:3001/api/login', {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // 设置请求头为 JSON 格式

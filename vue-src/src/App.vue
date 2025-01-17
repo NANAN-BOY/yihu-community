@@ -15,7 +15,7 @@ import router from "./router";
 const restoreLoginStatus = async () => {
     try {
       console.log('fetchUserInfo');
-      const response = await fetch('http://localhost:3001/api/user-info', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/user-info`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${store.state.token}`,

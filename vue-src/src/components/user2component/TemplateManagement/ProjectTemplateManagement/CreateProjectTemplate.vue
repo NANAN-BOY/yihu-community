@@ -1,6 +1,6 @@
 <script setup>
 import { ArrowDown, ArrowUp, Close, Document, DocumentAdd, FolderAdd } from '@element-plus/icons-vue';
-import { reactive, ref } from 'vue';
+import { reactive, ref,computed } from 'vue';
 import store from '../../../../store';
 import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElCheckbox, ElTag, ElButton } from 'element-plus';
 
@@ -128,6 +128,11 @@ const submitForm = () => {
 
 // 添加字段相关的状态
 const addFieldDialogVisible = ref(false);
+const isMobile = computed(() => {
+  return window.innerWidth < 768; // 假设手机屏幕宽度小于768px
+});
+
+
 const fieldTypeOptions = [
   { label: '文本框', value: '1' },
   { label: '多行文本框', value: '2' },
@@ -190,7 +195,7 @@ const showAddFieldDialog = () => {
 
     <el-button type="primary" @click="showAddFieldDialog" style="margin-top: 20px;">添加字段</el-button>
 
-    <el-form label-width="auto" style="max-width: 600px; margin-top: 20px;">
+    <el-form label-width="auto" style=" margin-top: 20px;">
       <el-form-item>
         <el-button @click="onSteps = 1">上一步</el-button>
         <el-button type="success" @click="submitForm">下一步</el-button>
@@ -203,50 +208,46 @@ const showAddFieldDialog = () => {
     <el-button type="primary" @click="submitForm">保存模板</el-button>
   </div>
 
-  <!-- 添加字段对话框 -->
-  <el-dialog v-model="addFieldDialogVisible" title="添加字段" width="90%" max-width="600px" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-form label-width="100px">
-      <el-form-item label="字段名称">
-        <el-input v-model="currentField.fieldName" placeholder="请输入字段名称"></el-input>
-      </el-form-item>
-      <el-form-item label="字段类型">
-        <el-select v-model="currentField.fieldType" placeholder="请选择字段类型">
-          <el-option v-for="type in fieldTypeOptions" :key="type.value" :label="type.label" :value="type.value"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="必填">
-        <el-checkbox v-model="currentField.isRequired">是否必填</el-checkbox>
-      </el-form-item>
-      <el-form-item v-if="currentField.fieldType === '3'" label="选项">
-        <div style="display: flex; align-items: center;">
-          <el-input
-              v-model="newOption"
-              placeholder="请输入选项"
-              style="flex-grow: 1; margin-right: 8px;"
-          />
-          <el-button type="primary" @click="addOption">+</el-button>
-        </div>
-        <ul id="optionsList" style="list-style-type: none; padding: 0;">
-          <li v-for="(option, index) in currentField.options" :key="index" style="margin-bottom: 8px;">
-            <el-tag
-                closable
-                @close="currentField.options.splice(index, 1)"
-                style="margin-right: 8px;"
-            >
-              {{ option }}
-            </el-tag>
-          </li>
-        </ul>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="addFieldDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="addField">确认</el-button>
-      </span>
-    </template>
-  </el-dialog>
+ <!-- 添加字段对话框 -->
+<el-dialog v-model="addFieldDialogVisible" title="添加字段" :width="isMobile ? '90%' : ''" :close-on-click-modal="false" :close-on-press-escape="false">
+  <el-form label-width="100px">
+    <el-form-item label="字段名称">
+      <el-input v-model="currentField.fieldName" placeholder="请输入字段名称"></el-input>
+    </el-form-item>
+    <el-form-item label="字段类型">
+      <el-select v-model="currentField.fieldType" placeholder="请选择字段类型">
+        <el-option v-for="type in fieldTypeOptions" :key="type.value" :label="type.label" :value="type.value"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item label="必填">
+      <el-checkbox v-model="currentField.isRequired">是否必填</el-checkbox>
+    </el-form-item>
+    <el-form-item v-if="currentField.fieldType === '3'" label="选项">
+      <el-input-tag
+        v-model="currentField.options"
+        placeholder="当前选项"
+        aria-label="请输入选项"
+      />
+      <div style="display: flex; align-items: center;">
+        <el-input
+          v-model="newOption"
+          placeholder="在此添加选项"
+          style="flex-grow: 1; margin-right: 8px;"
+        />
+        <el-button type="primary" @click="addOption">+</el-button>
+      </div>
+    </el-form-item>
+  </el-form>
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="addFieldDialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="addField">确认</el-button>
+    </span>
+  </template>
+</el-dialog>
+
 </template>
+
 
 <style scoped>
 /* 移动端优化 */

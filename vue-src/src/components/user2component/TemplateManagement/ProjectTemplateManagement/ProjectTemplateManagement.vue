@@ -11,7 +11,7 @@ import {
   ElInput,
   ElMessageBox
 } from 'element-plus';
-import {ArrowDown, Search} from '@element-plus/icons-vue';
+import { ArrowDown, Search } from '@element-plus/icons-vue';
 import store from '../../../../store';
 import CreateProjectTemplate from "./CreateProjectTemplate.vue";
 
@@ -21,6 +21,9 @@ const input = ref('');
 // 模板数据
 const tableData = ref([]);
 const filteredData = ref([]);  // 存储过滤后的数据
+
+// 当前启用的模板
+const enabledTemplate = ref(null);
 
 // 格式化时间
 const formatDate = (dateString) => {
@@ -44,6 +47,9 @@ const getTemplateList = async () => {
         formattedCreateAt: formatDate(template.template_create_at),
       }));
       filteredData.value = [...tableData.value];  // 初始化数据
+
+      // 找到启用的模板（如果有的话），并且只有第一个模板可以启用
+      enabledTemplate.value = tableData.value.find(template => template.template_enable === 1) || null;
     } else {
       ElMessage.error('没有找到模板数据');
     }
@@ -105,8 +111,8 @@ const enableTemplate = (templateId) => {
 const archiveTemplate = (templateId) => {
   console.log(`归档模板：${templateId}`);
 };
-
 </script>
+
 <template>
   <div v-if="!showCreateComponent">
     <!-- 面包屑导航 -->
@@ -120,6 +126,38 @@ const archiveTemplate = (templateId) => {
       <el-icon><Search /></el-icon>
     </el-button>
     <br /><br />
+
+    <!-- 当前启用的模板 -->
+    <div v-if="enabledTemplate">
+      <strong>当前启用的模板:</strong>
+      <div class="template-card">
+        <div class="template-header">
+          <span class="template-title">{{ enabledTemplate.template_name }}</span>
+          <div class="template-actions">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                <el-icon class="el-icon--right">
+                  <arrow-down />
+                </el-icon>
+                ...
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="enableTemplate(enabledTemplate.template_id)">启用模板</el-dropdown-item>
+                  <el-dropdown-item @click="archiveTemplate(enabledTemplate.template_id)">归档模板</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </div>
+        <div class="template-description">{{ enabledTemplate.template_description.length > 10 ? enabledTemplate.template_description.slice(0, 10) + '...' : enabledTemplate.template_description }}</div>
+        <div class="template-created-at">{{ enabledTemplate.formattedCreateAt }}</div>
+      </div>
+    </div>
+
+    <div v-else>
+      <strong>没有启用的模板</strong>
+    </div>
 
     <!-- 模板列表，添加了滚动样式 -->
     <div class="template-list">
@@ -205,7 +243,7 @@ const archiveTemplate = (templateId) => {
 
 /* 设置列表容器的滚动 */
 .template-list {
-  max-height: 80vh;  /* 可以根据需要调整高度 */
+  max-height: 60vh;  /* 可以根据需要调整高度 */
   overflow-y: auto;   /* 启用垂直滚动 */
   padding-right: 10px; /* 防止右侧滚动条遮挡内容 */
 }
@@ -217,7 +255,7 @@ const archiveTemplate = (templateId) => {
   }
 
   .template-list {
-    max-height: 80vh;  /* 小屏幕时限制滚动区域的高度 */
+    max-height: 60vh;  /* 小屏幕时限制滚动区域的高度 */
   }
 }
 </style>

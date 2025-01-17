@@ -32,14 +32,20 @@ const addOption = () => {
 // 添加字段
 const addField = () => {
   if (!currentField.fieldName.trim()) {
-    alert('字段名称是必填项！');
+    ElNotification({
+      title: '错误',
+      message: '字段名称不能为空！',
+      type: 'error',
+      duration: 3000,
+    });
     return;
   }
+
   form.fields.push({
     fieldName: currentField.fieldName,
     fieldType: currentField.fieldType,
     isRequired: currentField.isRequired,
-    options: currentField.fieldType === '3' ? [...currentField.options] : null,  // 如果是下拉选择，确保 options 为空时是 null
+    options: currentField.fieldType === '3' ? [...currentField.options] : null, // 如果是下拉选择，确保 options 为空时是 null
   });
 
   // 重置字段输入

@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import store from './store.js';  // Vuex
 import login from './views/login.vue';
 import dashboard from './views/dashboard.vue';
-
+import register from './views/register.vue';
 const routes = [
   {
     path: '/',
@@ -12,6 +12,11 @@ const routes = [
     path: '/login',
     name: 'login',
     component: login,
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: register,
   },
   {
     path: '/dashboard',

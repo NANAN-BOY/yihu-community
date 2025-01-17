@@ -5,7 +5,7 @@ const mysql = require('mysql2');
 const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
-    password: 'Qwertyuiop123',  // 根据实际配置修改密码
+    password: '123456',  // 根据实际配置修改密码
     database: 'project',
     waitForConnections: true,
     connectionLimit: 10,

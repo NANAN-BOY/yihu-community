@@ -2,14 +2,9 @@
   <!-- 顶部导航栏 -->
   <el-header style="background-color: #3ec474; color: white; padding: 0; display: flex; align-items: center;">
     <div class="header-content" style="width: 100%; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;">
+
       <!-- 手机端三道杠按钮 -->
-      <el-button
-          v-if="isMobile"
-          style="position: fixed; top: 15px; left: 15px; z-index: 10; border: none;"
-          @click="drawerVisible = true"
-      >
-        <el-icon><Expand /></el-icon>
-      </el-button>
+      <el-button v-if="isMobile" style="position: fixed; top: 15px; left: 15px; z-index: 10; border: none;" @click="drawerVisible = true"><el-icon><Expand /></el-icon></el-button>
 
       <!-- 左侧菜单 -->
       <el-col :span="isMobile ? 24 : 20" style="display: flex; align-items: center; justify-content: flex-start;">
@@ -19,37 +14,41 @@
 
       <!-- 电脑端退出按钮 -->
       <el-col v-if="!isMobile" :span="4" style="display: flex; align-items: center; justify-content: flex-end;">
-        <el-button type="primary" @click="handleLogout">安全登出</el-button>
+        <el-button type="primary" @click="handleLogout" color="#d7fbe8" >安全登出</el-button>
       </el-col>
     </div>
   </el-header>
-
   <el-container style="height: auto;">
     <!-- 左侧侧边栏 -->
     <el-aside :width="sidebarWidth" style="background-color: #ffffff;">
-      <el-menu default-active="1" class="el-menu-vertical-demo" @select="handleSelect">
+      <el-menu :default-active="currentUserRole + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
         <!-- 角色2相关菜单项 -->
-        <el-menu-item v-if="currentUserRole === 2" index="1">
+        <el-menu-item v-if="currentUserRole === 2" index="2-1">
           <el-icon><Document /></el-icon>
           <span>项目管理</span>
         </el-menu-item>
-
-        <el-menu-item v-if="currentUserRole === 2" index="2">
+        <el-menu-item v-if="currentUserRole === 2" index="2-2">
           <el-icon><Avatar /></el-icon>
           <span>专家库管理</span>
         </el-menu-item>
-
-        <el-sub-menu v-if="currentUserRole === 2" index="3">
+        <el-sub-menu v-if="currentUserRole === 2" index="2-3">
           <template #title><el-icon><Tickets /></el-icon>模板管理</template>
-          <el-menu-item index="3-1">项目申报模板</el-menu-item>
-          <el-menu-item index="3-2">活动细节模板</el-menu-item>
+          <el-menu-item index="2-3-1">项目申报模板</el-menu-item>
+          <el-menu-item index="2-3-2">活动细节模板</el-menu-item>
         </el-sub-menu>
-
-        <el-menu-item v-if="currentUserRole === 2" index="4">
+        <el-menu-item v-if="currentUserRole === 2" index="2-4">
           <el-icon><UserFilled /></el-icon>
           <span>社会组织管理</span>
         </el-menu-item>
-
+        <!-- 角色3相关菜单项 -->
+        <el-menu-item v-if="currentUserRole === 3" index="3-1">
+          <el-icon><Document /></el-icon>
+          <span>项目管理</span>
+        </el-menu-item>
+        <el-menu-item v-if="currentUserRole === 3" index="3-2">
+          <el-icon><Document /></el-icon>
+          <span>活动管理</span>
+        </el-menu-item>
         <!-- 手机端下，登出按钮也显示在侧边栏 -->
         <el-menu-item v-if="isMobile" index="5" @click="handleLogout">
           <el-button type="primary" style="width: 100%;">安全登出</el-button>
@@ -68,28 +67,19 @@
 
   <!-- 手机端侧边栏 -->
   <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
-    <el-menu default-active="1" class="el-menu-vertical-demo" @select="handleSelect">
-      <el-menu-item v-if="currentUserRole === 2" index="1">
-        <el-icon><Document /></el-icon>
-        <span>项目管理</span>
-      </el-menu-item>
-
-      <el-menu-item v-if="currentUserRole === 2" index="2">
-        <el-icon><Avatar /></el-icon>
-        <span>专家库管理</span>
-      </el-menu-item>
-
-      <el-sub-menu v-if="currentUserRole === 2" index="3">
-        <template #title><el-icon><Tickets /></el-icon>模板管理</template>
-        <el-menu-item index="3-1">项目申报模板</el-menu-item>
-        <el-menu-item index="3-2">活动细节模板</el-menu-item>
+    <!-- 角色2相关菜单项 -->
+    <el-menu :default-active="currentUserRole + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
+      <el-menu-item v-if="currentUserRole === 2" index="2-1">
+        <el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
+      <el-menu-item v-if="currentUserRole === 2" index="2-2"><el-icon><Avatar /></el-icon><span>专家库管理</span></el-menu-item>
+      <el-sub-menu v-if="currentUserRole === 2" index="2-3"><template #title><el-icon><Tickets /></el-icon>模板管理</template>
+        <el-menu-item index="2-3-1">项目申报模板</el-menu-item>
+        <el-menu-item index="2-3-2">活动细节模板</el-menu-item>
       </el-sub-menu>
-
-      <el-menu-item v-if="currentUserRole === 2" index="4">
-        <el-icon><UserFilled /></el-icon>
-        <span>社会组织管理</span>
-      </el-menu-item>
-
+      <el-menu-item v-if="currentUserRole === 2" index="2-4"><el-icon><UserFilled /></el-icon><span>社会组织管理</span></el-menu-item>
+      <!-- 角色3相关菜单项 -->
+      <el-menu-item v-if="currentUserRole === 3" index="3-1"><el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
+      <el-menu-item v-if="currentUserRole === 3" index="3-2"><el-icon><Document /></el-icon><span>活动管理</span></el-menu-item>
       <!-- 手机端下，登出按钮 -->
       <el-menu-item index="5" @click="handleLogout">
         <el-button type="primary" style="width: 100%;">安全登出</el-button>
@@ -117,7 +107,7 @@ const sidebarWidth = ref('250px'); // 默认宽度
 const isMobile = ref(false); // 是否是移动设备
 const currentComponent = ref(null); // 当前显示的组件
 
-const currentUserRole = ref(2); // 当前用户角色（例如：角色 2）
+const currentUserRole = ref(store.state.user.user_role);
 
 // 处理菜单项选择
 const handleSelect = (index) => {
@@ -135,20 +125,31 @@ const handleSelect = (index) => {
   }
   // 根据索引设置当前组件
   switch (index) {
-    case '1':
+    //角色2
+    case '2-1':
       currentComponent.value = ProjectManagement;
       break;
-    case '2':
+    case '2-2':
       currentComponent.value = ExpertLibraryManagement;
       break;
-    case '3-1':
+    case '2-3-1':
       currentComponent.value = ProjectTemplateManagement;
       break;
-    case '3-2':
+    case '2-3-2':
       currentComponent.value = ActivityTemplateManagement;
       break;
-    case '4':
+    case '2-4':
       currentComponent.value = SocialOrganizationManagement;
+      break;
+    //角色3
+    case '3-1':
+      currentComponent.value = SocialOrganizationManagement;
+      break;
+    case '3-2':
+      currentComponent.value = ProjectManagement;
+      break;
+    case '3-3':
+      currentComponent.value = ActivityTemplateManagement;
       break;
     default:
       currentComponent.value = null;

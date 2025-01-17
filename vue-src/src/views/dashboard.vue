@@ -21,31 +21,31 @@
   <el-container style="height: auto;">
     <!-- 左侧侧边栏 -->
     <el-aside :width="sidebarWidth" style="background-color: #ffffff;">
-      <el-menu :default-active="currentUserRole + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
+      <el-menu :default-active="store.state.user.user_role + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
         <!-- 角色2相关菜单项 -->
-        <el-menu-item v-if="currentUserRole === 2" index="2-1">
+        <el-menu-item v-if="store.state.user.user_role === 2" index="2-1">
           <el-icon><Document /></el-icon>
           <span>项目管理</span>
         </el-menu-item>
-        <el-menu-item v-if="currentUserRole === 2" index="2-2">
+        <el-menu-item v-if="store.state.user.user_role=== 2" index="2-2">
           <el-icon><Avatar /></el-icon>
           <span>专家库管理</span>
         </el-menu-item>
-        <el-sub-menu v-if="currentUserRole === 2" index="2-3">
+        <el-sub-menu v-if="store.state.user.user_role === 2" index="2-3">
           <template #title><el-icon><Tickets /></el-icon>模板管理</template>
           <el-menu-item index="2-3-1">项目申报模板</el-menu-item>
           <el-menu-item index="2-3-2">活动细节模板</el-menu-item>
         </el-sub-menu>
-        <el-menu-item v-if="currentUserRole === 2" index="2-4">
+        <el-menu-item v-if="store.state.user.user_role === 2" index="2-4">
           <el-icon><UserFilled /></el-icon>
           <span>社会组织管理</span>
         </el-menu-item>
         <!-- 角色3相关菜单项 -->
-        <el-menu-item v-if="currentUserRole === 3" index="3-1">
+        <el-menu-item v-if="store.state.user.user_role === 3" index="3-1">
           <el-icon><Document /></el-icon>
           <span>项目管理</span>
         </el-menu-item>
-        <el-menu-item v-if="currentUserRole === 3" index="3-2">
+        <el-menu-item v-if="store.state.user.user_role === 3" index="3-2">
           <el-icon><Document /></el-icon>
           <span>活动管理</span>
         </el-menu-item>
@@ -55,7 +55,6 @@
         </el-menu-item>
       </el-menu>
     </el-aside>
-
     <!-- 右侧内容区 -->
     <el-container>
       <!-- 页面主内容 -->
@@ -68,18 +67,18 @@
   <!-- 手机端侧边栏 -->
   <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
     <!-- 角色2相关菜单项 -->
-    <el-menu :default-active="currentUserRole + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
-      <el-menu-item v-if="currentUserRole === 2" index="2-1">
+    <el-menu :default-active="store.state.user.user_role + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
+      <el-menu-item v-if="store.state.user.user_role === 2" index="2-1">
         <el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
-      <el-menu-item v-if="currentUserRole === 2" index="2-2"><el-icon><Avatar /></el-icon><span>专家库管理</span></el-menu-item>
-      <el-sub-menu v-if="currentUserRole === 2" index="2-3"><template #title><el-icon><Tickets /></el-icon>模板管理</template>
+      <el-menu-item v-if="store.state.user.user_role === 2" index="2-2"><el-icon><Avatar /></el-icon><span>专家库管理</span></el-menu-item>
+      <el-sub-menu v-if="store.state.user.user_role === 2" index="2-3"><template #title><el-icon><Tickets /></el-icon>模板管理</template>
         <el-menu-item index="2-3-1">项目申报模板</el-menu-item>
         <el-menu-item index="2-3-2">活动细节模板</el-menu-item>
       </el-sub-menu>
-      <el-menu-item v-if="currentUserRole === 2" index="2-4"><el-icon><UserFilled /></el-icon><span>社会组织管理</span></el-menu-item>
+      <el-menu-item v-if="store.state.user.user_role === 2" index="2-4"><el-icon><UserFilled /></el-icon><span>社会组织管理</span></el-menu-item>
       <!-- 角色3相关菜单项 -->
-      <el-menu-item v-if="currentUserRole === 3" index="3-1"><el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
-      <el-menu-item v-if="currentUserRole === 3" index="3-2"><el-icon><Document /></el-icon><span>活动管理</span></el-menu-item>
+      <el-menu-item v-if="store.state.user.user_role === 3" index="3-1"><el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
+      <el-menu-item v-if="store.state.user.user_role === 3" index="3-2"><el-icon><Document /></el-icon><span>活动管理</span></el-menu-item>
       <!-- 手机端下，登出按钮 -->
       <el-menu-item index="5" @click="handleLogout">
         <el-button type="primary" style="width: 100%;">安全登出</el-button>

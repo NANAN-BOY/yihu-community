@@ -11,42 +11,62 @@ import axios from 'axios';
 import store from './store';
 import {ElNotification} from "element-plus";
 import router from "./router";
-
 const restoreLoginStatus = async () => {
-    try {
-      console.log('fetchUserInfo');
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/user-info`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${store.state.token}`,
-        },
-      });
+  try {
 
-      if (!response.ok) {
-        throw new Error('身份已过期'); // 如果响应失败，抛出错误
-      }
+    // 尝试获取用户信息
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/restore-login`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${store.state.token}`,  // 将 token 作为 Bearer token 发送
+      },
+    });
 
-      const data = await response.json();
-
-      if (!data.user || typeof data.user !== 'object') {
-        throw new Error('身份已过期'); // 如果用户信息无效，抛出错误
-      }
-
-      commit('SET_USER', data.user); // 设置用户信息
-
-    } catch (error) {
-      // 使用 ElNotification 显示错误信息
-      ElNotification({
-        title: '身份已过期',
-        message: '请重新登录。',
-        type: 'error',
-        duration: 3000, // 自动关闭时间
-      });
-      // 清除 token 和用户信息，跳转到登录页
-      //登出
-      await router.push('/login');
+    // 如果响应失败，抛出错误
+    if (!response.ok) {
+      throw new Error('身份已过期');
     }
+
+    // 获取响应数据
+    const data = await response.json();
+
+    // 如果后端返回错误信息，抛出错误
+    if (data.status === 'error') {
+      throw new Error(data.message);
+    }
+
+    // 返回状态正常时，处理用户信息
+    if (data.status === 'success' && data.user) {
+      // 将用户信息存入 Vuex
+      await store.dispatch('setUser', {
+        user_id: data.user.user_id,
+        user_name: data.user.user_name,
+        user_phoneNumber: data.user.user_phoneNumber,
+        user_role: data.user.user_role,
+        user_accountStatus: data.user.user_accountStatus,
+      });
+    } else {
+      throw new Error('恢复用户信息失败');
+    }
+  } catch (error) {
+    // 使用 ElNotification 显示错误信息
+    ElNotification({
+      title: '身份已过期',
+      message: '请重新登录。',
+      type: 'error',
+      duration: 3000, // 自动关闭时间
+    });
+
+    // 清除 token 和用户信息
+    localStorage.removeItem('token');  // 清除 token
+    await store.dispatch('setToken', null);  // 清空 Vuex 中的 token
+    await store.dispatch('setUser', null);  // 清空 Vuex 中的用户信息
+
+    // 跳转到登录页面
+    await router.push('/login');
+  }
 };
+
 
 // 在组件加载时调用
 onMounted(() => {

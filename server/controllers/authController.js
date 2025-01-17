@@ -108,7 +108,46 @@ const register = async (req, res) => {
 
 // 恢复登录状态
 const restoreLogin = async (req, res) => {
+  const token = req.headers['authorization']?.split(' ')[1]; // 从请求头获取 token
+  if (!token) {
+    return res.status(401).json({ status: 'error', message: '缺少token，请重新登录' });
+  }
 
+  try {
+    // 验证并解码 token
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // 查询数据库获取用户信息
+    const sql = 'SELECT user_id, user_name, user_phoneNumber, user_role, user_accountStatus FROM User WHERE user_id = ?';
+    const [results] = await req.db.query(sql, [decoded.user_id]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ status: 'error', message: '用户不存在' });
+    }
+
+    const user = results[0];
+
+    // 返回用户信息
+    const responseData = {
+      status: 'success',
+      message: '恢复登录状态成功',
+      user: {
+        user_id: user.user_id,
+        user_name: user.user_name,
+        user_phoneNumber: user.user_phoneNumber,
+        user_role: user.user_role,
+        user_accountStatus: user.user_accountStatus,
+      }
+    };
+    return res.json(responseData);
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ status: 'error', message: 'token已过期，请重新登录' });
+    } else {
+      console.error(err); // 记录错误
+      return res.status(500).json({ status: 'error', message: '系统错误' });
+    }
+  }
 };
 
 // 导出控制器

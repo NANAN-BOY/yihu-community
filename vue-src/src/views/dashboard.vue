@@ -96,6 +96,8 @@ import ExpertLibraryManagement from '../components/user2component/ExpertLibraryM
 import ProjectTemplateManagement from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue'; // 导入项目申报模板模板管理组件
 import ActivityTemplateManagement from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue'; // 导入活动细节模板模板管理组件
 import SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement.vue';
+import user3PrijectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue'
+
 import {Avatar, Document, Expand, List, Tickets, UserFilled} from "@element-plus/icons-vue"; // 导入社会组织管理组件
 import {Location, Menu as IconMenu, Setting} from '@element-plus/icons-vue';
 import {ElNotification} from "element-plus";
@@ -105,8 +107,6 @@ const drawerVisible = ref(false); // 控制手机端侧边栏的显示
 const sidebarWidth = ref('250px'); // 默认宽度
 const isMobile = ref(false); // 是否是移动设备
 const currentComponent = ref(null); // 当前显示的组件
-
-const currentUserRole = ref(store.state.user.user_role);
 
 // 处理菜单项选择
 const handleSelect = (index) => {
@@ -142,7 +142,7 @@ const handleSelect = (index) => {
       break;
     //角色3
     case '3-1':
-      currentComponent.value = SocialOrganizationManagement;
+      currentComponent.value = user3PrijectManagement;
       break;
     case '3-2':
       currentComponent.value = ProjectManagement;

@@ -2,7 +2,7 @@
 import { ArrowDown, ArrowUp, Close, Document, DocumentAdd, FolderAdd } from '@element-plus/icons-vue';
 import { reactive, ref } from 'vue';
 import store from '../../../../store';
-import { ElNotification } from 'element-plus'; // 假设你已经配置了 Vuex 存储
+import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElCheckbox, ElTag, ElButton } from 'element-plus';
 
 let onSteps = ref(1);
 
@@ -19,12 +19,14 @@ const currentField = reactive({
   isRequired: false,
   options: [],
 });
+const newOption = ref('');
 const userId = store.state.user.user_id;
 
 // 添加选项
-const addOption = (option) => {
-  if (option.trim() === '') return;
-  currentField.options.push(option);
+const addOption = () => {
+  if (newOption.value.trim() === '') return;
+  currentField.options.push(newOption.value);
+  newOption.value = ''; // 清空输入框
 };
 
 // 添加字段
@@ -45,6 +47,10 @@ const addField = () => {
   currentField.fieldType = '1';
   currentField.isRequired = false;
   currentField.options = [];
+  newOption.value = '';
+
+  // 关闭对话框
+  addFieldDialogVisible.value = false;
 };
 
 // 删除字段
@@ -119,10 +125,26 @@ const submitForm = () => {
         // 失败时不切换步骤，保持当前步骤
       });
 };
+
+// 添加字段相关的状态
+const addFieldDialogVisible = ref(false);
+const fieldTypeOptions = [
+  { label: '文本框', value: '1' },
+  { label: '多行文本框', value: '2' },
+  { label: '下拉选择', value: '3' },
+  { label: '文件上传', value: '4' },
+];
+
+// 显示添加字段对话框
+const showAddFieldDialog = () => {
+  addFieldDialogVisible.value = true;
+  currentField.fieldName = '';
+  currentField.fieldType = '1';
+  currentField.isRequired = false;
+  currentField.options = [];
+  newOption.value = '';
+};
 </script>
-
-
-
 
 <template>
   <el-steps style="max-width: 600px" :active="onSteps">
@@ -150,45 +172,8 @@ const submitForm = () => {
     </el-form>
   </div>
 
-
   <!--第二步-->
   <div v-if="onSteps === 2">
-    <el-form label-width="auto" style="max-width: 600px">
-      <el-form-item label="字段名称">
-        <el-input v-model="currentField.fieldName" placeholder="请输入字段名称" />
-      </el-form-item>
-      <el-form-item label="字段类型">
-        <el-select v-model="currentField.fieldType" placeholder="请选择字段类型">
-          <el-option label="文本框" value="1" />
-          <el-option label="多行文本框" value="2" />
-          <el-option label="下拉选择" value="3" />
-          <el-option label="文件上传" value="4" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="必填">
-        <el-checkbox v-model="currentField.isRequired">是否必填</el-checkbox>
-      </el-form-item>
-      <el-form-item v-if="currentField.fieldType === '3'" label="选项">
-        <el-input
-            placeholder="请输入选项并回车确认"
-            @keyup.enter="addOption($event.target.value); $event.target.value = ''"
-        />
-        <el-tag
-            v-for="(option, index) in currentField.options"
-            :key="index"
-            closable
-            @close="currentField.options.splice(index, 1)"
-        >
-          {{ option }}
-        </el-tag>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="addField">添加字段</el-button>
-        <el-button @click="onSteps = 1">上一步</el-button>
-        <el-button type="success" @click="submitForm">下一步</el-button>
-      </el-form-item>
-    </el-form>
-
     <h3>已添加的字段：</h3>
     <div v-for="(field, index) in form.fields" :key="index" style="border: 1px solid #ebeef5; border-radius: 4px; padding: 16px; margin-bottom: 8px;">
       <div style="display: flex; justify-content: space-between;">
@@ -202,12 +187,82 @@ const submitForm = () => {
         <el-button type="primary" size="small" @click="moveField(index, index + 1)" :disabled="index === form.fields.length - 1">下移</el-button>
       </div>
     </div>
+
+    <el-button type="primary" @click="showAddFieldDialog" style="margin-top: 20px;">添加字段</el-button>
+
+    <el-form label-width="auto" style="max-width: 600px; margin-top: 20px;">
+      <el-form-item>
+        <el-button @click="onSteps = 1">上一步</el-button>
+        <el-button type="success" @click="submitForm">下一步</el-button>
+      </el-form-item>
+    </el-form>
   </div>
 
   <!--第三步-->
   <div v-if="onSteps === 3">
     <el-button type="primary" @click="submitForm">保存模板</el-button>
   </div>
+
+  <!-- 添加字段对话框 -->
+  <el-dialog v-model="addFieldDialogVisible" title="添加字段" width="90%" max-width="600px" :close-on-click-modal="false" :close-on-press-escape="false">
+    <el-form label-width="100px">
+      <el-form-item label="字段名称">
+        <el-input v-model="currentField.fieldName" placeholder="请输入字段名称"></el-input>
+      </el-form-item>
+      <el-form-item label="字段类型">
+        <el-select v-model="currentField.fieldType" placeholder="请选择字段类型">
+          <el-option v-for="type in fieldTypeOptions" :key="type.value" :label="type.label" :value="type.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="必填">
+        <el-checkbox v-model="currentField.isRequired">是否必填</el-checkbox>
+      </el-form-item>
+      <el-form-item v-if="currentField.fieldType === '3'" label="选项">
+        <div style="display: flex; align-items: center;">
+          <el-input
+              v-model="newOption"
+              placeholder="请输入选项"
+              style="flex-grow: 1; margin-right: 8px;"
+          />
+          <el-button type="primary" @click="addOption">+</el-button>
+        </div>
+        <ul id="optionsList" style="list-style-type: none; padding: 0;">
+          <li v-for="(option, index) in currentField.options" :key="index" style="margin-bottom: 8px;">
+            <el-tag
+                closable
+                @close="currentField.options.splice(index, 1)"
+                style="margin-right: 8px;"
+            >
+              {{ option }}
+            </el-tag>
+          </li>
+        </ul>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="addFieldDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="addField">确认</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .el-dialog__body {
+    padding: 20px;
+  }
+  .el-form-item {
+    margin-bottom: 16px;
+  }
+  .el-tag {
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+}
+</style>
+
+
+

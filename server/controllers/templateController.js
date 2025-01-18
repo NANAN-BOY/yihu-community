@@ -69,6 +69,48 @@ const enableProjectTemplate = async (req, res) => {
         res.status(500).json({ message: 'Error enabling template', error: error.message });
     }
 };
-module.exports = { createProjectTemplate,
-    getProjectTemplateList
-,enableProjectTemplate};
+const getEnableProjectTemplate = async (req, res) => {
+    try {
+        // 查询启用的模板（模板类型为 1 且 template_enable 为 1）
+        const [templateResult] = await db.execute(
+            'SELECT template_id, template_name, template_description, template_create_at FROM Template WHERE template_enable = 1 AND template_type = 1'
+        );
+
+        // 如果没有找到启用的模板，返回提示信息
+        if (templateResult.length === 0) {
+            return res.status(404).json({ message: '请通知管理员创建并启用模板' });
+        }
+
+        const templateId = templateResult[0].template_id;
+        const templateName = templateResult[0].template_name;
+        const templateDescription = templateResult[0].template_description;
+        const templateCreateAt = templateResult[0].template_create_at;
+
+        // 查询该模板的所有字段
+        const [templateFields] = await db.execute(
+            'SELECT templateFields_name, templateFields_type, templateFields_isRequired, templateFields_options FROM TemplateFields WHERE template_id = ?',
+            [templateId]
+        );
+
+        // 组装完整的模板信息，包括字段信息
+        const fullTemplateInfo = {
+            template_id: templateId,
+            template_name: templateName,
+            template_description: templateDescription,
+            template_create_at: templateCreateAt,
+            fields: templateFields
+        };
+        // 返回完整的模板信息和字段信息
+        res.status(200).json(fullTemplateInfo);
+    } catch (error) {
+        console.error('Error fetching current project template:', error);
+        res.status(500).json({ message: 'Error fetching current project template', error: error.message });
+    }
+};
+
+module.exports = {
+    createProjectTemplate,
+    getProjectTemplateList,
+    enableProjectTemplate,
+    getEnableProjectTemplate
+};

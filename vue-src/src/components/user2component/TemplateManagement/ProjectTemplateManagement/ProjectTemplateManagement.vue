@@ -1,3 +1,93 @@
+<template>
+  <div v-if="!showCreateComponent">
+    <!-- 面包屑导航 -->
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item><strong>项目申报模板管理</strong></el-breadcrumb-item>
+    </el-breadcrumb>
+    <br />
+    <el-button type="primary" @click="toggleCreateComponent">创建新模板</el-button>&nbsp;
+    <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchTemplates" />
+    <el-button type="primary" @click="searchTemplates">
+      <el-icon><Search /></el-icon>
+    </el-button>
+    <br /><br />
+
+    <!-- 当前启用的模板 -->
+    <div v-loading="loading" v-if="enabledTemplate !== null">
+      <strong>当前启用的模板:</strong>
+      <div class="template-card" style="background:#dbefdb;">
+        <div class="template-header">
+          <span class="template-title">{{ enabledTemplate.template_name }}</span>
+          <div class="template-actions">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                <el-icon class="el-icon--right">
+                  <arrow-down />
+                </el-icon>
+                ...
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="enableTemplate(enabledTemplate.template_id,enabledTemplate.template_name)">启用模板</el-dropdown-item>
+                  <el-dropdown-item @click="archiveTemplate(enabledTemplate.template_id)">归档模板</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </div>
+        <div class="template-description">{{ enabledTemplate.template_description.length > 20 ? enabledTemplate.template_description.slice(0, 20) + '...' : enabledTemplate.template_description }}</div>
+        <div class="template-created-at">{{ enabledTemplate.formattedCreateAt }}</div>
+      </div>
+    </div>
+
+    <div v-else v-loading="loading">
+      <strong> </strong>
+    </div>
+
+    <!-- 模板列表 -->
+    <div v-loading="loading" class="template-list">
+      <div v-for="(template, index) in filteredData" :key="index" class="template-card">
+        <div class="template-header">
+          <span class="template-title">{{ template.template_name }}</span>
+          <div class="template-actions">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                <el-icon class="el-icon--right">
+                  <arrow-down />
+                </el-icon>
+                ...
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="enableTemplate(template.template_id,template.template_name)">启用模板</el-dropdown-item>
+                  <el-dropdown-item @click="archiveTemplate(template.template_id)">归档模板</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </div>
+        <div class="template-description">{{ template.template_description.length > 20 ? template.template_description.slice(0, 20) + '...' : template.template_description }}</div>
+        <div class="template-created-at">{{ template.formattedCreateAt }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="showCreateComponent">
+    <!-- 创建项目模板页面 -->
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item @click="closeCreateComponent"><a>项目申报模板管理</a></el-breadcrumb-item>
+      <el-breadcrumb-item><strong>创建项目模板</strong></el-breadcrumb-item>
+    </el-breadcrumb>
+    <br /><el-page-header @back="closeCreateComponent" title="放弃">
+    <template #content>
+      <span class="text-large font-600 mr-3"> 创建项目模板向导 </span>
+    </template>
+  </el-page-header>
+    <!-- 创建模板组件 -->
+    <CreateProjectTemplate />
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import {
@@ -24,6 +114,7 @@ const filteredData = ref([]);  // 存储过滤后的数据
 
 // 当前启用的模板
 const enabledTemplate = ref(null);
+const loading = ref(true);  // 控制加载状态
 
 // 格式化时间
 const formatDate = (dateString) => {
@@ -56,6 +147,8 @@ const getTemplateList = async () => {
   } catch (error) {
     ElMessage.error('获取模板列表失败');
     console.error('Error fetching templates:', error);
+  } finally {
+    loading.value = false;  // 数据加载完成后隐藏加载动画
   }
 };
 
@@ -173,101 +266,10 @@ const enableTemplate = (templateId, templateName) => {
   }
 };
 
-
 const archiveTemplate = (templateId) => {
   console.log(`归档模板：${templateId}`);
 };
 </script>
-
-<template>
-  <div v-if="!showCreateComponent">
-    <!-- 面包屑导航 -->
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong>项目申报模板管理</strong></el-breadcrumb-item>
-    </el-breadcrumb>
-    <br />
-    <el-button type="primary" @click="toggleCreateComponent">创建新模板</el-button>&nbsp;
-    <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchTemplates" />
-    <el-button type="primary" @click="searchTemplates">
-      <el-icon><Search /></el-icon>
-    </el-button>
-    <br /><br />
-
-    <!-- 当前启用的模板 -->
-    <div v-if="enabledTemplate">
-      <strong>当前启用的模板:</strong>
-      <div class="template-card" style="background:#dbefdb;">
-        <div class="template-header">
-          <span class="template-title">{{ enabledTemplate.template_name }}</span>
-          <div class="template-actions">
-            <el-dropdown>
-              <span class="el-dropdown-link">
-                <el-icon class="el-icon--right">
-                  <arrow-down />
-                </el-icon>
-                ...
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="enableTemplate(enabledTemplate.template_id,enabledTemplate.template_name)">启用模板</el-dropdown-item>
-                  <el-dropdown-item @click="archiveTemplate(enabledTemplate.template_id)">归档模板</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
-        </div>
-        <div class="template-description">{{ enabledTemplate.template_description.length > 10 ? enabledTemplate.template_description.slice(0, 10) + '...' : enabledTemplate.template_description }}</div>
-        <div class="template-created-at">{{ enabledTemplate.formattedCreateAt }}</div>
-      </div>
-    </div>
-
-    <div v-else>
-      <strong>没有启用的模板</strong>
-    </div>
-
-    <!-- 模板列表，添加了滚动样式 -->
-    <div class="template-list">
-      <div v-for="(template, index) in filteredData" :key="index" class="template-card">
-        <div class="template-header">
-          <span class="template-title">{{ template.template_name }}</span>
-          <div class="template-actions">
-            <el-dropdown>
-              <span class="el-dropdown-link">
-                <el-icon class="el-icon--right">
-                  <arrow-down />
-                </el-icon>
-                ...
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="enableTemplate(template.template_id,template.template_name)">启用模板</el-dropdown-item>
-                  <el-dropdown-item @click="archiveTemplate(template.template_id)">归档模板</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
-        </div>
-        <div class="template-description">{{ template.template_description.length > 10 ? template.template_description.slice(0, 10) + '...' : template.template_description }}</div>
-        <div class="template-created-at">{{ template.formattedCreateAt }}</div>
-      </div>
-    </div>
-  </div>
-
-  <div v-if="showCreateComponent">
-    <!-- 创建项目模板页面 -->
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item @click="closeCreateComponent"><a>项目申报模板管理</a></el-breadcrumb-item>
-      <el-breadcrumb-item><strong>创建项目模板</strong></el-breadcrumb-item>
-    </el-breadcrumb>
-    <br /><el-page-header @back="closeCreateComponent" title="放弃">
-    <template #content>
-      <span class="text-large font-600 mr-3"> 创建项目模板向导 </span>
-    </template>
-  </el-page-header>
-    <!-- 创建模板组件 -->
-    <CreateProjectTemplate />
-  </div>
-</template>
 
 <style scoped>
 /* 面板样式 */
@@ -307,21 +309,9 @@ const archiveTemplate = (templateId) => {
   margin-top: 5px;
 }
 
-/* 设置列表容器的滚动 */
 .template-list {
-  max-height: 60vh;  /* 可以根据需要调整高度 */
-  overflow-y: auto;   /* 启用垂直滚动 */
-  padding-right: 10px; /* 防止右侧滚动条遮挡内容 */
-}
-
-/* 针对小屏幕优化 */
-@media (max-width: 768px) {
-  .template-card {
-    padding: 12px;
-  }
-
-  .template-list {
-    max-height: 60vh;  /* 小屏幕时限制滚动区域的高度 */
-  }
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
 }
 </style>

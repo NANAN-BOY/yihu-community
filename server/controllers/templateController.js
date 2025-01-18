@@ -88,7 +88,7 @@ const getEnableProjectTemplate = async (req, res) => {
 
         // 查询该模板的所有字段
         const [templateFields] = await db.execute(
-            'SELECT templateFields_name, templateFields_type, templateFields_isRequired, templateFields_options FROM TemplateFields WHERE template_id = ?',
+            'SELECT templateFields_id, templateFields_name, templateFields_type, templateFields_isRequired, templateFields_options FROM TemplateFields WHERE template_id = ?',
             [templateId]
         );
 
@@ -101,6 +101,7 @@ const getEnableProjectTemplate = async (req, res) => {
             fields: templateFields
         };
         // 返回完整的模板信息和字段信息
+        console.log(fullTemplateInfo);
         res.status(200).json(fullTemplateInfo);
     } catch (error) {
         console.error('Error fetching current project template:', error);

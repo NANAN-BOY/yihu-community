@@ -15,6 +15,7 @@ const toggleCreateComponent = () => {
 const input = ref('');
 const filteredData = ref([]);  // 存储过滤后的数据
 const searchTemplates = () => {
+};
 // 询问是否放弃创建的函数
 const closeCreateComponent = () => {
     ElMessageBox.confirm(
@@ -34,7 +35,6 @@ const closeCreateComponent = () => {
         .catch(() => {
           ElMessage.info('操作已取消');
         });
-  };
 };
 
 </script>

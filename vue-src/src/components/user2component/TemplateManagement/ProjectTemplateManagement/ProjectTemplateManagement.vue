@@ -103,10 +103,76 @@ onMounted(() => {
   getTemplateList();
 });
 
-// 模板启用/归档操作
-const enableTemplate = (templateId) => {
-  console.log(`启用模板：${templateId}`);
+// 模板启用操作
+const enableTemplate = (templateId, templateName) => {
+  if (enabledTemplate.value && enabledTemplate.value.template_id !== templateId) {
+    // 询问用户是否替换当前启用模板
+    ElMessageBox.confirm(
+        `是否将当前启用模板 "${enabledTemplate.value.template_name}" 替换为模板 "${templateName}"？`,
+        '替换模板',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+    ).then(async () => {
+      try {
+        // 启用新的模板，并禁用当前模板
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/template/enableProjectTemplatet`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ template_id: templateId }),
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          ElMessage.success(`模板 "${templateName}" 启用成功`);
+          getTemplateList();  // 刷新模板列表
+        } else {
+          ElMessage.error(`启用模板失败: ${data.message}`);
+        }
+      } catch (error) {
+        ElMessage.error('启用模板时发生错误');
+        console.error('Error enabling template:', error);
+      }
+    }).catch(() => {
+      ElMessage.info('操作已取消');
+    });
+  } else {
+    // 当前没有启用模板，直接启用
+    ElMessageBox.confirm(
+        `是否启用模板 "${templateName}"？`,
+        '启用模板',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+    ).then(async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/template/enableProjectTemplatet`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ template_id: templateId }),
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          ElMessage.success(`模板 "${templateName}" 启用成功`);
+          getTemplateList();  // 刷新模板列表
+        } else {
+          ElMessage.error(`启用模板失败: ${data.message}`);
+        }
+      } catch (error) {
+        ElMessage.error('启用模板时发生错误');
+        console.error('Error enabling template:', error);
+      }
+    }).catch(() => {
+      ElMessage.info('操作已取消');
+    });
+  }
 };
+
 
 const archiveTemplate = (templateId) => {
   console.log(`归档模板：${templateId}`);
@@ -130,7 +196,7 @@ const archiveTemplate = (templateId) => {
     <!-- 当前启用的模板 -->
     <div v-if="enabledTemplate">
       <strong>当前启用的模板:</strong>
-      <div class="template-card">
+      <div class="template-card" style="background:#dbefdb;">
         <div class="template-header">
           <span class="template-title">{{ enabledTemplate.template_name }}</span>
           <div class="template-actions">
@@ -143,7 +209,7 @@ const archiveTemplate = (templateId) => {
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item @click="enableTemplate(enabledTemplate.template_id)">启用模板</el-dropdown-item>
+                  <el-dropdown-item @click="enableTemplate(enabledTemplate.template_id,enabledTemplate.template_name)">启用模板</el-dropdown-item>
                   <el-dropdown-item @click="archiveTemplate(enabledTemplate.template_id)">归档模板</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -174,7 +240,7 @@ const archiveTemplate = (templateId) => {
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item @click="enableTemplate(template.template_id)">启用模板</el-dropdown-item>
+                  <el-dropdown-item @click="enableTemplate(template.template_id,template.template_name)">启用模板</el-dropdown-item>
                   <el-dropdown-item @click="archiveTemplate(template.template_id)">归档模板</el-dropdown-item>
                 </el-dropdown-menu>
               </template>

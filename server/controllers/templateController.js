@@ -45,5 +45,30 @@ const getProjectTemplateList = async (req, res) => {
         res.status(500).json({ message: 'Error fetching templates', error: error.message });
     }
 };
-
-module.exports = { createProjectTemplate, getProjectTemplateList };
+const enableProjectTemplate = async (req, res) => {
+    try {
+        const { template_id } = req.body;
+        // 检查模板是否存在
+        const [templateExists] = await db.execute('SELECT template_id FROM Template WHERE template_id = ?', [template_id]);
+        if (templateExists.length === 0) {return res.status(404).json({ message: 'Template not found' });}
+        // 查询当前启用的模板，并且是模板类型为 1 的模板
+        const [enabledTemplates] = await db.execute('SELECT template_id FROM Template WHERE template_enable = 1 AND template_type = 1');
+        if (enabledTemplates.length > 0) {
+            // 如果当前已经有启用的模板，先禁用它
+            await db.execute('UPDATE Template SET template_enable = 0 WHERE template_enable = 1 AND template_type = 1');
+        }
+        // 启用指定的模板
+        const [result] = await db.execute(
+            'UPDATE Template SET template_enable = 1 WHERE template_id = ?',
+            [template_id]
+        );
+        // 返回成功的响应
+        res.status(200).json({ message: 'Template enabled successfully' });
+    } catch (error) {
+        console.error('Error enabling template:', error);
+        res.status(500).json({ message: 'Error enabling template', error: error.message });
+    }
+};
+module.exports = { createProjectTemplate,
+    getProjectTemplateList
+,enableProjectTemplate};

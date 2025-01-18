@@ -21,7 +21,7 @@
   <el-container style="height: auto;">
     <!-- 左侧侧边栏 -->
     <el-aside :width="sidebarWidth" style="background-color: #ffffff;">
-      <el-menu :default-active="store.state.user.user_role + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
+      <el-menu class="el-menu-vertical-demo" @select="handleSelect">
         <!-- 角色2相关菜单项 -->
         <el-menu-item v-if="store.state.user.user_role === 2" index="2-1">
           <el-icon><Document /></el-icon>
@@ -67,7 +67,7 @@
   <!-- 手机端侧边栏 -->
   <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
     <!-- 角色2相关菜单项 -->
-    <el-menu :default-active="store.state.user.user_role + '-1'" class="el-menu-vertical-demo" @select="handleSelect">
+    <el-menu class="el-menu-vertical-demo" @select="handleSelect">
       <el-menu-item v-if="store.state.user.user_role === 2" index="2-1">
         <el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
       <el-menu-item v-if="store.state.user.user_role === 2" index="2-2"><el-icon><Avatar /></el-icon><span>专家库管理</span></el-menu-item>

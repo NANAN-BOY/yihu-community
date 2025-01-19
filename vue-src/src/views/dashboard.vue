@@ -100,7 +100,7 @@ import user3PrijectManagement from '../components/user3component/ProjectManageme
 
 import {Avatar, Document, Expand, List, Tickets, UserFilled} from "@element-plus/icons-vue"; // 导入社会组织管理组件
 import {Location, Menu as IconMenu, Setting} from '@element-plus/icons-vue';
-import {ElNotification} from "element-plus";
+import {ElNotification,ElMessage} from "element-plus";
 
 const router = useRouter();
 const drawerVisible = ref(false); // 控制手机端侧边栏的显示

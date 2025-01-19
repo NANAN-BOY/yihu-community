@@ -74,19 +74,20 @@ const submitProjectDeclare = async (req, res) => {
 const getAllProjects = async (req, res) => {
   const connection = await db.getConnection();
   try {
-    // 查询所有项目的基本信息（不包括字段）
+    // 查询所有项目的基本信息（包括项目名称）
     const [projects] = await connection.query(
-      `SELECT pd.projectDeclare_id, pd.template_id, pd.projectDeclare_user, pd.projectDeclare_create_at, pd.projectDeclare_draftEnable
+        `SELECT pd.projectDeclare_id, pd.template_id, pd.projectDeclare_user, pd.projectDeclare_create_at, 
+              pd.projectDeclare_draftEnable, pd.project_name 
        FROM ProjectDeclare pd`
     );
 
     // 查询每个项目是否已被优化
     const projectIds = projects.map(project => project.projectDeclare_id);
     const [optimizationStatus] = await connection.query(
-      `SELECT projectDeclare_id
+        `SELECT projectDeclare_id
        FROM ProjectDeclareFieldValueAssociation
        WHERE projectDeclare_id IN (?) AND optimize_frequency > 0`,
-      [projectIds]
+        [projectIds]
     );
 
     // 将结果整合到项目数据中
@@ -96,7 +97,7 @@ const getAllProjects = async (req, res) => {
       isOptimized: optimizedProjectIds.includes(project.projectDeclare_id)
     }));
 
-    // 返回带有优化状态的项目列表
+    // 返回带有优化状态和项目名称的项目列表
     res.status(200).json({ success: true, projects: projectsWithOptimizationStatus });
   } catch (error) {
     console.error('获取项目列表失败:', error);

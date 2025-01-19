@@ -54,7 +54,7 @@ const getProjectList = async () => {
       projectData.value = data.projects.map(project => ({
         ...project,
         project_name: project.project_name,  // 使用返回的项目名称
-        projectDeclare_user: project.projectDeclare_user,  // 显示提交组织（例如用户ID）
+        projectDeclare_user: project.projectDeclare_user_name,  // 显示提交组织
         project_description: project.projectDeclare_create_at,  // 映射实际的字段描述
         formattedCreateAt: formatDate(project.projectDeclare_create_at),  // 格式化日期字段
         isOptimized: project.isOptimized  // 映射是否优化字段

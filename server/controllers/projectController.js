@@ -70,14 +70,13 @@ const submitProjectDeclare = async (req, res) => {
   }
 };
 
-// 获取所有项目列表及是否优化
 const getAllProjects = async (req, res) => {
   const connection = await db.getConnection();
   try {
-    // 查询所有项目的基本信息（包括项目名称）
+    // 查询所有项目的基本信息（包括项目名称和用户ID）
     const [projects] = await connection.query(
         `SELECT pd.projectDeclare_id, pd.template_id, pd.projectDeclare_user, pd.projectDeclare_create_at, 
-              pd.projectDeclare_draftEnable, pd.project_name 
+              pd.projectDeclare_draftEnable, pd.project_name
        FROM ProjectDeclare pd`
     );
 
@@ -97,8 +96,24 @@ const getAllProjects = async (req, res) => {
       isOptimized: optimizedProjectIds.includes(project.projectDeclare_id)
     }));
 
-    // 返回带有优化状态和项目名称的项目列表
-    res.status(200).json({ success: true, projects: projectsWithOptimizationStatus });
+    // 获取用户信息
+    const userIds = projectsWithOptimizationStatus.map(project => project.projectDeclare_user);
+    const [users] = await connection.query(
+        `SELECT user_id, user_name FROM User WHERE user_id IN (?)`,
+        [userIds]
+    );
+
+    // 将用户名添加到项目数据中
+    const projectsWithUserNames = projectsWithOptimizationStatus.map(project => {
+      const user = users.find(u => u.user_id === project.projectDeclare_user);
+      return {
+        ...project,
+        projectDeclare_user_name: user ? user.user_name : '未知用户'  // 添加用户的用户名
+      };
+    });
+
+    // 返回带有优化状态和用户名的项目列表
+    res.status(200).json({ success: true, projects: projectsWithUserNames });
   } catch (error) {
     console.error('获取项目列表失败:', error);
     res.status(500).json({ success: false, message: '获取项目列表失败，请稍后再试！' });
@@ -106,7 +121,6 @@ const getAllProjects = async (req, res) => {
     connection.release(); // 释放数据库连接
   }
 };
-
 
 
 module.exports = {

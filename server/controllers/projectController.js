@@ -121,9 +121,53 @@ const getAllProjects = async (req, res) => {
     connection.release(); // 释放数据库连接
   }
 };
+const getMyProjects = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const { userId } = req.query;  // 从请求的查询参数中获取 userId
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: '用户未授权' });
+    }
+
+    // 查询该用户的所有项目
+    const [projects] = await connection.query(
+        `SELECT pd.projectDeclare_id, pd.template_id, pd.projectDeclare_user, pd.projectDeclare_create_at, 
+              pd.projectDeclare_draftEnable, pd.project_name
+       FROM ProjectDeclare pd
+       WHERE pd.projectDeclare_user = ?`, [userId]
+    );
+
+    // 查询每个项目是否已被优化
+    const projectIds = projects.map(project => project.projectDeclare_id);
+    const [optimizationStatus] = await connection.query(
+        `SELECT projectDeclare_id
+       FROM ProjectDeclareFieldValueAssociation
+       WHERE projectDeclare_id IN (?) AND optimize_frequency > 0`,
+        [projectIds]
+    );
+
+    // 将结果整合到项目数据中
+    const optimizedProjectIds = optimizationStatus.map(record => record.projectDeclare_id);
+    const projectsWithOptimizationStatus = projects.map(project => ({
+      ...project,
+      isOptimized: optimizedProjectIds.includes(project.projectDeclare_id)
+    }));
+
+    // 返回带有优化状态的项目列表
+    res.status(200).json({ success: true, projects: projectsWithOptimizationStatus });
+  } catch (error) {
+    console.error('获取我的项目列表失败:', error);
+    res.status(500).json({ success: false, message: '获取我的项目列表失败，请稍后再试！' });
+  } finally {
+    connection.release(); // 释放数据库连接
+  }
+};
+
 
 
 module.exports = {
   submitProjectDeclare,
   getAllProjects,
+  getMyProjects,
 };

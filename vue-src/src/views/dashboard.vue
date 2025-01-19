@@ -90,8 +90,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import store from '../store'; // 假设你已经配置了 Vuex 存储
-import ProjectManagement from '../components/user2component/ProjectManagement.vue'; // 导入项目管理组件
+import store from '../store'; 
+import user2ProjectManagement from '../components/user2component/ProjectManagement/user2ProjectManagement.vue'; 
 import ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement.vue'; // 导入专家库管理组件
 import ProjectTemplateManagement from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue'; // 导入项目申报模板模板管理组件
 import ActivityTemplateManagement from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue'; // 导入活动细节模板模板管理组件
@@ -114,19 +114,14 @@ const handleSelect = (index) => {
   const lockReason = store.getters.navbarLockReason;
   // 检查导航栏是否锁定
   if (navbarState) {
-    ElNotification({
-      title: '警告',
-      message: `您正在进行“${lockReason || '重要'}”操作，切换页面可能会导致操作丢失，请先保存或放弃。`,
-      type: 'warning',
-      duration: 3000,
-    });
+    ElMessage.error('请先保存或放弃当前操作。');
     return; // 阻止导航切换
   }
   // 根据索引设置当前组件
   switch (index) {
     //角色2
     case '2-1':
-      currentComponent.value = ProjectManagement;
+      currentComponent.value = user2ProjectManagement;
       break;
     case '2-2':
       currentComponent.value = ExpertLibraryManagement;

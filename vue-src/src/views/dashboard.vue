@@ -92,11 +92,11 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import store from '../store'; 
 import user2ProjectManagement from '../components/user2component/ProjectManagement/user2ProjectManagement.vue'; 
-import ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement.vue'; // 导入专家库管理组件
+import ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement/ExpertLibraryManagement.vue'; // 导入专家库管理组件
 import ProjectTemplateManagement from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue'; // 导入项目申报模板模板管理组件
 import ActivityTemplateManagement from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue'; // 导入活动细节模板模板管理组件
 import SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement.vue';
-import user3PrijectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue'
+import user3ProjectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue'
 
 import {Avatar, Document, Expand, List, Tickets, UserFilled} from "@element-plus/icons-vue"; // 导入社会组织管理组件
 import {Location, Menu as IconMenu, Setting} from '@element-plus/icons-vue';
@@ -137,7 +137,7 @@ const handleSelect = (index) => {
       break;
     //角色3
     case '3-1':
-      currentComponent.value = user3PrijectManagement;
+      currentComponent.value = user3ProjectManagement;
       break;
     case '3-2':
       currentComponent.value = ProjectManagement;

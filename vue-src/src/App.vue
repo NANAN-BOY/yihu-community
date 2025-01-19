@@ -13,7 +13,10 @@ import {ElNotification} from "element-plus";
 import router from "./router";
 const restoreLoginStatus = async () => {
   try {
-
+    // 检查是否有 token
+    if (!store.state.token) {
+      return;
+    }
     // 尝试获取用户信息
     const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/restore-login`, {
       method: 'GET',

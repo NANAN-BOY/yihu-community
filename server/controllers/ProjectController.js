@@ -8,19 +8,16 @@ const submitProjectDeclare = async (req, res) => {
     projectDeclare_draftEnable,
     fields, // 项目申报字段数据
   } = req.body;
-
   const connection = await db.getConnection();
   try {
     // 开始事务
     await connection.beginTransaction();
-
     // 1. 创建 ProjectDeclare 记录
     const [projectDeclareResult] = await connection.query(
       'INSERT INTO ProjectDeclare (template_id, projectDeclare_user, projectDeclare_create_at, projectDeclare_draftEnable) VALUES (?, ?, NOW(), ?)',
       [template_id, projectDeclare_user, projectDeclare_draftEnable]
     );
     const projectDeclare_id = projectDeclareResult.insertId; // 获取插入后的 projectDeclare_id
-
     // 2. 创建 ProjectDeclareField 记录
     const fieldValues = fields.map(field => [
       field.templateFields_id,
@@ -30,14 +27,12 @@ const submitProjectDeclare = async (req, res) => {
       'INSERT INTO ProjectDeclareField (templateFields_id, projectDeclareField_value) VALUES ?',
       [fieldValues]
     );
-
     // 3. 创建 ProjectDeclareFieldValueAssociation 记录
     // 获取所有插入的 ProjectDeclareField_id，并构造关联关系
     const [insertedFields] = await connection.query(
       'SELECT projectDeclareField_id, templateFields_id FROM ProjectDeclareField WHERE templateFields_id IN (?)',
       [fields.map(field => field.templateFields_id)]
     );
-
     const associations = insertedFields.map(field => ({
       projectDeclare_id,
       projectDeclareField_id: field.projectDeclareField_id,
@@ -45,7 +40,6 @@ const submitProjectDeclare = async (req, res) => {
       optimize_frequency: 0,
       projectOptimizeRrecord_id: null,
     }));
-
     const associationValues = associations.map(association => [
       association.projectDeclare_id,
       association.projectDeclareField_id,
@@ -53,15 +47,12 @@ const submitProjectDeclare = async (req, res) => {
       association.optimize_frequency,
       association.projectOptimizeRrecord_id,
     ]);
-
     await connection.query(
       'INSERT INTO ProjectDeclareFieldValueAssociation (projectDeclare_id, projectDeclareField_id, optimize_enable, optimize_frequency, projectOptimizeRrecord_id) VALUES ?',
       [associationValues]
     );
-
     // 提交事务
     await connection.commit();
-
     // 返回成功响应
     res.status(200).json({ success: true });
   } catch (error) {
@@ -73,10 +64,45 @@ const submitProjectDeclare = async (req, res) => {
     connection.release(); // 释放数据库连接
   }
 };
+// 获取所有项目列表及是否优化
+const getAllProjects = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    // 查询所有项目的基本信息（不包括字段）
+    const [projects] = await connection.query(
+      `SELECT pd.projectDeclare_id, pd.template_id, pd.projectDeclare_user, pd.projectDeclare_create_at, pd.projectDeclare_draftEnable
+       FROM ProjectDeclare pd`
+    );
 
+    // 查询每个项目是否已被优化
+    const projectIds = projects.map(project => project.projectDeclare_id);
+    const [optimizationStatus] = await connection.query(
+      `SELECT projectDeclare_id
+       FROM ProjectDeclareFieldValueAssociation
+       WHERE projectDeclare_id IN (?) AND optimize_frequency > 0`,
+      [projectIds]
+    );
+
+    // 将结果整合到项目数据中
+    const optimizedProjectIds = optimizationStatus.map(record => record.projectDeclare_id);
+    const projectsWithOptimizationStatus = projects.map(project => ({
+      ...project,
+      isOptimized: optimizedProjectIds.includes(project.projectDeclare_id)
+    }));
+
+    // 返回带有优化状态的项目列表
+    res.status(200).json({ success: true, projects: projectsWithOptimizationStatus });
+  } catch (error) {
+    console.error('获取项目列表失败:', error);
+    res.status(500).json({ success: false, message: '获取项目列表失败，请稍后再试！' });
+  } finally {
+    connection.release(); // 释放数据库连接
+  }
+};
 
 
 
 module.exports = {
   submitProjectDeclare,
+  getAllProjects,
 };

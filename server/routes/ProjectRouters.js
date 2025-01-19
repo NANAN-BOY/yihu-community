@@ -4,5 +4,6 @@ const router = express.Router();
 
 // 路由：提交项目申报
 router.post('/project/submitProjectDeclare', ProjectController.submitProjectDeclare);
+router.get('/project/getAllProjects', ProjectController.getAllProjects);
 
 module.exports = router;

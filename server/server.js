@@ -6,6 +6,7 @@ const userRoutes = require('./routes/userRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const mallRoutes = require('./routes/templateRoutes');
 const ProjectRouters = require('./routes/ProjectRouters');
+const ExpertLibraryRoutes = require('./routes/ExpertLibraryRoutes');
 const pool = require('./db/pool'); // 引入连接池
 
 const app = express();
@@ -28,6 +29,7 @@ app.use('/api', userRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api', mallRoutes);
 app.use('/api', ProjectRouters);
+app.use('/api', ExpertLibraryRoutes);
 
 // 启动服务器
 app.listen(port, () => {

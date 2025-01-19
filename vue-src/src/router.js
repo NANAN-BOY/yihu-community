@@ -3,6 +3,7 @@ import store from './store.js';  // Vuex
 import login from './views/login.vue';
 import dashboard from './views/dashboard.vue';
 import register from './views/register.vue';
+import expertInvitedRegister from './views/expertInvitedRegister.vue';
 const routes = [
   {
     path: '/',
@@ -23,6 +24,12 @@ const routes = [
     name: 'dashboard',
     component: dashboard,
     meta: { requiresAuth: true },  // 需要身份验证
+  },
+  {
+    path: '/expertInvitedRegister/:inviteId',
+    name: 'expertInvitedRegister',
+    component: expertInvitedRegister,
+    meta: { requiresAuth: false },  // 需要身份验证
   },
 ];
 

@@ -7,7 +7,8 @@ import expertInvitedRegister from './views/expertInvitedRegister.vue';
 const routes = [
   {
     path: '/',
-    component: login,
+    component: dashboard,
+    meta: { requiresAuth: true },
   },
   {
     path: '/login',

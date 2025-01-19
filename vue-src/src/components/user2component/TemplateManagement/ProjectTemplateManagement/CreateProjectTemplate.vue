@@ -2,7 +2,7 @@
 import { ArrowDown, ArrowUp, Close, Document, DocumentAdd, FolderAdd } from '@element-plus/icons-vue';
 import { reactive, ref,computed } from 'vue';
 import store from '../../../../store';
-import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElCheckbox, ElTag, ElButton } from 'element-plus';
+import { ElNotification,ElMessage, ElMessageBox, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElCheckbox, ElTag, ElButton } from 'element-plus';
 
 let onSteps = ref(1);
 
@@ -186,6 +186,13 @@ const showAddFieldDialog = () => {
   <!--第二步-->
   <div v-if="onSteps === 2">
     <h3>已添加的字段：</h3>
+    <div :key="index" style="border: 1px solid #ebeef5; border-radius: 4px; padding: 16px; margin-bottom: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <span><strong>字段名称:</strong>项目名称</span>
+        <span><strong>字段类型:</strong>单行文本</span>
+        <span><strong>必填:</strong>是</span>
+    </div>
+  </div>
     <div v-for="(field, index) in form.fields" :key="index" style="border: 1px solid #ebeef5; border-radius: 4px; padding: 16px; margin-bottom: 8px;">
       <div style="display: flex; justify-content: space-between;">
         <span><strong>字段名称:</strong> {{ field.fieldName }}</span>

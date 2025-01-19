@@ -17,7 +17,7 @@ const filteredData = ref([]);  // 存储过滤后的数据
 const searchTemplates = () => {
 };
 // 询问是否放弃创建的函数
-const closeCreateComponent = () => {
+const GiveUpCreateComponent = () => {
     ElMessageBox.confirm(
         '确定放弃当前的创建操作吗？',
         '确定返回吗？',
@@ -36,7 +36,10 @@ const closeCreateComponent = () => {
           ElMessage.info('操作已取消');
         });
 };
-
+const CloseCreateComponent = () => {
+  store.dispatch('unlockNavbar');
+  showCreateComponent.value = false;
+};
 </script>
 
 <template>
@@ -56,16 +59,16 @@ const closeCreateComponent = () => {
   <div v-if="showCreateComponent">
     <!-- 创建项目模板页面 -->
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item @click="closeCreateComponent"><a>项目管理</a></el-breadcrumb-item>
+      <el-breadcrumb-item @click="GiveUpCreateComponent"><a>项目管理</a></el-breadcrumb-item>
       <el-breadcrumb-item><strong>新建项目</strong></el-breadcrumb-item>
     </el-breadcrumb>
-    <br /><el-page-header @back="closeCreateComponent" title="放弃">
+    <br /><el-page-header @back="GiveUpCreateComponent" title="放弃">
     <template #content>
       <span class="text-large font-600 mr-3"> 创建项目 </span>
     </template>
   </el-page-header>
     <!-- 创建模板组件 -->
-    <CreateProject />
+    <CreateProject @closeForm="CloseCreateComponent"/>
   </div>
 </template>
 

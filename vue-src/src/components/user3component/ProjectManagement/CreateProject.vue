@@ -25,14 +25,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,defineProps, defineEmits } from 'vue';
 import axios from 'axios';
 import { ElForm, ElInput, ElSelect, ElOption, ElButton, ElUpload, ElMessageBox, ElMessage } from 'element-plus';
 import store from '../../../store';
 const templateData = ref<any>({});
 const formData = ref<any>({}); // 用于保存表单数据
 const uploadUrl = ref(`${import.meta.env.VITE_BACKEND_IP}/api/upload`); // 上传文件的 URL
-
+const emit = defineEmits<{
+  (e: 'closeForm', formData: any): void;
+}>();
 // 获取启用的模板数据
 const fetchTemplateData = async () => {
   try {
@@ -84,8 +86,8 @@ const submitForm = async () => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/project/submitProjectDeclare`, submitData);
       if (response.data.success) {
-        ElMessage.success('提交成功！');
-        formData.value = {}; // 清空表单数据
+        ElMessage.success('提交成功！'); 
+        emit('closeForm', formData);
       } else {
         ElMessage.error('提交失败，请稍后再试！');
       }

@@ -1,71 +1,3 @@
-<script setup>
-import { ref } from 'vue';
-import { ElDialog, ElButton, ElSelect, ElOption, ElInput } from 'element-plus';
-import axios from 'axios';
-import store from "../../../store";  // 引入 store
-import QRCode from 'qrcode.vue';  // 引入二维码生成器
-
-// 控制弹窗的显示与关闭
-const dialogVisible = ref(false);
-const inviteUrlDialogVisible = ref(false);  // 控制显示邀请 URL 的弹窗
-const inviteUrl = ref('');  // 存储生成的邀请 URL
-
-const OpenInviteComponent = () => {
-  dialogVisible.value = true;
-};
-
-const CloseCreateComponent = () => {
-  dialogVisible.value = false;
-};
-
-const CloseInviteUrlDialog = () => {
-  inviteUrlDialogVisible.value = false;
-};
-
-const value = ref('3');  // 默认选择3天
-const options = [
-  { value: '1', label: '1天' },
-  { value: '3', label: '3天' },
-  { value: '7', label: '7天' },
-  { value: '30', label: '30天' }
-];
-
-// 计算截止日期
-const calculateDeadline = () => {
-  const currentDate = new Date();
-  const deadlineDate = new Date(currentDate);
-  deadlineDate.setDate(currentDate.getDate() + parseInt(value.value));  // 计算截止日期
-
-  // 通过 toISOString 保证返回的日期格式符合后端要求
-  const formattedDeadline = deadlineDate.toISOString().slice(0, 19);  // 去除毫秒部分
-  console.log('截止日期:', formattedDeadline);
-  return formattedDeadline;  // 返回 ISO 格式的截止日期字符串
-};
-
-// 提交邀请信息
-const CreateInviteURL = async () => {
-  const inviteDeadline = calculateDeadline();  // 计算截止日期
-  const inviteUserId = store.state.user.user_id;
-  const inviteData = {
-    invite_user_id: inviteUserId,
-    invite_deadline: inviteDeadline  // 发送ISO格式的截止日期
-  };
-
-  try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/invite-expert`, inviteData);
-    const inviteId = response.data.inviteSpecialisRrecord_id;  // 假设后端返回的邀请 ID
-    // 生成邀请 URL
-    inviteUrl.value = `${window.location.origin}/expertInvitedRegister/${inviteId}`;
-
-    CloseCreateComponent();  // 关闭当前弹窗
-    inviteUrlDialogVisible.value = true;  // 显示邀请 URL 的弹窗
-  } catch (error) {
-    console.error('邀请失败:', error);
-    alert('邀请失败，请稍后重试');
-  }
-};
-</script>
-
 <template>
   <el-breadcrumb separator="/">
     <el-breadcrumb-item><strong>专家库管理</strong></el-breadcrumb-item>
@@ -107,8 +39,198 @@ const CreateInviteURL = async () => {
   </el-dialog>
 
   <h1>当前在职专家</h1>
+
+  <!-- 专家卡片列表 -->
+  <div class="expert-list">
+    <div v-for="user in users" :key="user.user_id" class="expert-card" @click="viewExpertDetails(user.user_id)">
+      <div class="card-header">
+        <span class="card-title">{{ user.user_name }}</span>
+      </div>
+      <div class="card-body">
+        <p><strong>用户 ID:</strong> {{ user.user_id }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 查看专家详细信息的弹窗 -->
+  <el-dialog title="专家详细信息" v-model="expertDialogVisible" width="50%">
+    <div v-if="expertDetails">
+      <p><strong>专家姓名:</strong> {{ expertDetails.user_name }}</p>
+      <p><strong>用户 ID:</strong> {{ expertDetails.user_id }}</p>
+      <p><strong>注册手机号:</strong> {{ expertDetails.user_phoneNumber }}</p>
+      <p><strong>邀请人:</strong> {{ expertDetails.inviteUserInfo.invite_user_name }}</p>
+      <p><strong>加入时间:</strong> {{ formatDate(expertDetails.user_createDate) }}</p>
+      <!-- 这里可以继续展示更多专家的详细信息 -->
+    </div>
+    <span slot="footer" class="dialog-footer">
+      <el-button type="primary" @click="closeExpertDialog">关闭</el-button>
+    </span>
+  </el-dialog>
 </template>
 
+<script setup>
+import { ref, onMounted } from 'vue';
+import { ElDialog, ElButton, ElSelect, ElOption, ElInput, ElMessage } from 'element-plus';
+import axios from 'axios';
+import store from "../../../store";
+import QRCode from 'qrcode.vue';
+
+const dialogVisible = ref(false);
+const inviteUrlDialogVisible = ref(false);
+const inviteUrl = ref('');
+const users = ref([]);
+const expertDialogVisible = ref(false);
+const expertDetails = ref(null);
+
+
+// 格式化时间，去掉毫秒和时区
+const formatDate = (date) => {
+  const newDate = new Date(date);
+
+  const year = newDate.getFullYear();
+  const month = newDate.getMonth() + 1; // 获取月份，注意月份是从0开始的
+  const day = newDate.getDate();
+  const hour = newDate.getHours();
+  const minute = newDate.getMinutes();
+
+  // 格式化为 "2024年12月1日 21:32"
+  return `${year}年${month}月${day}日 ${hour}:${minute < 10 ? '0' + minute : minute}`;
+};
+
+
+
+const fetchUsers = async () => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/users/list?user_role=4&user_accountStatus=1`);
+    if (response.data.users) {
+      users.value = response.data.users;
+    } else {
+      ElMessage.error('未找到用户信息');
+    }
+  } catch (error) {
+    console.error('获取用户列表失败:', error);
+    ElMessage.error('获取用户列表失败，请稍后重试');
+  }
+};
+
+onMounted(() => {
+  fetchUsers();
+});
+
+const OpenInviteComponent = () => {
+  dialogVisible.value = true;
+};
+
+const CloseCreateComponent = () => {
+  dialogVisible.value = false;
+};
+
+const CloseInviteUrlDialog = () => {
+  inviteUrlDialogVisible.value = false;
+};
+
+const value = ref('3');
+const options = [
+  { value: '1', label: '1天' },
+  { value: '3', label: '3天' },
+  { value: '7', label: '7天' },
+  { value: '30', label: '30天' }
+];
+
+const calculateDeadline = () => {
+  const currentDate = new Date();
+  const deadlineDate = new Date(currentDate);
+  deadlineDate.setDate(currentDate.getDate() + parseInt(value.value));
+  return deadlineDate.toISOString().slice(0, 19);
+};
+
+const CreateInviteURL = async () => {
+  const inviteDeadline = calculateDeadline();
+  const inviteUserId = store.state.user.user_id;
+  const inviteData = {invite_user_id: inviteUserId, invite_deadline: inviteDeadline};
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/invite-expert`, inviteData);
+    const inviteId = response.data.inviteSpecialisRrecord_id;
+    inviteUrl.value = `${window.location.origin}/expertInvitedRegister/${inviteId}`;
+    CloseCreateComponent();
+    inviteUrlDialogVisible.value = true;
+  } catch (error) {
+    console.error('邀请失败:', error);
+    alert('邀请失败，请稍后重试');
+  }
+};
+
+const viewExpertDetails = async (userId) => {
+  try {
+    // 同时发起两个请求，一个获取专家信息，一个获取邀请人信息
+    const [userResponse, inviteUserResponse] = await Promise.all([
+      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/users/getUserInfo/${userId}`),
+      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/inviteUserInfo/${userId}`)
+    ]);
+
+    // 判断专家信息是否存在
+    if (userResponse.data) {
+      // 获取到专家的详细信息
+      expertDetails.value = userResponse.data.user;
+    } else {
+      ElMessage.error('未找到专家详细信息');
+      return;
+    }
+
+    // 判断邀请人信息是否存在
+    if (inviteUserResponse.data) {
+      // 获取到邀请人的信息并保存到专家详细信息中
+      expertDetails.value.inviteUserInfo = inviteUserResponse.data;
+    } else {
+      ElMessage.error('未找到邀请人信息');
+    }
+
+    // 显示专家对话框
+    expertDialogVisible.value = true;
+  } catch (error) {
+    console.error('获取专家详细信息失败:', error);
+    ElMessage.error('获取专家详细信息失败，请稍后重试');
+  }
+};
+
+
+// 关闭专家详细信息弹窗
+const closeExpertDialog = () => {
+  expertDialogVisible.value = false;
+  expertDetails.value = null;
+};
+</script>
+
 <style scoped>
-/* 这里可以添加更多样式 */
+/* 专家卡片列表样式 */
+.expert-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.expert-card {
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  padding: 16px;
+  width: 240px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.expert-card:hover {
+  background-color: #f5f5f5;
+}
+
+.card-header {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.card-body {
+  font-size: 14px;
+  color: #666;
+}
 </style>

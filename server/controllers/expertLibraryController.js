@@ -94,14 +94,20 @@ const expertRegister = async (req, res) => {
 
         const inviteRecord = inviteRecords[0];
 
-        // 3. 验证邀请是否过期
+        // 3. 检查邀请是否已经被接受
+        if (inviteRecord.invite_isAgree !== null) {
+            // 如果 invite_isAgree 不为空，表示邀请已经被接受
+            return res.status(400).json({ message: '邀请已失效' });
+        }
+
+        // 4. 验证邀请是否过期
         const currentDate = moment();
         const inviteDeadline = moment(inviteRecord.invite_deadline);
         if (currentDate.isAfter(inviteDeadline)) {
             return res.status(400).json({ message: '邀请已经过期' });
         }
 
-        // 4. 创建新用户并进行密码加密
+        // 5. 创建新用户并进行密码加密
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(userPassword, salt);
 
@@ -112,13 +118,13 @@ const expertRegister = async (req, res) => {
 
         const newUserId = newUserResult.insertId; // 获取新插入的用户ID
 
-        // 5. 更新邀请记录，标记专家已注册且同意邀请
+        // 6. 更新邀请记录，标记专家已注册且同意邀请
         await db.query(
             'UPDATE InviteSpecialisRrecord SET Specialis_user_id = ?, invite_isAgree = ? WHERE inviteSpecialisRrecord_id = ?',
             [newUserId, true, inviteId]
         );
 
-        // 6. 返回成功消息
+        // 7. 返回成功消息
         return res.status(201).json({
             message: '专家注册成功',
             userId: newUserId,
@@ -130,6 +136,7 @@ const expertRegister = async (req, res) => {
         return res.status(500).json({ message: '服务器错误，请稍后再试' });
     }
 };
+
 
 module.exports = {
     inviteExpert,

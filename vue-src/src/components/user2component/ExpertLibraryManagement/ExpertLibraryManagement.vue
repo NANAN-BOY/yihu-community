@@ -28,14 +28,17 @@
       <p>邀请链接已成功生成：</p>
       <el-input v-model="inviteUrl" type="text" readonly style="width: 100%;" />
 
+      <!-- 复制按钮 -->
+      <el-button @click="copyInviteUrl" size="mini" style="margin-top: 10px;">复制链接</el-button>
+
       <!-- 使用 qrcode.vue 生成二维码 -->
       <div style="text-align: center; margin-top: 20px;">
         <QRCode :value="inviteUrl" size="200" />
       </div>
     </div>
     <span slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="CloseInviteUrlDialog">关闭</el-button>
-    </span>
+    <el-button type="primary" @click="CloseInviteUrlDialog">关闭</el-button>
+  </span>
   </el-dialog>
 
   <h1>当前在职专家</h1>
@@ -97,6 +100,18 @@ const formatDate = (date) => {
   return `${year}年${month}月${day}日 ${hour}:${minute < 10 ? '0' + minute : minute}`;
 };
 
+
+const copyInviteUrl = () => {
+  const input = document.createElement('input');
+  input.value = inviteUrl.value;
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand('copy');
+  document.body.removeChild(input);
+
+  // 显示提示信息
+  ElMessage.success('邀请链接已复制成功！');
+};
 
 
 const fetchUsers = async () => {

@@ -1,4 +1,7 @@
 <template>
+  <el-breadcrumb separator="/">
+    <el-breadcrumb-item><strong>项目管理</strong></el-breadcrumb-item>
+  </el-breadcrumb><br />
   <!-- 项目列表 -->
   <div v-loading="loading" class="project-list">
     <div v-for="(project, index) in filteredProjects" :key="index" class="project-card">

@@ -59,6 +59,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import router from "../router";
 
 const inviteId = ref(null);
 const inviteInfo = ref(null);
@@ -158,6 +159,8 @@ const handleSubmit = async () => {
     if (response.ok) {
       ElMessage.success('注册成功！');
       dialogVisible.value = false; // 关闭对话框
+      //跳转vue路由
+      await router.push('/dashboard');
     } else {
       ElMessage.error(data.message || '注册失败，请重试');
     }

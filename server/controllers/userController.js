@@ -1,42 +1,48 @@
 const path = require('path'); 
 const fs = require('fs');
-
-// 获取用户信息
-const getUser = async (req, res) => {
-  const userId = req.params.id;
-  const sql = 'SELECT username, email, phone_number FROM Users WHERE user_id = ?';
-  
+const db = require('../db/pool');
+const getUserListByRoleAndStatus = async (req, res) => {
+  const { user_role, user_accountStatus } = req.query;
+  // 检查参数是否存在
+  if (user_role === undefined || user_accountStatus === undefined) {return res.status(400).json({ message: '缺少必需的参数' });}
   try {
-    const [results] = await req.db.query(sql, [userId]);
-    if (results.length === 0) {
-      return res.status(404).json({ error: '用户未找到' });
+    // 查询符合条件的用户
+    const [users] = await db.query('SELECT user_id, user_name FROM User WHERE user_role = ? AND user_accountStatus = ?', [user_role, user_accountStatus]);
+    // 返回用户列表
+    return res.status(200).json({ message: '用户列表获取成功', users });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: '服务器错误，请稍后重试' });
+  }
+};
+const getUserById = async (req, res) => {
+  const { id } = req.params;
+
+  // 检查参数是否存在
+  if (!id) {
+    return res.status(400).json({ message: '缺少用户ID' });
+  }
+
+  try {
+    // 查询用户信息
+    const [users] = await db.query(
+        'SELECT user_id, user_name, user_phoneNumber, user_role, user_accountStatus, user_createDate, user_lastUpdated FROM User WHERE user_id = ?',
+        [id]
+    );
+
+    // 检查用户是否存在
+    if (users.length === 0) {
+      return res.status(404).json({ message: '用户不存在' });
     }
-    res.status(200).json(results[0]);
-  } catch (err) {
-    console.error('Database query error:', err);
-    res.status(500).json({ error: '数据库错误' });
+
+    // 返回用户信息
+    return res.status(200).json({ message: '用户信息获取成功', user: users[0] });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: '服务器错误，请稍后重试' });
   }
 };
 
-const decryptUserId = (hashedId) => {
-  return Buffer.from(hashedId, 'base64').toString('utf-8'); // Base64 解码
-};
 
-const getAvatar = (req, res) => {
-  const hashedUserId = req.params.hashedUserId; // 从请求参数中获取加密后的用户ID
-  const userId = decryptUserId(hashedUserId); // 解密用户ID
-  const avatarPath = path.join(__dirname, '../uploads/avatars', `${userId}.png`); 
 
-  fs.access(avatarPath, fs.constants.F_OK, (err) => {
-    if (err) {
-      return res.status(404).json({ error: '头像未找到' });
-    }
-    res.sendFile(avatarPath, (err) => {
-      if (err) {
-        return res.status(500).json({ error: '头像下载失败' });
-      }
-    });
-  });
-};
-
-module.exports = { getUser , getAvatar};
+module.exports = { getUserListByRoleAndStatus,getUserById};

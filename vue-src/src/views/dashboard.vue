@@ -62,7 +62,7 @@ import user2ProjectManagement from '../components/user2component/ProjectManageme
 import user2ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement/ExpertLibraryManagement.vue'; // 导入专家库管理组件
 import user2ProjectTemplateManagement from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue'; // 导入项目申报模板模板管理组件
 import user2ActivityTemplateManagement from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue'; // 导入活动细节模板模板管理组件
-import user2SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement.vue';
+import user2SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement/SocialOrganizationManagement.vue';
 import user3ProjectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue'
 import WaitingOptimizationProject from '../components/user4component/WaitingOptimizationProject.vue';
 

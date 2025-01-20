@@ -60,6 +60,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import router from "../router";
+import store from "../store";
 
 const inviteId = ref(null);
 const inviteInfo = ref(null);
@@ -131,7 +132,6 @@ onMounted(() => {
   fetchInviteInfo();
 });
 
-// 提交表单
 const handleSubmit = async () => {
   // 验证密码和确认密码是否一致
   if (password.value !== confirmPassword.value) {
@@ -159,7 +159,17 @@ const handleSubmit = async () => {
     if (response.ok) {
       ElMessage.success('注册成功！');
       dialogVisible.value = false; // 关闭对话框
-      //跳转vue路由
+      await store.dispatch('setToken', data.token);
+      await store.dispatch('setUser', {
+        user_id: data.user.user_id,
+        user_name: data.user.user_name,
+        user_phoneNumber: data.user.user_phoneNumber,
+        user_role: data.user.user_role,
+        user_accountStatus: data.user.user_accountStatus,
+      });
+      // 将 token 存入 localStorage
+      localStorage.setItem('token', data.token);
+      // 跳转到首页或用户的 Dashboard
       await router.push('/dashboard');
     } else {
       ElMessage.error(data.message || '注册失败，请重试');
@@ -169,6 +179,7 @@ const handleSubmit = async () => {
     ElMessage.error('注册请求失败，请稍后重试');
   }
 };
+
 
 // 关闭对话框
 const handleClose = () => {

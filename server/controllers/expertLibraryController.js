@@ -78,29 +78,52 @@ const JWT_SECRET = 'your_jwt_secret_key'; // 替换为你的 JWT 密钥
 
 const expertRegister = async (req, res) => {
     const { inviteId, userName, userPhoneNumber, userPassword } = req.body;
+
     // 1. 校验参数
-    if (!inviteId || !userName || !userPhoneNumber || !userPassword) {return res.status(400).json({ message: '缺少必需的字段' });}
+    if (!inviteId || !userName || !userPhoneNumber || !userPassword) {
+        return res.status(400).json({ message: '缺少必需的字段' });
+    }
+
     try {
-        // 2. 查找邀请记录
+        // 2. 检查手机号是否已经被注册
+        const [existingUser] = await db.query('SELECT * FROM User WHERE user_phoneNumber = ?', [userPhoneNumber]);
+        if (existingUser.length > 0) {
+            return res.status(400).json({ message: '该手机号已被注册' });
+        }
+
+        // 3. 查找邀请记录
         const [inviteRecords] = await db.query('SELECT * FROM InviteSpecialisRrecord WHERE inviteSpecialisRrecord_id = ?', [inviteId]);
-        if (inviteRecords.length === 0) {return res.status(404).json({ message: '无效的邀请ID' });}
+        if (inviteRecords.length === 0) {
+            return res.status(404).json({ message: '无效的邀请ID' });
+        }
         const inviteRecord = inviteRecords[0];
-        // 3. 检查邀请是否已经被接受
-        if (inviteRecord.invite_isAgree !== null) {return res.status(400).json({ message: '邀请已失效' });}
-        // 4. 验证邀请是否过期
+
+        // 4. 检查邀请是否已经被接受
+        if (inviteRecord.invite_isAgree !== null) {
+            return res.status(400).json({ message: '邀请已失效' });
+        }
+
+        // 5. 验证邀请是否过期
         const currentDate = moment();
         const inviteDeadline = moment(inviteRecord.invite_deadline);
-        if (currentDate.isAfter(inviteDeadline)) {return res.status(400).json({ message: '邀请已经过期' });}
-        // 5. 创建新用户并进行密码加密
+        if (currentDate.isAfter(inviteDeadline)) {
+            return res.status(400).json({ message: '邀请已经过期' });
+        }
+
+        // 6. 创建新用户并进行密码加密
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(userPassword, salt);
-        const [newUserResult] = await db.query('INSERT INTO User (user_name, user_phoneNumber, user_hashPassword, user_role, user_accountStatus, user_createDate, user_lastUpdated) VALUES (?, ?, ?, ?, ?, ?, ?)',
+
+        const [newUserResult] = await db.query(
+            'INSERT INTO User (user_name, user_phoneNumber, user_hashPassword, user_role, user_accountStatus, user_createDate, user_lastUpdated) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [userName, userPhoneNumber, hashedPassword, 4, 1, new Date(), new Date()]
         );
         const newUserId = newUserResult.insertId; // 获取新插入的用户ID
-        // 6. 更新邀请记录，标记专家已注册且同意邀请
+
+        // 7. 更新邀请记录，标记专家已注册且同意邀请
         await db.query('UPDATE InviteSpecialisRrecord SET Specialis_user_id = ?, invite_isAgree = ? WHERE inviteSpecialisRrecord_id = ?', [newUserId, true, inviteId]);
-        // 7. 自动登录：生成 JWT token 并返回用户信息
+
+        // 8. 自动登录：生成 JWT token 并返回用户信息
         const payload = {
             user_id: newUserId,
             user_name: userName,
@@ -109,7 +132,8 @@ const expertRegister = async (req, res) => {
             user_accountStatus: 1, // 正常状态
         };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
-        // 8. 返回成功消息和登录信息
+
+        // 9. 返回成功消息和登录信息
         return res.status(201).json({
             message: '专家注册成功并已自动登录',
             token: token,
@@ -127,6 +151,7 @@ const expertRegister = async (req, res) => {
         return res.status(500).json({ message: '服务器错误，请稍后再试' });
     }
 };
+
 
 
 

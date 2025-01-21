@@ -1,72 +1,37 @@
 const db = require('../db/pool'); // 假设你有一个数据库连接模块
 
 const submitProjectDeclare = async (req, res) => {
-  const {
-    template_id,
-    projectDeclare_user,
-    projectDeclare_draftEnable,
-    fields,
-    project_name,
-  } = req.body;
-
+  const {template_id, projectDeclare_user, projectDeclare_draftEnable, fields, project_name,} = req.body;
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-
     // 1. 创建 ProjectDeclare 主记录
     const [projectDeclareResult] = await connection.query(
         'INSERT INTO ProjectDeclare (template_id, projectDeclare_user, projectDeclare_create_at, projectDeclare_draftEnable, project_name) VALUES (?, ?, NOW(), ?, ?)',
         [template_id, projectDeclare_user, projectDeclare_draftEnable, project_name]
     );
     const projectDeclare_id = projectDeclareResult.insertId;
-
     // 2. 批量插入 ProjectDeclareField 并获取精确的 ID 范围
     if (fields && fields.length > 0) {
       // 批量插入字段
-      const fieldValues = fields.map(field => [
-        field.templateFields_id,
-        field.value
-      ]);
-      await connection.query(
-          'INSERT INTO ProjectDeclareField (templateFields_id, projectDeclareField_value) VALUES ?',
-          [fieldValues]
-      );
-
+      const fieldValues = fields.map(field => [field.templateFields_id, field.value]);
+      await connection.query('INSERT INTO ProjectDeclareField (templateFields_id, projectDeclareField_value) VALUES ?', [fieldValues]);
       // 获取本次批量插入的 ID 范围 (依赖自增 ID 连续性)
       const [result] = await connection.query('SELECT LAST_INSERT_ID() AS firstId, ROW_COUNT() AS rowCount');
       const firstId = result[0].firstId;
       const rowCount = result[0].rowCount;
       const lastId = firstId + rowCount - 1;
-
       // 查询本次插入的字段 ID
-      const [insertedFields] = await connection.query(
-          'SELECT projectDeclareField_id, templateFields_id FROM ProjectDeclareField WHERE projectDeclareField_id BETWEEN ? AND ?',
-          [firstId, lastId]
-      );
-
+      const [insertedFields] = await connection.query('SELECT projectDeclareField_id, templateFields_id FROM ProjectDeclareField WHERE projectDeclareField_id BETWEEN ? AND ?', [firstId, lastId]);
       // 3. 构建关联记录
       const associations = insertedFields.map(field => ({
-        projectDeclare_id,
-        projectDeclareField_id: field.projectDeclareField_id,
-        optimize_enable: false,
-        optimize_frequency: 0,
-        projectOptimizeRrecord_id: null,
-      }));
-
+        projectDeclare_id, projectDeclareField_id: field.projectDeclareField_id, optimize_enable: false, optimize_frequency: 0, projectOptimizeRrecord_id: null,}));
       const associationValues = associations.map(a => [
-        a.projectDeclare_id,
-        a.projectDeclareField_id,
-        a.optimize_enable,
-        a.optimize_frequency,
-        a.projectOptimizeRrecord_id,
-      ]);
-
+        a.projectDeclare_id, a.projectDeclareField_id, a.optimize_enable, a.optimize_frequency, a.projectOptimizeRrecord_id,]);
       await connection.query(
-          'INSERT INTO ProjectDeclareFieldValueAssociation (projectDeclare_id, projectDeclareField_id, optimize_enable, optimize_frequency, projectOptimizeRrecord_id) VALUES ?',
-          [associationValues]
+          'INSERT INTO ProjectDeclareFieldValueAssociation (projectDeclare_id, projectDeclareField_id, optimize_enable, optimize_frequency, projectOptimizeRrecord_id) VALUES ?', [associationValues]
       );
     }
-
     await connection.commit();
     res.status(200).json({ success: true });
   } catch (error) {
@@ -87,7 +52,6 @@ const getAllProjects = async (req, res) => {
               pd.projectDeclare_draftEnable, pd.project_name
        FROM ProjectDeclare pd`
     );
-
     // 查询每个项目是否已被优化
     const projectIds = projects.map(project => project.projectDeclare_id);
     const [optimizationStatus] = await connection.query(
@@ -96,21 +60,18 @@ const getAllProjects = async (req, res) => {
        WHERE projectDeclare_id IN (?) AND optimize_frequency > 0`,
         [projectIds]
     );
-
     // 将结果整合到项目数据中
     const optimizedProjectIds = optimizationStatus.map(record => record.projectDeclare_id);
     const projectsWithOptimizationStatus = projects.map(project => ({
       ...project,
       isOptimized: optimizedProjectIds.includes(project.projectDeclare_id)
     }));
-
     // 获取用户信息
     const userIds = projectsWithOptimizationStatus.map(project => project.projectDeclare_user);
     const [users] = await connection.query(
         `SELECT user_id, user_name FROM User WHERE user_id IN (?)`,
         [userIds]
     );
-
     // 将用户名添加到项目数据中
     const projectsWithUserNames = projectsWithOptimizationStatus.map(project => {
       const user = users.find(u => u.user_id === project.projectDeclare_user);
@@ -119,7 +80,6 @@ const getAllProjects = async (req, res) => {
         projectDeclare_user_name: user ? user.user_name : '未知用户'  // 添加用户的用户名
       };
     });
-
     // 返回带有优化状态和用户名的项目列表
     res.status(200).json({ success: true, projects: projectsWithUserNames });
   } catch (error) {
@@ -133,11 +93,7 @@ const getMyProjects = async (req, res) => {
   const connection = await db.getConnection();
   try {
     const { userId } = req.query;  // 从请求的查询参数中获取 userId
-
-    if (!userId) {
-      return res.status(400).json({ success: false, message: '用户未授权' });
-    }
-
+    if (!userId) {return res.status(400).json({ success: false, message: '用户未授权' });}
     // 查询该用户的所有项目
     const [projects] = await connection.query(
         `SELECT pd.projectDeclare_id, pd.template_id, pd.projectDeclare_user, pd.projectDeclare_create_at, 
@@ -145,7 +101,6 @@ const getMyProjects = async (req, res) => {
        FROM ProjectDeclare pd
        WHERE pd.projectDeclare_user = ?`, [userId]
     );
-
     // 查询每个项目是否已被优化
     const projectIds = projects.map(project => project.projectDeclare_id);
     const [optimizationStatus] = await connection.query(
@@ -154,14 +109,12 @@ const getMyProjects = async (req, res) => {
        WHERE projectDeclare_id IN (?) AND optimize_frequency > 0`,
         [projectIds]
     );
-
     // 将结果整合到项目数据中
     const optimizedProjectIds = optimizationStatus.map(record => record.projectDeclare_id);
     const projectsWithOptimizationStatus = projects.map(project => ({
       ...project,
       isOptimized: optimizedProjectIds.includes(project.projectDeclare_id)
     }));
-
     // 返回带有优化状态的项目列表
     res.status(200).json({ success: true, projects: projectsWithOptimizationStatus });
   } catch (error) {
@@ -175,11 +128,9 @@ const getMyProjects = async (req, res) => {
 // 获取项目详细信息
 const getProjectDetails = async (req, res) => {
   const projectId = req.params.id; // 从请求参数中获取项目 ID
-
   if (!projectId) {
     return res.status(400).json({ success: false, message: "项目 ID 是必需的" });
   }
-
   const query = `
         SELECT 
             p.projectDeclare_id AS project_id,
@@ -216,16 +167,11 @@ const getProjectDetails = async (req, res) => {
                 WHERE projectDeclare_id = p.projectDeclare_id
             );
     `;
-
   let connection;
   try {
     connection = await db.getConnection();
     const [rows] = await connection.query(query, [projectId]);
-
-    if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: "项目未找到" });
-    }
-
+    if (rows.length === 0) {return res.status(404).json({ success: false, message: "项目未找到" });}
     // 提取公共项目信息
     const projectDetails = {
       project_id: rows[0].project_id,
@@ -233,7 +179,6 @@ const getProjectDetails = async (req, res) => {
       project_create_at: rows[0].project_create_at,
       project_creator_name: rows[0].project_creator_name,
     };
-
     // 提取字段信息
     const fields = rows.map((row) => ({
       field_id: row.field_id,
@@ -245,7 +190,6 @@ const getProjectDetails = async (req, res) => {
       last_specialist_name: row.last_specialist_name,
       last_optimize_time: row.last_optimize_time,
     }));
-
     return res.status(200).json({
       success: true,
       data: {

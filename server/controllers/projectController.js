@@ -164,10 +164,98 @@ const getMyProjects = async (req, res) => {
   }
 };
 
+// 获取项目详细信息
+const getProjectDetails = async (req, res) => {
+  const projectId = req.params.id; // 从请求参数中获取项目 ID
 
+  if (!projectId) {
+    return res.status(400).json({ success: false, message: "项目 ID 是必需的" });
+  }
+
+  const query = `
+        SELECT 
+            p.projectDeclare_id AS project_id,
+            p.project_name,
+            p.projectDeclare_create_at AS project_create_at,
+            u.user_name AS project_creator_name,
+            pdfva.projectDeclareField_id AS field_id,
+            pdf.projectDeclareField_value AS field_value,
+            tf.templateFields_name AS field_name,
+            tf.templateFields_type AS field_type,
+            pdfva.optimize_frequency,
+            por.specialist_user_id AS last_specialist_id,
+            last_specialist.user_name AS last_specialist_name,
+            por.projectOptimize_create_at AS last_optimize_time
+        FROM 
+            ProjectDeclare p
+        LEFT JOIN 
+            User u ON p.projectDeclare_user = u.user_id
+        LEFT JOIN 
+            ProjectDeclareFieldValueAssociation pdfva ON p.projectDeclare_id = pdfva.projectDeclare_id
+        LEFT JOIN 
+            ProjectDeclareField pdf ON pdfva.projectDeclareField_id = pdf.projectDeclareField_id
+        LEFT JOIN 
+            TemplateFields tf ON pdf.templateFields_id = tf.templateFields_id
+        LEFT JOIN 
+            ProjectOptimizeRrecord por ON pdfva.projectOptimizeRrecord_id = por.projectOptimizeRrecord_id
+        LEFT JOIN 
+            User last_specialist ON por.specialist_user_id = last_specialist.user_id
+        WHERE 
+            p.projectDeclare_id = ?
+            AND pdfva.optimize_frequency = (
+                SELECT MAX(optimize_frequency) 
+                FROM ProjectDeclareFieldValueAssociation 
+                WHERE projectDeclare_id = p.projectDeclare_id
+            );
+    `;
+
+  let connection;
+  try {
+    connection = await db.getConnection();
+    const [rows] = await connection.query(query, [projectId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: "项目未找到" });
+    }
+
+    // 提取公共项目信息
+    const projectDetails = {
+      project_id: rows[0].project_id,
+      project_name: rows[0].project_name,
+      project_create_at: rows[0].project_create_at,
+      project_creator_name: rows[0].project_creator_name,
+    };
+
+    // 提取字段信息
+    const fields = rows.map((row) => ({
+      field_id: row.field_id,
+      field_value: row.field_value,
+      field_name: row.field_name,
+      field_type: row.field_type,
+      optimize_frequency: row.optimize_frequency,
+      last_specialist_id: row.last_specialist_id,
+      last_specialist_name: row.last_specialist_name,
+      last_optimize_time: row.last_optimize_time,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        project: projectDetails,
+        fields: fields,
+      },
+    });
+  } catch (error) {
+    console.error("获取项目详细信息出错:", error);
+    return res.status(500).json({ success: false, message: "服务器内部错误" });
+  } finally {
+    connection.release();
+  }
+};
 
 module.exports = {
   submitProjectDeclare,
   getAllProjects,
   getMyProjects,
+  getProjectDetails
 };

@@ -4,7 +4,7 @@
   </el-breadcrumb><br />
   <!-- 项目列表 -->
   <div v-loading="loading" class="project-list">
-    <div v-for="(project, index) in filteredProjects" :key="index" class="project-card">
+    <div v-for="(project, index) in filteredProjects" :key="project.project_id" class="project-card" @click="setNowOnClickProject(project)">
       <div class="project-header">
         <span class="project-title">{{ project.project_name }}</span>
       </div>
@@ -22,19 +22,23 @@
       </div>
     </div>
   </div>
+  <ViewProjectDetail v-model="NowOnClickProject"/>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-
 // 项目数据
 const projectData = ref([]);
 const filteredProjects = ref([]);  // 存储过滤后的项目数据
 const loading = ref(false);  // 控制加载状态
 const input = ref('');  // 搜索输入
 
-// 格式化时间
+//ViewProjectDetail NEED
+import ViewProjectDetail from "./ViewProjectDetail.vue";
+const NowOnClickProject = ref(null);
+
+// Format Date
 const formatDate = (dateString) => {
   const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
   if (match) {
@@ -51,8 +55,6 @@ const getProjectList = async () => {
     const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/project/getAllProjects`);
     if (!response.ok) throw new Error('Network response was not ok');
     const data = await response.json();
-    console.log(data);
-
     if (data.success) {
       projectData.value = data.projects.map(project => ({
         ...project,
@@ -86,6 +88,11 @@ const searchProjects = () => {
   }
 };
 
+// 更新当前点击项目
+const setNowOnClickProject = (project) => {
+  NowOnClickProject.value = project;  // 将选中的项目传递给 NowOnClickProject
+};
+
 // 在组件挂载时获取项目数据
 onMounted(() => {
   getProjectList();
@@ -101,6 +108,11 @@ onMounted(() => {
   margin-bottom: 10px;
   display: flex;
   flex-direction: column;
+  cursor: pointer;  /* 提示可以点击 */
+}
+
+.project-card:hover {
+  background-color: #f5f7fa;
 }
 
 .project-header {

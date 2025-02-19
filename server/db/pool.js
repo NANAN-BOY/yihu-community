@@ -3,9 +3,9 @@ const mysql = require('mysql2');
 
 // 创建并导出连接池
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '123456',  // 根据实际配置修改密码
+    host: '123.249.11.153',
+    user: 'project',
+    password: 'GGGYCRpwWCSbNPMy',  // 根据实际配置修改密码
     database: 'project',
     waitForConnections: true,
     connectionLimit: 10,

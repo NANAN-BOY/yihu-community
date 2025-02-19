@@ -16,6 +16,9 @@
     <!-- ComputerSidebar -->
     <el-aside :width="sidebarWidth" style="background-color: #ffffff;">
       <el-menu class="el-menu-vertical-demo" @select="handleSelect">
+        <!-- R1 -->
+        <el-menu-item v-if="store.state.user.user_role === 1" index="1-1"><el-icon><Document /></el-icon><span>专家库管理</span></el-menu-item>
+        <el-menu-item v-if="store.state.user.user_role === 1" index="1-2"><el-icon><Avatar /></el-icon><span>系统管理</span></el-menu-item>
         <!-- R2 -->
         <el-menu-item v-if="store.state.user.user_role === 2" index="2-1"><el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
         <el-menu-item v-if="store.state.user.user_role=== 2" index="2-2"><el-icon><Avatar /></el-icon><span>专家库管理</span></el-menu-item>
@@ -37,6 +40,10 @@
   <!-- MobilePhoneSidebar -->
   <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
     <el-menu class="el-menu-vertical-demo" @select="handleSelect">
+      <!-- R1 -->
+      <el-menu-item v-if="store.state.user.user_role === 1" index="1-1"><el-icon><Document /></el-icon><span>专家库管理</span></el-menu-item>
+      <el-menu-item v-if="store.state.user.user_role === 1" index="1-2"><el-icon><Avatar /></el-icon><span>系统管理</span></el-menu-item>
+
       <!-- R2 -->
       <el-menu-item v-if="store.state.user.user_role === 2" index="2-1"><el-icon><Document /></el-icon><span>项目管理</span></el-menu-item>
       <el-menu-item v-if="store.state.user.user_role === 2" index="2-2"><el-icon><Avatar /></el-icon><span>专家库管理</span></el-menu-item>
@@ -57,9 +64,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import store from '../store'; 
-import user2ProjectManagement from '../components/user2component/ProjectManagement/user2ProjectManagement.vue'; 
-import user2ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement/ExpertLibraryManagement.vue'; // 导入专家库管理组件
+import store from '../store';
+import user2ProjectManagement from '../components/user2component/ProjectManagement/user2ProjectManagement.vue';
+import user1ExpertLibraryManagement from '../components/user2component/ExpertLibraryManagement/ExpertLibraryManagement.vue'; // 导入专家库管理组件
 import user2ProjectTemplateManagement from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue'; // 导入项目申报模板模板管理组件
 import user2ActivityTemplateManagement from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue'; // 导入活动细节模板模板管理组件
 import user2SocialOrganizationManagement from '../components/user2component/SocialOrganizationManagement/SocialOrganizationManagement.vue';
@@ -82,9 +89,12 @@ const handleSelect = (index) => {
   const lockReason = store.getters.navbarLockReason;
   if (navbarState) {ElMessage.error('请先保存或放弃当前操作。');return;}
   switch (index) {
+    //R1
+    case '1-1':currentComponent.value = user1ExpertLibraryManagement;break;
+    case '1-2':router.push('/user1component/ExpertLibraryManagement/ExpertLibraryManagement');break;
     //R2
     case '2-1':currentComponent.value = user2ProjectManagement;break;
-    case '2-2':currentComponent.value = user2ExpertLibraryManagement;break;
+    case '2-2':currentComponent.value = user1ExpertLibraryManagement;break;
     case '2-3-1':currentComponent.value = user2ProjectTemplateManagement;break;
     case '2-3-2':currentComponent.value = user2ActivityTemplateManagement;break;
     case '2-4':currentComponent.value = user2SocialOrganizationManagement;break;

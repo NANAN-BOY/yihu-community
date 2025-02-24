@@ -333,7 +333,7 @@ app.get('/admin/view-template/:templateId', async (req, res) => {
     }
     catch (error) {
         console.error('Error fetching template:', error);
-        res.status(500).send('获取模板失败123');
+        res.status(500).send('获取模板失败1234');
     }
 });
 

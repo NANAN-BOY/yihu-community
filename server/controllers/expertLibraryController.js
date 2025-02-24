@@ -190,6 +190,33 @@ const getInviteUserInfo = async (req, res) => {
     }
 };
 
+const expertRefuseInvitation = async (req, res) => {
+    const { inviteSpecialisRrecord_id, expertRefuseInvitationReason } = req.body;
+
+    try {
+        // 检查请求参数是否完整
+        if (!inviteSpecialisRrecord_id ||!expertRefuseInvitationReason) {
+            return res.status(400).json({ error: 'inviteSpecialisRrecord_id and expertRefuseInvitationReason are required' });
+        }
+
+        // 执行更新操作，将邀请记录标记为已拒绝，并记录拒绝原因
+        const [result] = await db.execute(
+            'UPDATE InviteSpecialisRrecord SET invite_isAgree = false, invite_refuseReason =? WHERE inviteSpecialisRrecord_id =?',
+            [expertRefuseInvitationReason, inviteSpecialisRrecord_id]
+        );
+
+        // 检查是否有记录被更新
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Invitation record not found' });
+        }
+
+        // 返回成功响应
+        res.status(200).json({ message: 'Invitation refused successfully' });
+    } catch (error) {
+        console.error('Error refusing invitation:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 
 
@@ -197,5 +224,6 @@ module.exports = {
     inviteExpert,
     getInviteInfo,
     expertRegister,// 导出查询邀请信息的方法
-    getInviteUserInfo
+    getInviteUserInfo,
+    expertRefuseInvitation
 };

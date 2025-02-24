@@ -5,10 +5,17 @@
 
       <!-- 显示邀请信息 -->
       <div v-if="inviteInfo" class="invite-info">
-        <p>邀请人: <strong>{{ inviteInfo.invite_user_name }}</strong></p>
-        <p v-if="remainingTime">剩余时间: <strong>{{ remainingTime }}</strong></p>
-        <el-button type="danger">拒绝</el-button>
-        <el-button type="success" @click="dialogVisible = true">接受邀请</el-button>
+        <p>
+          邀请人: <strong>{{ inviteInfo.invite_user_name }}</strong>
+        </p>
+        <p v-if="remainingTime">
+          剩余时间: <strong>{{ remainingTime }}</strong>
+        </p>
+        <!-- 绑定拒绝邀请的函数 -->
+        <el-button type="danger" @click="refuseInvitation">拒绝</el-button>
+        <el-button type="success" @click="dialogVisible = true"
+          >接受邀请</el-button
+        >
         <p v-if="expired" class="expired">该邀请已过期</p>
       </div>
 
@@ -27,19 +34,37 @@
 
       <!-- 注册信息弹框 -->
       <el-dialog
-          v-model="dialogVisible"
-          title="填写注册信息"
-          width="500"
-          :before-close="handleClose"
+        v-model="dialogVisible"
+        title="填写注册信息"
+        width="500"
+        :before-close="handleClose"
       >
         <!-- 用户名 -->
-        <el-input v-model="userName" style="width: 240px" placeholder="用户名" />
+        <el-input
+          v-model="userName"
+          style="width: 240px"
+          placeholder="用户名"
+        />
         <!-- 手机号 -->
-        <el-input v-model="userPhoneNumber" style="width: 240px" placeholder="手机号" />
+        <el-input
+          v-model="userPhoneNumber"
+          style="width: 240px"
+          placeholder="手机号"
+        />
         <!-- 密码 -->
-        <el-input v-model="password" type="password" style="width: 240px" placeholder="密码" />
+        <el-input
+          v-model="password"
+          type="password"
+          style="width: 240px"
+          placeholder="密码"
+        />
         <!-- 确认密码 -->
-        <el-input v-model="confirmPassword" type="password" style="width: 240px" placeholder="确认密码" />
+        <el-input
+          v-model="confirmPassword"
+          type="password"
+          style="width: 240px"
+          placeholder="确认密码"
+        />
 
         <!-- 错误消息 -->
         <p v-if="passwordError" class="error-message">密码和确认密码不匹配</p>
@@ -180,6 +205,36 @@ const handleSubmit = async () => {
   }
 };
 
+// 拒绝邀请的函数
+const refuseInvitation = async () => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/expertRefuseInvitation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "inviteSpecialisRrecord_id": inviteId.value,
+        "expertRefuseInvitationReason": "用户拒绝邀请"
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      ElMessage.success(data.message);
+      // 可以在这里做一些后续处理，比如清除邀请信息
+      inviteInfo.value = null;
+      remainingTime.value = null;
+      expired.value = false;
+    } else {
+      ElMessage.error(data.message || '拒绝邀请失败，请重试');
+    }
+  } catch (error) {
+    console.error('拒绝邀请请求失败:', error);
+    ElMessage.error('拒绝邀请请求失败，请稍后重试');
+  }
+};
 
 // 关闭对话框
 const handleClose = () => {

@@ -196,7 +196,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 样式保持不变 */
 .top-navbar {
   background-color: #3ec474;
   color: white;

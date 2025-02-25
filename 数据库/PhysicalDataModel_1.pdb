@@ -2741,7 +2741,7 @@ CARD 0 新宋体,8,N</a:FontList>
 <o:ReferenceSymbol Id="o16">
 <a:CreationDate>1734759786</a:CreationDate>
 <a:ModificationDate>1736835474</a:ModificationDate>
-<a:Rect>((-21716,-1316), (-16092,6597))</a:Rect>
+<a:Rect>((-21719,-1316), (-16095,6597))</a:Rect>
 <a:ListOfPoints>((-19024,-1316),(-18750,6597))</a:ListOfPoints>
 <a:ArrowStyle>1</a:ArrowStyle>
 <a:LineColor>12615680</a:LineColor>
@@ -2881,7 +2881,7 @@ CARD 0 新宋体,8,N</a:FontList>
 <o:ReferenceSymbol Id="o35">
 <a:CreationDate>1736821521</a:CreationDate>
 <a:ModificationDate>1736847948</a:ModificationDate>
-<a:Rect>((-31736,-4162), (-22063,-2788))</a:Rect>
+<a:Rect>((-31736,-4162), (-22063,-2713))</a:Rect>
 <a:ListOfPoints>((-31736,-3925),(-22063,-3947))</a:ListOfPoints>
 <a:ArrowStyle>1</a:ArrowStyle>
 <a:LineColor>12615680</a:LineColor>
@@ -4238,9 +4238,10 @@ TableComment 0 新宋体,8,N</a:FontList>
 <a:Code>inviteSpecialisRrecord_id</a:Code>
 <a:CreationDate>1736822184</a:CreationDate>
 <a:Creator>Administrator</a:Creator>
-<a:ModificationDate>1736822241</a:ModificationDate>
+<a:ModificationDate>1739954032</a:ModificationDate>
 <a:Modifier>Administrator</a:Modifier>
 <a:DataType>int</a:DataType>
+<a:Identity>1</a:Identity>
 <a:Mandatory>1</a:Mandatory>
 </o:Column>
 <o:Column Id="o131">

@@ -10,35 +10,35 @@
               <!-- 手机号输入框 -->
               <el-form-item>
                 <el-input
-                    v-model="userPhoneNumber"
-                    type="tel"
-                    placeholder="请输入手机号"
-                    required
-                    clearable
-                    prefix-icon="PhoneFilled"
+                  v-model="userPhoneNumber"
+                  type="tel"
+                  placeholder="请输入手机号"
+                  required
+                  clearable
+                  prefix-icon="PhoneFilled"
                 ></el-input>
               </el-form-item>
 
               <!-- 密码输入框 -->
               <el-form-item>
                 <el-input
-                    v-model="userPassword"
-                    type="password"
-                    placeholder="请输入密码"
-                    required
-                    clearable
-                    prefix-icon="Key"
+                  v-model="userPassword"
+                  type="password"
+                  placeholder="请输入密码"
+                  required
+                  clearable
+                  prefix-icon="Key"
                 ></el-input>
               </el-form-item>
 
               <!-- 登录按钮 -->
               <el-form-item>
                 <el-button
-                    class="btn_login"
-                    type="success"
-                    block
-                    :loading="loading"
-                    @click="handleSubmit"
+                  class="btn_login"
+                  type="success"
+                  block
+                  :loading="loading"
+                  @click="handleSubmit"
                 >
                   登录
                 </el-button>
@@ -141,154 +141,172 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Global styles */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f2f4f3;
-}
-
+/* 基础布局 */
 .outer-layer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #f2f4f3;
+  padding: 20px;
 }
 
 .outer-layer-content {
+  width: 100%;
+  max-width: 1200px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* 内容容器 */
+.content_box {
+  display: flex;
+  min-height: 600px;
+}
+
+/* 左侧图片区域 */
+.content_left {
+  flex: 1;
+  background: url("https://source.unsplash.com/random/800x600?technology")
+    center/cover;
+  display: none; /* 默认隐藏，PC端显示 */
+}
+
+/* 右侧表单区域 */
+.content_right {
+  flex: 1;
+  padding: 40px 30px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 480px; /* Set max-width to prevent it from getting too wide on large screens */
-  padding: 40px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.content_left {
-  display: none; /* Hide the left side */
-}
-
-.content_right {
-  width: 100%;
-  padding: 20px;
+  justify-content: center;
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 26px; /* Slightly larger for better readability */
-  color: #333;
+  color: #2c3e50;
+  font-size: 28px;
+  margin-bottom: 40px;
+  font-weight: 600;
 }
 
-.ct_input {
-  margin-bottom: 20px;
-}
-
-.input_text {
+/* 表单样式 */
+.cr_top {
+  max-width: 400px;
+  margin: 0 auto;
   width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
 }
 
-.input_text:focus {
-  border-color: #1CB278;
-  outline: none;
+.el-form-item {
+  margin-bottom: 28px;
 }
 
+.el-input {
+  width: 100%;
+}
+
+.el-input :deep(.el-input__wrapper) {
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.el-input :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #3ec474 inset;
+}
+
+/* 登录按钮 */
 .btn_login {
   width: 100%;
-  padding: 14px;
-  background-color: #1CB278;
+  height: 48px;
+  font-size: 16px;
+  background-color: #3ec474;
   border: none;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .btn_login:hover {
-  background-color: #3cc18a;
+  background-color: #34a862;
+  transform: translateY(-2px);
 }
 
-.btn_login:active {
-  background-color: #13996a;
-}
-
+/* 账号操作链接 */
 .account-oprate {
   display: flex;
   justify-content: space-between;
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 .account-oprate a {
+  color: #666;
   font-size: 14px;
-  color: #1CB278;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .account-oprate a:hover {
-  color: #3cc18a;
+  color: #3ec474;
 }
 
-.error-message {
-  color: red;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.success-message {
-  color: green;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-/* Responsive styles */
+/* 移动端适配 */
 @media (max-width: 768px) {
+  .outer-layer {
+    padding: 10px;
+    background: #fff;
+  }
+
   .outer-layer-content {
-    width: 90%;
-    padding: 30px;
+    border-radius: 12px;
+  }
+
+  .content_box {
+    min-height: auto;
+  }
+
+  .content_right {
+    padding: 30px 20px;
   }
 
   h2 {
     font-size: 24px;
+    margin-bottom: 30px;
   }
 
-  .input_text, .btn_login {
-    font-size: 16px;
+  .el-form-item {
+    margin-bottom: 20px;
   }
 
-  .account-oprate a {
-    font-size: 12px;
+  .btn_login {
+    height: 44px;
+  }
+
+  .account-oprate {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
   }
 }
 
-@media (max-width: 480px) {
-  .outer-layer-content {
-    width: 95%;
-    padding: 25px;
+/* PC端显示左侧图片 */
+@media (min-width: 992px) {
+  .content_left {
+    display: block;
   }
 
-  h2 {
-    font-size: 22px;
+  .content_right {
+    padding: 60px;
   }
+}
 
-  .input_text, .btn_login {
-    font-size: 14px;
-  }
-
-  .account-oprate a {
-    font-size: 12px;
-  }
+/* 底部装饰 */
+.login_footer {
+  height: 40px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 12px;
 }
 </style>

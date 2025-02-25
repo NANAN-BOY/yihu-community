@@ -104,20 +104,27 @@ onMounted(() => {
 
     <!-- 项目列表显示方式 -->
     <div v-loading="loading" class="project-list">
-      <div v-for="(project, index) in filteredData" :key="index" class="project-card">
-        <div class="project-header">
-          <span class="project-title">{{ project.project_name }}</span>
-        </div>
-        <div class="project-description">
-          <strong>提交时间：</strong> {{ project.projectDeclare_create_at }}  <!-- 显示提交时间 -->
-        </div>
-        <div class="project-status">
-          <strong>优化状态: </strong>
-          <span :style="{ color: project.isOptimized ? 'green' : 'red' }">
-            {{ project.isOptimized ? '已优化' : '未优化' }}
-          </span>
+      <div v-if="filteredData.length > 0">
+        <div v-for="(project, index) in filteredData" :key="index" class="project-card">
+          <div class="project-header">
+            <span class="project-title">{{ project.project_name }}</span>
+          </div>
+          <div class="project-description">
+            <strong>提交时间：</strong> {{ project.projectDeclare_create_at }}
+          </div>
+          <div class="project-status">
+            <strong>优化状态: </strong>
+            <span :style="{ color: project.isOptimized ? 'green' : 'red' }">
+              {{ project.isOptimized ? '已优化' : '未优化' }}
+            </span>
+          </div>
         </div>
       </div>
+      <el-empty
+          v-else
+          description="暂无项目数据，点击上方按钮创建新项目"
+          :image-size="200"
+      />
     </div>
   </div>
 

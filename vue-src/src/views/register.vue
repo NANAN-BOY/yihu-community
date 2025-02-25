@@ -79,7 +79,10 @@
 <script setup>
 // 修改引入部分
 import { ref, computed } from 'vue';
-import { ElNotification, ElMessage } from 'element-plus'; // 添加ElMessage
+import { ElNotification, ElMessage } from 'element-plus';
+import axios from "axios";
+import store from "../store";
+import router from "../router"; // 添加ElMessage
 
 // 表单数据（移除passwordMismatch的ref声明）
 const user_name = ref('');
@@ -129,15 +132,9 @@ const handleSubmit = async () => {
     await store.dispatch('setToken', response.data.token);
     await store.dispatch('setUser', response.data.user);
 
-    ElNotification({
-      title: '注册成功',
-      message: '正在跳转到仪表盘...',
-      type: 'success',
-      duration: 1500
-    });
+    ElMessage.success('注册成功！欢迎使用。')
 
-    // 添加跳转延迟让用户看到提示
-    setTimeout(() => router.push('/dashboard'), 1600);
+    await router.push('/dashboard');
 
   } catch (error) {
     // 优化错误处理

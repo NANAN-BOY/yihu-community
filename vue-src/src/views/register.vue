@@ -10,55 +10,54 @@
               <!-- 组织名称 -->
               <el-form-item>
                 <el-input
-                  v-model="user_name"
-                  placeholder="请输入组织名称"
-                  clearable
-                  prefix-icon="User"
+                    v-model="user_name"
+                    placeholder="请输入组织名称"
+                    clearable
+                    prefix-icon="User"
                 ></el-input>
               </el-form-item>
 
               <!-- 手机号 -->
               <el-form-item>
                 <el-input
-                  v-model="user_phoneNumber"
-                  type="tel"
-                  placeholder="请输入管理者手机号"
-                  clearable
-                  prefix-icon="PhoneFilled"
+                    v-model="user_phoneNumber"
+                    type="tel"
+                    placeholder="请输入管理者手机号"
+                    clearable
+                    prefix-icon="PhoneFilled"
                 ></el-input>
               </el-form-item>
 
               <!-- 密码 -->
               <el-form-item>
                 <el-input
-                  v-model="user_password"
-                  type="password"
-                  placeholder="请输入密码"
-                  show-password
-                  prefix-icon="Key"
+                    v-model="user_password"
+                    type="password"
+                    placeholder="请输入密码"
+                    show-password
+                    prefix-icon="Key"
                 ></el-input>
               </el-form-item>
 
               <!-- 确认密码 -->
               <el-form-item>
                 <el-input
-                  v-model="user_password_confirm"
-                  type="password"
-                  placeholder="请确认密码"
-                  show-password
-                  prefix-icon="Key"
+                    v-model="user_password_confirm"
+                    type="password"
+                    placeholder="请确认密码"
+                    show-password
+                    prefix-icon="Key"
                 ></el-input>
               </el-form-item>
 
               <!-- 注册按钮 -->
               <el-form-item>
                 <el-button
-                  class="btn_login"
-                  type="success"
-                  block
-                  :loading="loading"
-                  :disabled="passwordMismatch"
-                  @click="handleSubmit"
+                    class="btn_login"
+                    type="success"
+                    block
+                    :loading="loading"
+                    @click="handleSubmit"
                 >
                   立即注册
                 </el-button>
@@ -77,74 +76,84 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, watch } from 'vue';
-import axios from 'axios';
-import store from "../store.js";
-import router from "../router.js";
-import { ElNotification } from "element-plus";
+// 修改引入部分
+import { ref, computed } from 'vue';
+import { ElNotification, ElMessage } from 'element-plus'; // 添加ElMessage
 
-// 表单数据
+// 表单数据（移除passwordMismatch的ref声明）
 const user_name = ref('');
 const user_phoneNumber = ref('');
 const user_password = ref('');
 const user_password_confirm = ref('');
-const passwordMismatch = ref(false);
-const errorMessage = ref('');
-const successMessage = ref('');
 
-// 监听密码和确认密码匹配情况
-watch([user_password, user_password_confirm], () => {
-  passwordMismatch.value = user_password.value !== user_password_confirm.value;
-});
+// 改为计算属性
+const passwordMismatch = computed(() =>
+  user_password.value !== user_password_confirm.value
+);
 
-// 表单提交方法
+// 优化后的提交方法
 const handleSubmit = async () => {
-  if (!passwordMismatch.value) {
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, {
-        user_name: user_name.value,
-        user_phoneNumber: user_phoneNumber.value,
-        user_password: user_password.value
-      });
-      // 成功后处理返回的用户信息和 token
-      successMessage.value = response.data.message;
-      errorMessage.value = '';
-      // 保存 token 到 localStorage
-      // 将 token 和用户信息存入 Vuex
-      await store.dispatch('setToken', response.data.token);
-      await store.dispatch('setUser', {
-        user_id: response.data.user.user_id,
-        user_name: response.data.user.user_name,
-        user_phoneNumber: response.data.user.user_phoneNumber,
-        user_role: response.data.user.user_role,
-        user_accountStatus: response.data.user.user_accountStatus,
-      });
+  // 密码一致性检查
+  if (passwordMismatch.value) {
+    ElMessage.error('两次输入的密码不一致，请重新输入');
+    return;
+  }
 
-      // 将 token 存入 localStorage
-      localStorage.setItem('token', response.data.token);
-      ElNotification({
-        title: '注册成功',
-        message: '欢迎您的加入！',
-        type: 'success',
-        duration: 3000,
-      });
-      await router.push('/dashboard');
-    } catch (error) {
-      console.log(error);
-      // 错误处理
-      if (error.response) {
-        errorMessage.value = error.response.data || '注册失败，请稍后重试';
-      } else {
-        errorMessage.value = '网络错误，请检查网络连接';
-      }
-      successMessage.value = '';
-    }
+  // 必填字段校验
+  if (!user_name.value?.trim()) {
+    ElMessage.warning('请输入组织名称');
+    return;
+  }
+
+  if (!/^1[3-9]\d{9}$/.test(user_phoneNumber.value)) {
+    ElMessage.warning('请输入有效的手机号码');
+    return;
+  }
+
+  if (user_password.value.length < 6) {
+    ElMessage.warning('密码长度不能少于6位');
+    return;
+  }
+
+  try {
+    // 保留原有注册逻辑...
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, {
+      user_name: user_name.value.trim(),
+      user_phoneNumber: user_phoneNumber.value.trim(),
+      user_password: user_password.value
+    });
+
+    // 成功后的本地存储操作
+    localStorage.setItem('token', response.data.token);
+    await store.dispatch('setToken', response.data.token);
+    await store.dispatch('setUser', response.data.user);
+
+    ElNotification({
+      title: '注册成功',
+      message: '正在跳转到仪表盘...',
+      type: 'success',
+      duration: 1500
+    });
+
+    // 添加跳转延迟让用户看到提示
+    setTimeout(() => router.push('/dashboard'), 1600);
+
+  } catch (error) {
+    // 优化错误处理
+    const errorMsg = error.response?.data?.message ||
+                     '注册失败，请检查网络后重试';
+    ElMessage({
+      message: errorMsg,
+      type: 'error',
+      duration: 3000,
+      showClose: true
+    });
+    console.error('注册错误:', error);
   }
 };
-
 </script>
+
 
 <style scoped>
 /* 共用登录页面样式 */

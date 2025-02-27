@@ -14,7 +14,7 @@
         <!-- 左侧标题 -->
         <el-col :span="isMobile ? 24 : 20" class="left-menu">
           <span :class="isMobile ? 'menu-title-mobile' : 'menu-title'"
-            >智能管理系统</span
+            ><strong>易互</strong></span
           >
         </el-col>
         <!-- 电脑端登出按钮 -->

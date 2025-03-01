@@ -4,7 +4,7 @@
       <div class="content_box">
         <div class="content_left"></div>
         <div class="content_right">
-          <h2>欢迎注册</h2>
+          <h2>注册易互平台</h2>
           <div class="cr_top">
             <el-form @submit.prevent="handleSubmit" label-width="0px">
               <!-- 组织名称 -->
@@ -17,7 +17,6 @@
                 ></el-input>
               </el-form-item>
 
-              <!-- 手机号 -->
               <!-- 手机号 -->
               <el-form-item>
                 <div class="phone-input-wrapper">
@@ -46,7 +45,17 @@
                     prefix-icon="Message"
                 ></el-input>
               </el-form-item>
-
+              <el-form-item>
+                <el-cascader
+                    v-model="selectedArea"
+                    :options="areaOptions"
+                    :props="areaProps"
+                    :show-all-levels="true"
+                    placeholder="请选择所在地区"
+                    clearable
+                    style="width: 100%"
+                />
+              </el-form-item>
               <!-- 密码 -->
               <el-form-item>
                 <el-input
@@ -96,11 +105,12 @@
   </div>
 </template>
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ElNotification, ElMessage } from 'element-plus';
 import axios from "axios";
 import store from "../store";
 import router from "../router";
+import { regionData } from 'element-china-area-data';
 
 const user_name = ref('');
 const user_phoneNumber = ref('');
@@ -108,8 +118,17 @@ const user_password = ref('');
 const user_password_confirm = ref('');
 const sms_code = ref('');
 const countdown = ref(0);
-let timer = null;
 
+let timer = null;
+// 新增地区相关响应式变量
+const selectedArea = ref([]);
+const areaOptions = ref(regionData);
+const areaProps = {
+  value: 'code',
+  label: 'label',
+  children: 'children',
+  emitPath: true,  // 改为true以获取完整路径
+};
 const passwordMismatch = computed(() =>
   user_password.value !== user_password_confirm.value
 );
@@ -142,13 +161,17 @@ const handleSubmit = async () => {
     ElMessage.warning('密码长度不能少于6位');
     return;
   }
-
+  if (selectedArea.value.length !== 3) {
+    ElMessage.warning('请选择完整的省市区划');
+    return;
+  }
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, {
       user_name: user_name.value.trim(),
       user_phoneNumber: user_phoneNumber.value.trim(),
       user_password: user_password.value,
-      sms_code: sms_code.value.trim() // 新增验证码参数
+      sms_code: sms_code.value.trim(), // 新增验证码参数
+      area_code: selectedArea.value[1]
     });
 
     localStorage.setItem('token', response.data.token);
@@ -201,7 +224,6 @@ const sendSMSCode = async () => {
 
 
 <style scoped>
-/* 共用登录页面样式 */
 /* 基础布局 */
 .outer-layer {
   min-height: 100vh;
@@ -227,15 +249,15 @@ const sendSMSCode = async () => {
   min-height: 600px;
 }
 
-/* 左侧图片区域 */
 .content_left {
   flex: 1;
-  background: url("https://source.unsplash.com/random/800x600?technology")
-    center/cover;
+  background: url("htgl-bg.png") center/cover;
+  background-size: 85%;  /* 缩小背景图片尺寸 */
+  background-repeat: no-repeat;  /* 禁止重复 */
   display: none;
+  background-color: #ffffff;  /* 添加备用背景色 */
 }
 
-/* 右侧表单区域 */
 .content_right {
   flex: 1;
   padding: 40px 30px;
@@ -252,7 +274,7 @@ h2 {
   font-weight: 600;
 }
 
-/* 表单样式 */
+/* 表单通用样式 */
 .cr_top {
   max-width: 400px;
   margin: 0 auto;
@@ -263,22 +285,22 @@ h2 {
   margin-bottom: 28px;
 }
 
-.el-input {
-  width: 100%;
+
+/* 新增级联选择器内部输入框精准调整 */
+.el-cascader :deep(.el-input) {
+  --el-input-height: 40px;
+  --el-input-inner-height: calc(var(--el-input-height) - 2px) !important;
+}
+.el-cascader :deep(.el-input__inner) {
+  height: 100% !important;
+  line-height: 38px !important; /* 精确对齐其他输入框文本 */
+}
+.el-cascader :deep(.el-input__suffix) {
+  top: 50% !important;
+  transform: translateY(-50%);
 }
 
-.el-input :deep(.el-input__wrapper) {
-  padding: 0 15px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  height: 40px;
-}
-
-.el-input :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #3ec474 inset;
-}
-
-/* 登录按钮 */
+/* 按钮样式 */
 .btn_login {
   width: 100%;
   height: 48px;
@@ -293,7 +315,7 @@ h2 {
   transform: translateY(-2px);
 }
 
-/* 账号操作链接 */
+/* 辅助链接 */
 .account-oprate {
   display: flex;
   justify-content: space-between;
@@ -318,27 +340,22 @@ h2 {
   align-items: center;
   gap: 10px;
 }
+
 .phone-input-wrapper :deep(.el-input) {
   flex: 1;
   min-width: 0;
 }
+
 .phone-input-wrapper :deep(.el-input__inner) {
   width: 100% !important;
 }
-.phone-input-wrapper :deep(.el-input__wrapper) {
-  padding: 0 15px;
-  padding-right: 30px;
-  border-radius: 8px;
-  height: 40px;
-  width: 100%;
-  transition-property: box-shadow, border-color;
-}
+
 .phone-input-wrapper :deep(.el-input__suffix) {
   right: 8px;
   position: absolute;
 }
 
-/* 验证码发送按钮 */
+/* 验证码按钮 */
 .send-code-btn {
   width: 120px;
   height: 40px;
@@ -359,6 +376,16 @@ h2 {
 .send-code-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* 级联选择器专用样式 */
+.el-cascader :deep(.el-input__inner) {
+  line-height: 40px;
+}
+
+.el-cascader :deep(.el-icon) {
+  font-size: 14px;
+  margin-top: -2px;
 }
 
 /* 移动端适配 */
@@ -389,34 +416,47 @@ h2 {
     margin-bottom: 20px;
   }
 
-  .btn_login {
-    height: 44px;
+  /* 移动端输入框高度调整 */
+  .el-input :deep(.el-input__wrapper),
+  .el-cascader :deep(.el-input__wrapper) {
+    height: 36px !important;
   }
 
-  .account-oprate {
+  .el-cascader :deep(.el-input__inner) {
+    line-height: 36px;
+  }
+
+  /* 级联选择器弹窗优化 */
+  .el-cascader__dropdown {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+    max-width: 90vw;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .el-cascader-panel {
+    max-height: 60vh !important;
+    overflow-y: auto;
     flex-direction: column;
-    align-items: center;
-    gap: 12px;
   }
 
-  /* 手机号输入适配 */
-  .phone-input-wrapper {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .el-cascader-menu {
+    min-width: 100px !important;
+    height: auto !important;
+    border-right: 1px solid #eee;
   }
 
-  .phone-input-wrapper :deep(.el-input) {
-    width: 100%;
-  }
-
-  .send-code-btn {
-    width: 100%;
-    margin-top: 8px;
-    height: 36px;
+  .el-cascader-node__label {
+    font-size: 14px;
+    padding: 8px 12px;
+    white-space: normal;
   }
 }
 
-/* PC端显示左侧图片 */
+/* PC端图片显示 */
 @media (min-width: 992px) {
   .content_left {
     display: block;
@@ -442,35 +482,5 @@ h2 {
 .content_right {
   padding-top: 60px;
 }
-
-.el-form-item {
-  margin-bottom: 22px;
-}
-
-.account-oprate {
-  text-align: center;
-  margin-top: 20px;
-  color: #666;
-}
-
-.account-oprate span {
-  margin-right: 8px;
-}
-
-.account-oprate a {
-  color: #3ec474;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-/* 移动端专属调整 */
-@media (max-width: 768px) {
-  .content_right {
-    padding-top: 40px;
-  }
-
-  .el-form-item {
-    margin-bottom: 18px;
-  }
-}
 </style>
+

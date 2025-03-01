@@ -18,13 +18,32 @@
               </el-form-item>
 
               <!-- 手机号 -->
+              <!-- 手机号 -->
+              <el-form-item>
+                <div class="phone-input-wrapper">
+                  <el-input
+                      v-model="user_phoneNumber"
+                      type="tel"
+                      placeholder="请输入管理者手机号"
+                      clearable
+                      prefix-icon="PhoneFilled"
+                  ></el-input>
+                  <el-button
+                      class="send-code-btn"
+                      :disabled="countdown > 0"
+                      @click="sendSMSCode">
+                    {{ countdown > 0 ? `${countdown}秒后重发` : '获取验证码' }}
+                  </el-button>
+                </div>
+              </el-form-item>
+
+              <!-- 验证码 -->
               <el-form-item>
                 <el-input
-                    v-model="user_phoneNumber"
-                    type="tel"
-                    placeholder="请输入管理者手机号"
+                    v-model="sms_code"
+                    placeholder="请输入短信验证码"
                     clearable
-                    prefix-icon="PhoneFilled"
+                    prefix-icon="Message"
                 ></el-input>
               </el-form-item>
 
@@ -77,25 +96,24 @@
   </div>
 </template>
 <script setup>
-// 修改引入部分
 import { ref, computed } from 'vue';
 import { ElNotification, ElMessage } from 'element-plus';
 import axios from "axios";
 import store from "../store";
-import router from "../router"; // 添加ElMessage
+import router from "../router";
 
-// 表单数据（移除passwordMismatch的ref声明）
 const user_name = ref('');
 const user_phoneNumber = ref('');
 const user_password = ref('');
 const user_password_confirm = ref('');
+const sms_code = ref('');
+const countdown = ref(0);
+let timer = null;
 
-// 改为计算属性
 const passwordMismatch = computed(() =>
   user_password.value !== user_password_confirm.value
 );
 
-// 优化后的提交方法
 const handleSubmit = async () => {
   // 密码一致性检查
   if (passwordMismatch.value) {
@@ -114,32 +132,35 @@ const handleSubmit = async () => {
     return;
   }
 
+  // 新增验证码校验
+  if (!sms_code.value?.trim() || sms_code.value.length !== 6) {
+    ElMessage.warning('请输入6位验证码');
+    return;
+  }
+
   if (user_password.value.length < 6) {
     ElMessage.warning('密码长度不能少于6位');
     return;
   }
 
   try {
-    // 保留原有注册逻辑...
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, {
       user_name: user_name.value.trim(),
       user_phoneNumber: user_phoneNumber.value.trim(),
-      user_password: user_password.value
+      user_password: user_password.value,
+      sms_code: sms_code.value.trim() // 新增验证码参数
     });
 
-    // 成功后的本地存储操作
     localStorage.setItem('token', response.data.token);
     await store.dispatch('setToken', response.data.token);
     await store.dispatch('setUser', response.data.user);
 
     ElMessage.success('注册成功！欢迎使用。')
-
     await router.push('/dashboard');
 
   } catch (error) {
-    // 优化错误处理
     const errorMsg = error.response?.data?.message ||
-                     '注册失败，请检查网络后重试';
+        '注册失败，请检查网络后重试';
     ElMessage({
       message: errorMsg,
       type: 'error',
@@ -149,6 +170,33 @@ const handleSubmit = async () => {
     console.error('注册错误:', error);
   }
 };
+const sendSMSCode = async () => {
+  if (!/^1[3-9]\d{9}$/.test(user_phoneNumber.value)) {
+    ElMessage.warning('请输入有效的手机号码');
+    return;
+  }
+  try {
+    countdown.value = 60;
+    timer = setInterval(() => {
+      countdown.value--;
+      if (countdown.value <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+    await axios.post(`${import.meta.env.VITE_BACKEND_IP}/captcha/generate`, null, {
+      params: {
+        phone: user_phoneNumber.value
+      }
+    });
+    ElMessage.success('验证码已发送');
+  } catch (error) {
+    ElMessage.error('验证码发送失败');
+    console.error('验证码发送错误:', error);
+    clearInterval(timer);
+    countdown.value = 0;
+  }
+};
+
 </script>
 
 
@@ -184,7 +232,7 @@ const handleSubmit = async () => {
   flex: 1;
   background: url("https://source.unsplash.com/random/800x600?technology")
     center/cover;
-  display: none; /* 默认隐藏，PC端显示 */
+  display: none;
 }
 
 /* 右侧表单区域 */
@@ -220,9 +268,10 @@ h2 {
 }
 
 .el-input :deep(.el-input__wrapper) {
-  padding: 12px 16px;
+  padding: 0 15px;
   border-radius: 8px;
   transition: all 0.3s ease;
+  height: 40px;
 }
 
 .el-input :deep(.el-input__wrapper:hover) {
@@ -262,6 +311,56 @@ h2 {
   color: #3ec474;
 }
 
+/* 手机号输入容器 */
+.phone-input-wrapper {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+}
+.phone-input-wrapper :deep(.el-input) {
+  flex: 1;
+  min-width: 0;
+}
+.phone-input-wrapper :deep(.el-input__inner) {
+  width: 100% !important;
+}
+.phone-input-wrapper :deep(.el-input__wrapper) {
+  padding: 0 15px;
+  padding-right: 30px;
+  border-radius: 8px;
+  height: 40px;
+  width: 100%;
+  transition-property: box-shadow, border-color;
+}
+.phone-input-wrapper :deep(.el-input__suffix) {
+  right: 8px;
+  position: absolute;
+}
+
+/* 验证码发送按钮 */
+.send-code-btn {
+  width: 120px;
+  height: 40px;
+  padding: 0 15px;
+  border-radius: 6px;
+  transition: all 0.3s;
+  white-space: nowrap;
+  background-color: #f5f7fa;
+  border-color: #dcdfe6;
+}
+
+.send-code-btn:hover {
+  background-color: #3ec474;
+  color: white;
+  border-color: #3ec474;
+}
+
+.send-code-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .outer-layer {
@@ -299,6 +398,22 @@ h2 {
     align-items: center;
     gap: 12px;
   }
+
+  /* 手机号输入适配 */
+  .phone-input-wrapper {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .phone-input-wrapper :deep(.el-input) {
+    width: 100%;
+  }
+
+  .send-code-btn {
+    width: 100%;
+    margin-top: 8px;
+    height: 36px;
+  }
 }
 
 /* PC端显示左侧图片 */
@@ -322,6 +437,7 @@ h2 {
   color: #666;
   font-size: 12px;
 }
+
 /* 注册页专属调整 */
 .content_right {
   padding-top: 60px;
@@ -347,7 +463,7 @@ h2 {
   font-weight: 500;
 }
 
-/* 移动端适配 */
+/* 移动端专属调整 */
 @media (max-width: 768px) {
   .content_right {
     padding-top: 40px;

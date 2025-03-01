@@ -1,7 +1,7 @@
-package com.yihu.server_springboot.controller;
+package com.yihu.controller;
 
-import com.yihu.server_springboot.service.CaptchaService;
-import com.yihu.server_springboot.utils.ApiResponse;
+import com.yihu.service.CaptchaService;
+import com.yihu.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,4 +1,4 @@
-package com.yihu.server_springboot.utils;
+package com.yihu.utils;
 
 public class ApiResponse<T> {
     private int code;

@@ -1,10 +1,10 @@
-package com.yihu.server_springboot;
+package com.yihu;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ServerSpringBootApplicationTests {
+class YiHuApplicationTests {
 
     @Test
     void contextLoads() {

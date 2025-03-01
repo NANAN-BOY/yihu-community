@@ -1,4 +1,4 @@
-package com.yihu.server_springboot;
+package com.yihu;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

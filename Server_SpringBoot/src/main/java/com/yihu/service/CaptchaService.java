@@ -1,4 +1,4 @@
-package com.yihu.server_springboot.service;
+package com.yihu.service;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;

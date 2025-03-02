@@ -9,4 +9,9 @@
         SELECT * FROM User
     </select>
 
+    <insert id="register" parameterType="com.yihu.entiy.User">
+        insert into [user](userName,password,phoneNumber)
+        values(#{userName},#{password},#{phoneNumber})
+    </insert>
+
 </mapper>

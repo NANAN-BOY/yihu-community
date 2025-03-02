@@ -7,6 +7,18 @@ spring:
     username: project
     password: 37SpbDHwjThaWyM6
     url: jdbc:mysql://123.249.11.153:3306/project?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      #password:(未设置所以暂时先注释掉)
+      lettuce:
+        pool:
+          max-active: 4
+          max-idle: 4
+          min-idle: 4
+          max-wait: 1000ms
+      timeout: 2000ms
 
 # \u914D\u7F6Emybatis\u5B9E\u4F53\u548Cxml\u6620\u5C04
 mybatis:

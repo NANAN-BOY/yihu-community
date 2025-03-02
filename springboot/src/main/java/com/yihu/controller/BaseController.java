@@ -6,6 +6,7 @@ import com.yihu.exception.CustomException;
 import com.yihu.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,9 +19,10 @@ public class BaseController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping("/login")
+    @GetMapping ("/login")
     public Result test(){
         List<User> userList =  userService.getAll();
+        System.out.println(userList);
         return Result.success(userList);
     }
 

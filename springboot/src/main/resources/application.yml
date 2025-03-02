@@ -4,9 +4,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.NonRegisteringDriver
-    username: root
-    password: mysql
-    url: jdbc:mysql://localhost:3306/yihu?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: project
+    password: 37SpbDHwjThaWyM6
+    url: jdbc:mysql://123.249.11.153:3306/project?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
 
 # \u914D\u7F6Emybatis\u5B9E\u4F53\u548Cxml\u6620\u5C04
 mybatis:

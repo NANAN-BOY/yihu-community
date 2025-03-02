@@ -63,7 +63,7 @@ import { ref } from 'vue';
 import { useStore } from 'vuex';  // 导入 Vuex store
 import { ElNotification } from 'element-plus';  // 导入 Element Plus 消息组件
 import { useRouter } from 'vue-router';
-
+import request from "../utils/request.js";
 // 定义响应式变量
 const userPhoneNumber = ref('');  // 用户手机号
 const userPassword = ref('');  // 用户密码
@@ -71,6 +71,12 @@ const loading = ref(false);  // 控制登录按钮加载状态
 const router = useRouter();
 
 const store = useStore();  // 获取 Vuex store 实例
+request.get('api/login').then(res =>{
+  alert("111")
+  alert(res)
+  console(res)
+})
+
 
 // 处理表单提交
 const handleSubmit = async () => {
@@ -93,7 +99,6 @@ const handleSubmit = async () => {
     });
 
     const data = await response.json();
-
     if (data.status === 'error') {
       // 使用 ElNotification 显示错误信息
       ElNotification({

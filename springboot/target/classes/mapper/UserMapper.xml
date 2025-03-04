@@ -11,11 +11,11 @@
 
     <insert id="insertUser" parameterType="com.yihu.entity.User">
         INSERT INTO User (
-            name, phone, password, role, status, balance, create_at, last_login_time,
-                           updater_id, update_at, delete_flag, location
+            name, phone, password, role, status, balance, create_at, last_login_time, updater_id,
+                          update_at, delete_flag, location
         ) VALUES (
-                     #{name}, #{phone}, #{password}, #{role}, #{status}, #{balance}, #{create_at}, #{last_login_time},
-                  #{updater_id}, #{update_at}, #{delete_flag}, #{location}
+                     #{name}, #{phone}, #{password}, #{role}, #{status}, #{balance}, #{create_at},
+                  #{last_login_time}, #{updater_id}, #{update_at}, #{delete_flag}, #{location}
                  )
     </insert>
 

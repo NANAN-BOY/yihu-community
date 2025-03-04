@@ -16,7 +16,7 @@ public class BaseController {
     private final UserService userService;
 
     @Autowired
-    public BaseController(UserService userService, CaptchaService captchaService) {
+    public BaseController(UserService userService) {
         this.userService = userService;
     }
 
@@ -27,7 +27,7 @@ public class BaseController {
         return Result.success(userList);
     }
 
-    @GetMapping("/register")
+    @PostMapping("/register")
     public Result register(@RequestParam String userName, @RequestParam String password,
                            @RequestParam String phoneNumber, @RequestParam String captcha,
                            @RequestParam String location){

@@ -23,3 +23,6 @@ pnpm-debug.log*
 *.sw?
 /server/node_modules/
 /Server_src/node_modules/
+#database
+./数据库/YiHuSystem.cdb
+./数据库/YiHuSystem.pdb

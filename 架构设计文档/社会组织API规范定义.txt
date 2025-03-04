@@ -1,0 +1,45 @@
+/user:
+    /user/register:组织注册请求验证码
+        method: POST
+        params:
+            - username
+            - phonenumber
+            - password
+        return:
+            - status
+            - message
+    /user/register:组织注册
+        method: POST
+        params:
+            - username
+            - phonenumber
+            - password
+        return:
+            - status
+            - message
+    /user/login:登录
+        method: POST
+        params:
+            - phonenumber
+            - password
+        return:
+            - status
+            - message
+            - token
+    /user/logout:
+        method: POST
+        params:
+            - token
+        return:
+            - status
+            - message
+    /user/info:
+        method: GET
+        params:
+            - token
+        return:
+            - status
+            - message
+            - username
+            - email
+            - phone

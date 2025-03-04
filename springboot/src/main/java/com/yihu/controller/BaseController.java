@@ -1,7 +1,7 @@
 package com.yihu.controller;
 
 import com.yihu.common.Result;
-import com.yihu.entiy.User;
+import com.yihu.entity.User;
 import com.yihu.service.CaptchaService;
 import com.yihu.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,10 @@ public class BaseController {
     }
 
     @GetMapping("/register")
-    public Result register(@RequestParam String userName, @RequestParam String password, @RequestParam String phoneNumber, @RequestParam String captcha){
-        int isSuccess = userService.register(userName,password,phoneNumber,captcha);
+    public Result register(@RequestParam String userName, @RequestParam String password,
+                           @RequestParam String phoneNumber, @RequestParam String captcha,
+                           @RequestParam String location){
+        int isSuccess = userService.register(userName,password,phoneNumber,captcha,location);
         if (isSuccess == 0){
             return Result.success("注册成功");
         }else if (isSuccess == 1){

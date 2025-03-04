@@ -1,6 +1,6 @@
 package com.yihu.service;
 
-import com.yihu.entiy.User;
+import com.yihu.entity.User;
 
 import java.util.List;
 
@@ -9,5 +9,5 @@ public interface UserService {
 
     List<User> getAll();
 
-    int register(String userName, String password, String phoneNumber, String captcha);
+    int register(String userName, String password, String phoneNumber, String captcha, String location);
 }

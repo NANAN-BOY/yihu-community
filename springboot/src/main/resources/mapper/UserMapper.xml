@@ -6,11 +6,11 @@
 <mapper namespace="com.yihu.mapper.UserMapper">
 
     <select id="selectAll" resultType="com.yihu.entity.User">
-        SELECT * FROM User
+        SELECT * FROM user
     </select>
 
     <insert id="register" parameterType="com.yihu.entity.User">
-        INSERT INTO User (
+        INSERT INTO user (
             name, phone, password, role, status, balance, create_at, last_login_time, updater_id,
                           update_at, delete_flag, location
         ) VALUES (
@@ -18,5 +18,9 @@
                   #{last_login_time}, #{updater_id}, #{update_at}, #{delete_flag}, #{location}
                  )
     </insert>
+
+    <select id="login" resultType="com.yihu.entity.User">
+        SELECT * FROM user WHERE phone = #{phone}
+    </select>
 
 </mapper>

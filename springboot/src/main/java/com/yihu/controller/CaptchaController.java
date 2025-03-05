@@ -19,6 +19,7 @@ public class CaptchaController {
 
     @GetMapping("/generate")
     public Result generateCaptcha(String phone) {
+        System.out.println("1");
         //生成验证码
         String captcha = captchaService.getCaptcha();
         System.out.println(captcha);

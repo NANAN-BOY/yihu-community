@@ -41,4 +41,13 @@ public class BaseController {
         }
     }
 
+    @PostMapping("/login")
+    public Result login(@RequestParam String phone, @RequestParam String password){
+        User user = userService.login(phone,password);
+        if (user != null){
+            return Result.success(user);
+        }else {
+            return Result.error(404,"登陆失败");
+        }
+    }
 }

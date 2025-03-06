@@ -11,13 +11,13 @@ public class User {
     private Integer role;//身份
     private Integer status;//用户状态
     private float balance;//余额
-    private Date create_at;//创建日期
-    private Date last_login_time;//最后登录时间
-    private Integer updater_id;//更新者id
-    private Date update_at;//更新时间
-    private Integer delete_flag;//删除标志
-    private Date delete_at;//删除时间（可为空）
-    private Integer delete_id;//删除者id（可为空）
+    private Date createAt;//创建日期
+    private Date lastLoginTime;//最后登录时间
+    private Integer updaterId;//更新者id
+    private Date updateAt;//更新时间
+    private Integer deleteFlag;//删除标志
+    private Date deleteAt;//删除时间（可为空）
+    private Integer deleteId;//删除者id（可为空）
     private String location;//用户所在位置
 
     public Integer getId() {
@@ -84,60 +84,60 @@ public class User {
         this.balance = balance;
     }
 
-    public Date getCreate_at() {
-        return create_at;
+    public Date getCreateAt() {
+        return createAt;
     }
 
-    public void setCreate_at(Date create_at) {
-        this.create_at = create_at;
+    public void setCreateAt(Date createAt) {
+        this.createAt = createAt;
     }
 
-    public Date getLast_login_time() {
-        return last_login_time;
+    public Date getLastLoginTime() {
+        return lastLoginTime;
     }
 
-    public void setLast_login_time(Date last_login_time) {
-        this.last_login_time = last_login_time;
+    public void setLastLoginTime(Date lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
     }
 
-    public Integer getUpdater_id() {
-        return updater_id;
+    public Integer getUpdaterId() {
+        return updaterId;
     }
 
-    public void setUpdater_id(Integer updater_id) {
-        this.updater_id = updater_id;
+    public void setUpdaterId(Integer updaterId) {
+        this.updaterId = updaterId;
     }
 
-    public Date getUpdate_at() {
-        return update_at;
+    public Date getUpdateAt() {
+        return updateAt;
     }
 
-    public void setUpdate_at(Date update_at) {
-        this.update_at = update_at;
+    public void setUpdateAt(Date updateAt) {
+        this.updateAt = updateAt;
     }
 
-    public Integer getDelete_flag() {
-        return delete_flag;
+    public Integer getDeleteFlag() {
+        return deleteFlag;
     }
 
-    public void setDelete_flag(Integer delete_flag) {
-        this.delete_flag = delete_flag;
+    public void setDeleteFlag(Integer deleteFlag) {
+        this.deleteFlag = deleteFlag;
     }
 
-    public Date getDelete_at() {
-        return delete_at;
+    public Date getDeleteAt() {
+        return deleteAt;
     }
 
-    public void setDelete_at(Date delete_at) {
-        this.delete_at = delete_at;
+    public void setDeleteAt(Date deleteAt) {
+        this.deleteAt = deleteAt;
     }
 
-    public Integer getDelete_id() {
-        return delete_id;
+    public Integer getDeleteId() {
+        return deleteId;
     }
 
-    public void setDelete_id(Integer delete_id) {
-        this.delete_id = delete_id;
+    public void setDeleteId(Integer deleteId) {
+        this.deleteId = deleteId;
     }
 
     public String getLocation() {
@@ -149,19 +149,40 @@ public class User {
     }
 
     public User(String name, String phone,String password, String location, Integer role,
-                Integer status, float balance, Date create_at, Date last_login_time,
-                Integer updater_id, Date update_at, Integer delete_flag) {
+                Integer status, float balance, Date createAt, Date lastLoginTime,
+                Integer updaterId, Date updateAt, Integer deleteFlag) {
         this.name = name;
         this.phone = phone;
         this.password = password;
         this.role = role;
         this.status = status;
         this.balance = balance;
-        this.create_at = create_at;
-        this.last_login_time = last_login_time;
-        this.updater_id = updater_id;
-        this.update_at = update_at;
-        this.delete_flag = delete_flag;
+        this.createAt = createAt;
+        this.lastLoginTime = lastLoginTime;
+        this.updaterId = updaterId;
+        this.updateAt = updateAt;
+        this.deleteFlag = deleteFlag;
+        this.location = location;
+    }
+
+    public User(Integer id, String name, String phone, String description, String password, Integer role, String location,
+                Integer status, float balance, Date createAt, Date lastLoginTime, Integer updaterId, Date updateAt,
+                Integer deleteFlag, Date deleteAt, Integer deleteId) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+        this.description = description;
+        this.password = password;
+        this.role = role;
+        this.status = status;
+        this.balance = balance;
+        this.createAt = createAt;
+        this.lastLoginTime = lastLoginTime;
+        this.updaterId = updaterId;
+        this.updateAt = updateAt;
+        this.deleteFlag = deleteFlag;
+        this.deleteAt = deleteAt;
+        this.deleteId = deleteId;
         this.location = location;
     }
 }

@@ -14,17 +14,12 @@
             name, phone, password, role, status, balance, create_at, last_login_time, updater_id,
                           update_at, delete_flag, location
         ) VALUES (
-                     #{name}, #{phone}, #{password}, #{role}, #{status}, #{balance}, #{create_at},
-                  #{last_login_time}, #{updater_id}, #{update_at}, #{delete_flag}, #{location}
+                     #{name}, #{phone}, #{password}, #{role}, #{status}, #{balance}, #{createAt},
+                  #{lastLoginTime}, #{updaterId}, #{updateAt}, #{deleteFlag}, #{location}
                  )
     </insert>
 
-    <resultMap id="UserResultMap" type="com.yihu.entity.User">
-        <result property="phone" column="phone" />
-        <result property="password" column="password" typeHandler="org.apache.ibatis.type.StringTypeHandler"/>
-    </resultMap>
-
-    <select id="login" resultMap="UserResultMap">
+    <select id="login" resultType="com.yihu.entity.User">
         SELECT * FROM user WHERE phone = #{phone}
     </select>
 

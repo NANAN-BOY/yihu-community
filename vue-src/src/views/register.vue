@@ -124,10 +124,10 @@ let timer = null;
 const selectedArea = ref([]);
 const areaOptions = ref(regionData);
 const areaProps = {
-  value: 'code',
+  value: 'value',
   label: 'label',
   children: 'children',
-  emitPath: true,  // 改为true以获取完整路径
+  emitPath: false,
 };
 const passwordMismatch = computed(() =>
   user_password.value !== user_password_confirm.value
@@ -161,18 +161,26 @@ const handleSubmit = async () => {
     ElMessage.warning('密码长度不能少于6位');
     return;
   }
-  if (selectedArea.value.length !== 3) {
+  if (selectedArea.value.length !== 6) {
     ElMessage.warning('请选择完整的省市区划');
     return;
   }
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, {
-      user_name: user_name.value.trim(),
-      user_phoneNumber: user_phoneNumber.value.trim(),
-      user_password: user_password.value,
-      sms_code: sms_code.value.trim(),
-      area_code: selectedArea.value[1]
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, null, {
+      params: {
+        userName: user_name.value,
+        password: user_phoneNumber.value,
+        phoneNumber: user_password.value,
+        captcha: sms_code.value,
+        location: selectedArea.value
+      }
     });
+    console.log(response.data);
+    console.log( user_name.value,
+        user_phoneNumber.value,
+         user_password.value,
+         sms_code.value,
+         selectedArea.value);
       const queryParams = new URLSearchParams({phone: user_phoneNumber.value, password: user_password.value,});
       const url = `${import.meta.env.VITE_BACKEND_IP}/api/login?${queryParams.toString()}`;
       const response1 = await fetch(url, {method: 'POST',});
@@ -222,11 +230,12 @@ const sendSMSCode = async () => {
         clearInterval(timer);
       }
     }, 1000);
-    await axios.get(`${import.meta.env.VITE_BACKEND_IP}/captcha/generate`, null, {
+    await axios.post(`${import.meta.env.VITE_BACKEND_IP}/captcha/generate`, null, {
       params: {
         phone: user_phoneNumber.value
       }
     });
+    console.log(user_phoneNumber.value);
     ElMessage.success('验证码已发送');
   } catch (error) {
     ElMessage.error('验证码发送失败');

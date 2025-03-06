@@ -7,11 +7,18 @@ const store = createStore({
     token: localStorage.getItem('token') || '', // 从本地存储获取 token
     // 用户信息
     user: {
-      user_id: null,                // 用户唯一标识符
-      user_name: '',                // 用户名
-      user_phoneNumber: '',         // 用户电话号码
-      user_role: '',                // 用户角色
-      user_accountStatus: '',       // 用户账号状态
+      id: null,                // 用户唯一标识符
+      name: '',                // 用户名
+      phone: '',         // 用户电话号码
+      description: '',
+      role: '',
+      status: '',
+      balance: '',
+      avatar: '',
+      createAt: '',
+      lastLoginTime: '',
+      updaterId: '',
+      updateAt: '',
     },
     navbar: {
       isLocked: false,               // 导航栏是否锁定
@@ -34,15 +41,22 @@ const store = createStore({
     },
     LOGOUT(state) {
       state.user = {
-        user_id: null,
-        user_name: '',
-        user_phoneNumber: '',
-        user_role: '',
-        user_accountStatus: '',
+        id: null,         // 更新字段名称
+        name: '',         // 使用新的字段名
+        phone: '',        // 使用新的字段名
+        description: '',
+        role: '',
+        status: '',
+        balance: '',
+        avatar: '',
+        createAt: '',
+        lastLoginTime: '',
+        updaterId: '',
+        updateAt: '',
       };
-      state.token = ''; // 清除 token
+      state.token = '';
       localStorage.removeItem('token');
-      state.navbar.isLocked = false; // 解锁导航栏
+      state.navbar.isLocked = false;
     },
     SET_NAVBAR_LOCK(state, payload) {
       state.navbar.isLocked = payload.isLocked; // 设置导航栏锁定状态

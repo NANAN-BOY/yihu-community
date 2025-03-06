@@ -71,11 +71,11 @@ const loading = ref(false);  // 控制登录按钮加载状态
 const router = useRouter();
 
 const store = useStore();  // 获取 Vuex store 实例
-request.get('api/login').then(res =>{
-  alert("111")
-  alert(res)
-  console(res)
-})
+// request.get('api/login').then(res =>{
+//   alert("111")
+//   alert(res)
+//   console(res)
+// })
 
 
 // 处理表单提交
@@ -83,23 +83,27 @@ const handleSubmit = async () => {
   loading.value = true;  // 开始加载状态
 
   try {
-    // 创建请求体（JSON 格式）
-    const requestBody = {
-      user_phoneNumber: userPhoneNumber.value,
-      user_password: userPassword.value,
-    };
+    // 创建查询参数
+    const queryParams = new URLSearchParams({
+      phone: userPhoneNumber.value,
+      password: userPassword.value,
+    });
+
+    // 拼接带参数的 URL
+    const url = `${import.meta.env.VITE_BACKEND_IP}/api/login?${queryParams.toString()}`;
 
     // 使用 Fetch API 发送 POST 请求
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/login`, {
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // 设置请求头为 JSON 格式
-      },
-      body: JSON.stringify(requestBody), // 发送 JSON 格式的数据
+      // 由于参数已在 URL 中，不需要再设置 Content-Type 和 body
+      // headers: {
+      //   'Content-Type': 'application/json', // 设置请求头为 JSON 格式
+      // },
+      // body: JSON.stringify(requestBody), // 发送 JSON 格式的数据
     });
 
     const data = await response.json();
-    if (data.status === 'error') {
+    if (data.msg === 'error') {
       // 使用 ElNotification 显示错误信息
       ElNotification({
         title: '登录失败',
@@ -107,27 +111,23 @@ const handleSubmit = async () => {
         type: 'error',
         duration: 3000, // 自动关闭时间
       });
-    } else if (data.status === 'success') {
+    } else if (data.msg === 'success') {
+      console.log(data)
+
+      // 将 token 和用户信息存入 Vuex
+      await store.dispatch('setToken', data.token);
+      await store.dispatch('setUser', data.data);
+
+      // 将 token 存入 localStorage
+      localStorage.setItem('token', data.token);
       // 使用 ElNotification 显示成功信息
+      console.log(store.state)
       ElNotification({
         title: '登录成功',
         message: '欢迎回来！',
         type: 'success',
         duration: 3000, // 自动关闭时间
       });
-
-      // 将 token 和用户信息存入 Vuex
-      await store.dispatch('setToken', data.token);
-      await store.dispatch('setUser', {
-        user_id: data.user.user_id,
-        user_name: data.user.user_name,
-        user_phoneNumber: data.user.user_phoneNumber,
-        user_role: data.user.user_role,
-        user_accountStatus: data.user.user_accountStatus,
-      });
-
-      // 将 token 存入 localStorage
-      localStorage.setItem('token', data.token);
       await router.push('/dashboard');
     }
   } catch (error) {

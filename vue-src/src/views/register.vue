@@ -170,17 +170,34 @@ const handleSubmit = async () => {
       user_name: user_name.value.trim(),
       user_phoneNumber: user_phoneNumber.value.trim(),
       user_password: user_password.value,
-      sms_code: sms_code.value.trim(), // 新增验证码参数
+      sms_code: sms_code.value.trim(),
       area_code: selectedArea.value[1]
     });
-
-    localStorage.setItem('token', response.data.token);
-    await store.dispatch('setToken', response.data.token);
-    await store.dispatch('setUser', response.data.user);
-
-    ElMessage.success('注册成功！欢迎使用。')
-    await router.push('/dashboard');
-
+      const queryParams = new URLSearchParams({phone: user_phoneNumber.value, password: user_password.value,});
+      const url = `${import.meta.env.VITE_BACKEND_IP}/api/login?${queryParams.toString()}`;
+      const response1 = await fetch(url, {method: 'POST',});
+      const data = await response1.json();
+      console.log(data);
+      if (data.msg === 'error') {
+        ElNotification({
+          title: '登录失败',
+          message: data.message,
+          type: 'error',
+          duration: 3000, // 自动关闭时间
+        });
+      } else if (data.msg === 'success') {
+        await store.dispatch('setToken', data.token);
+        await store.dispatch('setUser', data.data);
+        localStorage.setItem('token', data.token);
+        console.log(store.state)
+        ElNotification({
+          title: '登录成功',
+          message: '欢迎！',
+          type: 'success',
+          duration: 3000,
+        });
+        await router.push('/dashboard');
+      }
   } catch (error) {
     const errorMsg = error.response?.data?.message ||
         '注册失败，请检查网络后重试';
@@ -190,7 +207,6 @@ const handleSubmit = async () => {
       duration: 3000,
       showClose: true
     });
-    console.error('注册错误:', error);
   }
 };
 const sendSMSCode = async () => {
@@ -206,7 +222,7 @@ const sendSMSCode = async () => {
         clearInterval(timer);
       }
     }, 1000);
-    await axios.post(`${import.meta.env.VITE_BACKEND_IP}/captcha/generate`, null, {
+    await axios.get(`${import.meta.env.VITE_BACKEND_IP}/captcha/generate`, null, {
       params: {
         phone: user_phoneNumber.value
       }

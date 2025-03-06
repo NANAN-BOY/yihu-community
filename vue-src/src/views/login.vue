@@ -95,11 +95,6 @@ const handleSubmit = async () => {
     // 使用 Fetch API 发送 POST 请求
     const response = await fetch(url, {
       method: 'POST',
-      // 由于参数已在 URL 中，不需要再设置 Content-Type 和 body
-      // headers: {
-      //   'Content-Type': 'application/json', // 设置请求头为 JSON 格式
-      // },
-      // body: JSON.stringify(requestBody), // 发送 JSON 格式的数据
     });
 
     const data = await response.json();

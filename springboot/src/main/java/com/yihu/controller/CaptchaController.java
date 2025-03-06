@@ -1,5 +1,6 @@
 package com.yihu.controller;
 
+import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.service.CaptchaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ public class CaptchaController {
         this.captchaService = captchaService;
     }
 
+    @AuthAccess
     @GetMapping("/generate")
     public Result generateCaptcha(String phone) {
         System.out.println("1");

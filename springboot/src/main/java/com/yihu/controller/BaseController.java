@@ -1,9 +1,13 @@
 package com.yihu.controller;
 
+import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.entity.User;
+import com.yihu.exception.ServiceException;
 import com.yihu.service.CaptchaService;
 import com.yihu.service.UserService;
+import com.yihu.utils.TokenUtils;
+import org.apache.el.parser.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +31,7 @@ public class BaseController {
         return Result.success(userList);
     }
 
+    @AuthAccess
     @PostMapping("/register")
     public Result register(@RequestParam String userName, @RequestParam String password,
                            @RequestParam String phoneNumber, @RequestParam String captcha,
@@ -41,13 +46,17 @@ public class BaseController {
         }
     }
 
+    @AuthAccess
     @PostMapping("/login")
     public Result login(@RequestParam String phone, @RequestParam String password){
         User user = userService.login(phone,password);
-        if (user != null){
-            return Result.success(user);
-        }else {
-            return Result.error(404,"登陆失败");
+        if (user == null){
+            throw new ServiceException("用户名或密码错误");
         }
+        //生成token
+        String token = TokenUtils.getToken(user.getPhone(), user.getPassword());
+        user.setToken(token);
+
+        return Result.success(user);
     }
 }

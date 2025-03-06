@@ -19,7 +19,7 @@ public class User {
     private Date deleteAt;//删除时间（可为空）
     private Integer deleteId;//删除者id（可为空）
     private String location;//用户所在位置
-    private String token;
+
 
     public Integer getId() {
         return id;
@@ -149,9 +149,6 @@ public class User {
         this.location = location;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
 
     public User(String name, String phone, String password, String location, Integer role,
                 Integer status, float balance, Date createAt, Date lastLoginTime,

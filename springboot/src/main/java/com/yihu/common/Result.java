@@ -8,6 +8,7 @@ public class Result {
     private int code;
     private String msg;
     private Object data;
+    private String token;
 
     public  static  Result success(){
         Result result = new Result();
@@ -19,6 +20,13 @@ public class Result {
     public  static  Result success(Object data){
         Result result = success();
         result.setData(data);
+        return result;
+    }
+
+    public  static  Result success(Object data,String token){
+        Result result = success();
+        result.setData(data);
+        result.setToken(token);
         return result;
     }
 
@@ -58,5 +66,13 @@ public class Result {
 
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

@@ -55,8 +55,8 @@ public class BaseController {
         }
         //生成token
         String token = TokenUtils.getToken(user.getPhone(), user.getPassword());
-        user.setToken(token);
 
-        return Result.success(user);
+
+        return Result.success(user,token);
     }
 }

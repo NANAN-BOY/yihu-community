@@ -38,6 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int register(String userName, String password, String phoneNumber, String captcha, String location) {
+        if (userMapper.selectByPhone(phoneNumber)){
+            return -2;//手机号已注册
+        }
         Boolean isVerify = captchaService.verifyCaptcha(phoneNumber,captcha);
         if (isVerify){
             Date currentDate = new Date(); // 获取当前日期时间
@@ -57,7 +60,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User login(String phone, String password) {
-        System.out.println("5");
         User user = null;
         try {
             user = userMapper.login(phone);
@@ -66,20 +68,15 @@ public class UserServiceImpl implements UserService {
             System.out.println("数据库查询异常：" + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("6");
 
         if (user != null) {
-            System.out.println("1");
             String hashedPassword = user.getPassword();
             if (BCrypt.checkpw(password, hashedPassword)) {
-                System.out.println("2");
                 return user;
             } else {
-                System.out.println("3");
                 return null;
             }
         } else {
-            System.out.println("4");
             return null;
         }
     }

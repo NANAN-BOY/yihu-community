@@ -11,4 +11,6 @@ public interface UserMapper {
     int register(User user);//注册
 
     User login(@Param("phone") String phone);//登录
+
+    Boolean selectByPhone(@Param("phone") String phone);//通过手机号查询是否已注册
 }

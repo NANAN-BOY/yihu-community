@@ -41,7 +41,10 @@ public class BaseController {
             return Result.success("注册成功");
         }else if (isSuccess == 1){
             return Result.error(404,"注册失败");
-        }else {
+        }else if (isSuccess == -2){
+            return Result.error(404,"手机号已注册");
+        }
+        else {
             return Result.error(500, "验证码错误");
         }
     }

@@ -23,4 +23,8 @@
         SELECT * FROM user WHERE phone = #{phone}
     </select>
 
+    <select id="selectByPhone" resultType="java.lang.Boolean">
+            SELECT * FROM user WHERE phone = #{phone}
+    </select>
+
 </mapper>

@@ -1,7 +1,6 @@
 <template>
   <div>
-    <!-- 路由内容显示区域-->
-    <router-view></router-view>
+    <router-view :key="$route.fullPath"></router-view>
   </div>
 </template>
 

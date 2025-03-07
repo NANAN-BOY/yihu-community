@@ -111,7 +111,7 @@ import axios from "axios";
 import store from "../store";
 import router from "../router";
 import { regionData } from 'element-china-area-data';
-
+const loading = ref(false);
 const user_name = ref('');
 const user_phoneNumber = ref('');
 const user_password = ref('');
@@ -120,7 +120,7 @@ const sms_code = ref('');
 const countdown = ref(0);
 
 let timer = null;
-// 新增地区相关响应式变量
+
 const selectedArea = ref([]);
 const areaOptions = ref(regionData);
 const areaProps = {
@@ -134,87 +134,36 @@ const passwordMismatch = computed(() =>
 );
 
 const handleSubmit = async () => {
-  // 密码一致性检查
-  if (passwordMismatch.value) {
-    ElMessage.error('两次输入的密码不一致，请重新输入');
-    return;
-  }
-
-  // 必填字段校验
-  if (!user_name.value?.trim()) {
-    ElMessage.warning('请输入组织名称');
-    return;
-  }
-
-  if (!/^1[3-9]\d{9}$/.test(user_phoneNumber.value)) {
-    ElMessage.warning('请输入有效的手机号码');
-    return;
-  }
-
-  // 新增验证码校验
-  if (!sms_code.value?.trim() || sms_code.value.length !== 6) {
-    ElMessage.warning('请输入6位验证码');
-    return;
-  }
-
-  if (user_password.value.length < 6) {
-    ElMessage.warning('密码长度不能少于6位');
-    return;
-  }
-  if (selectedArea.value.length !== 6) {
-    ElMessage.warning('请选择完整的省市区划');
-    return;
-  }
+  if (loading.value) return;
+  if (passwordMismatch.value) {ElMessage.error('两次输入的密码不一致，请重新输入');return;}
+  if (!user_name.value?.trim()) {ElMessage.warning('请输入组织名称');return;}
+  if (!/^1[3-9]\d{9}$/.test(user_phoneNumber.value)) {ElMessage.warning('请输入有效的手机号码');return;}
+  if (!sms_code.value?.trim() || sms_code.value.length !== 6) {ElMessage.warning('请输入6位验证码');return;}
+  if (user_password.value.length < 6) {ElMessage.warning('密码长度不能少于6位');return;}
+  if (selectedArea.value.length !== 6) {ElMessage.warning('请选择完整的省市区划');return;}
+  loading.value = true;
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, null, {
       params: {
         userName: user_name.value,
-        password: user_phoneNumber.value,
-        phoneNumber: user_password.value,
+        password: user_password.value,     // 修正参数位置
+        phoneNumber: user_phoneNumber.value, // 修正参数位置
         captcha: sms_code.value,
         location: selectedArea.value
       }
     });
-    console.log(response.data);
-    console.log( user_name.value,
-        user_phoneNumber.value,
-         user_password.value,
-         sms_code.value,
-         selectedArea.value);
-      const queryParams = new URLSearchParams({phone: user_phoneNumber.value, password: user_password.value,});
-      const url = `${import.meta.env.VITE_BACKEND_IP}/api/login?${queryParams.toString()}`;
-      const response1 = await fetch(url, {method: 'POST',});
-      const data = await response1.json();
-      console.log(data);
-      if (data.msg === 'error') {
-        ElNotification({
-          title: '登录失败',
-          message: data.message,
-          type: 'error',
-          duration: 3000, // 自动关闭时间
-        });
-      } else if (data.msg === 'success') {
-        await store.dispatch('setToken', data.token);
-        await store.dispatch('setUser', data.data);
-        localStorage.setItem('token', data.token);
-        console.log(store.state)
-        ElNotification({
-          title: '登录成功',
-          message: '欢迎！',
-          type: 'success',
-          duration: 3000,
-        });
-        await router.push('/dashboard');
-      }
+    if (response.data.code && response.data.code !== 200) {
+      throw new Error(response.data.msg || '注册失败');
+    }
+    ElMessage.success('注册成功');
+     setTimeout(() => router.push({ path: '/login', replace: true }), 1000);
   } catch (error) {
     const errorMsg = error.response?.data?.message ||
+        error.message ||
         '注册失败，请检查网络后重试';
-    ElMessage({
-      message: errorMsg,
-      type: 'error',
-      duration: 3000,
-      showClose: true
-    });
+    ElMessage.error(errorMsg);
+  }finally {
+    loading.value = false;
   }
 };
 const sendSMSCode = async () => {

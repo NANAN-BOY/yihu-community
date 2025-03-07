@@ -31,7 +31,7 @@
         <el-menu class="el-menu-vertical-demo" @select="handleSelect">
           <template v-for="menu in menus">
             <el-sub-menu
-              v-if="menu.children && store.state.user.user_role === menu.role"
+              v-if="menu.children && store.state.user.role === menu.role"
               :index="menu.index"
               :key="`sub-${menu.index}`"
             >
@@ -49,7 +49,7 @@
             </el-sub-menu>
 
             <el-menu-item
-              v-else-if="store.state.user.user_role === menu.role"
+              v-else-if="store.state.user.role === menu.role"
               :index="menu.index"
               :key="`item-${menu.index}`"
             >
@@ -82,7 +82,7 @@
       <el-menu class="el-menu-vertical-demo" @select="handleSelect">
         <template v-for="menu in menus">
           <el-sub-menu
-            v-if="menu.children && store.state.user.user_role === menu.role"
+            v-if="menu.children && store.state.user.role === menu.role"
             :index="menu.index"
             :key="`m-sub-${menu.index}`"
           >
@@ -100,7 +100,7 @@
           </el-sub-menu>
 
           <el-menu-item
-            v-else-if="store.state.user.user_role === menu.role"
+            v-else-if="store.state.user.role === menu.role"
             :index="menu.index"
             :key="`m-item-${menu.index}`"
           >

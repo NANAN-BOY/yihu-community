@@ -4,10 +4,7 @@ import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.service.CaptchaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/captcha")
@@ -19,12 +16,13 @@ public class CaptchaController {
     }
 
     @AuthAccess
-    @GetMapping("/generate")
-    public Result generateCaptcha(String phone) {
+    @PostMapping("/generate")
+    public Result generateCaptcha(@RequestParam String phone) {
         System.out.println("1");
         //生成验证码
         String captcha = captchaService.getCaptcha();
         System.out.println(captcha);
+        System.out.println(phone);
         //将验证码存入数据库（5分钟有效）
         captchaService.saveCaptcha(phone, captcha);
         //此处需要发送短信的逻辑（尚未完成）

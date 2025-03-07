@@ -31,8 +31,9 @@ public class TokenUtils {
      *
      * @return token
      */
-    public static String getToken(String phone, String sign) {
-        return JWT.create().withAudience(phone)// 将phone 保存到 token 里面
+    public static String getToken(String phone, String sign, Integer role) {
+        String audience = phone + "|" + role; // 使用"|"分隔符合并
+        return JWT.create().withAudience(audience)// 将phone 保存到 token 里面
                 .withExpiresAt(DateUtil.offsetHour(new Date(), 2))// 2小时后过期
                 .sign(Algorithm.HMAC256(sign));// 用password作为token的密钥
     }
@@ -43,14 +44,25 @@ public class TokenUtils {
      * @return user对象
      */
     public static User getCurrentUser() {
-        try{
+        try {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             String token = request.getHeader("token");
             if (StringUtils.isNotBlank(token)) {
-                String phone = JWT.decode(token).getAudience().get(0);
-                return staticUserMapper.login(String.valueOf(phone));
+                // 获取合并后的字符串
+                String mergedAudience = JWT.decode(token).getAudience().get(0);
+
+                // 分割字符串提取phone和role
+                String[] parts = mergedAudience.split("\\|"); // 注意转义竖线
+                if (parts.length != 2) {
+                    throw new IllegalArgumentException("Invalid token audience format");
+                }
+                String phone = parts[0];  // 提取phone部分
+                Integer role = Integer.parseInt(parts[1]); // 提取role部分
+
+                // 将纯phone传递给login方法
+                return staticUserMapper.login(phone);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
         return null;

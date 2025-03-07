@@ -57,7 +57,7 @@ public class BaseController {
             throw new ServiceException("用户名或密码错误");
         }
         //生成token
-        String token = TokenUtils.getToken(user.getPhone(), user.getPassword());
+        String token = TokenUtils.getToken(user.getPhone(), user.getPassword(), user.getRole());
         return Result.success(user,token);
     }
 }

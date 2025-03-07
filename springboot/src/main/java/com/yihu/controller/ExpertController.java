@@ -5,6 +5,7 @@ import com.yihu.entity.User;
 import com.yihu.service.ExpertService;
 import com.yihu.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +25,8 @@ public class ExpertController {
     }
 
     @PostMapping("/create")
-    public Result createExpert(@RequestParam int inviteUserId,@RequestParam Date createAt,@RequestParam Date deadLine){
+    public Result createExpert(@RequestParam int inviteUserId, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date createAt, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date deadLine){
+
         User currentUser = TokenUtils.getCurrentUser();
 
         //  验证用户是否存在

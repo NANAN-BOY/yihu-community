@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.ExpertMapper">
+
+    <insert id="createInviteRecord"
+            parameterType="com.yihu.entity.InviteExpertRecord">
+        INSERT INTO invite_expert_record(invite_user_id, create_at, deadline)
+        VALUES (#{inviteUserId}, #{createAt}, #{deadline})
+
+        <selectKey keyProperty="id" order="AFTER" resultType="Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+
+
+</mapper>

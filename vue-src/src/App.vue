@@ -26,7 +26,6 @@ const restoreLoginStatus = async () => {
     if (response.status === 'error') {
       throw new Error(response.message);
     }
-    console.log(response.data);
     if (response.data.code == '200' && response.data.data) {
       await store.dispatch('setUser', response.data.data);
     } else {

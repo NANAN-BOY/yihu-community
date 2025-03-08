@@ -7,8 +7,10 @@ import com.yihu.exception.ServiceException;
 import com.yihu.service.CaptchaService;
 import com.yihu.service.UserService;
 import com.yihu.utils.TokenUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.el.parser.Token;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,5 +61,14 @@ public class BaseController {
         //生成token
         String token = TokenUtils.getToken(user.getPhone(), user.getPassword(), user.getRole());
         return Result.success(user,token);
+    }
+
+    @GetMapping("/user/info")
+    public Result getUserInfo(){
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null){
+            return Result.error(401,"用户未登录");
+        }
+        return Result.success(currentUser);
     }
 }

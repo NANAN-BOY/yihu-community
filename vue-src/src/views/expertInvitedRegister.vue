@@ -86,6 +86,7 @@ import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import router from "../router";
 import store from "../store";
+import axios from "axios";
 
 const inviteId = ref(null);
 const inviteInfo = ref(null);
@@ -118,15 +119,19 @@ const fetchInviteInfo = async () => {
   queryFailed.value = false; // 重置查询失败状态
   try {
     // 调用后端接口获取邀请信息
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/invite/${inviteId.value}`);
-    const data = await response.json();
-
-    if (response.ok && data.invite_user_name) {
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-record`, {
+      params: {
+        id: inviteId.value
+      }
+    });
+    const data = response;
+    console.log(data);
+    if (data.data.code == 200 && data.data.data.id) {
       inviteInfo.value = data; // 保存邀请信息
 
       // 计算剩余时间
       const now = new Date();
-      const inviteDeadline = new Date(data.invite_deadline);
+      const inviteDeadline = new Date(data.data.deadline);
       const diffTime = inviteDeadline - now; // 毫秒差
 
       if (diffTime > 0) {

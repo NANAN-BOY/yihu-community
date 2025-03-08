@@ -47,7 +47,7 @@
               <!-- 账号操作区域 -->
               <div class="account-oprate">
                 <router-link to="/register">申请账号</router-link>
-                <a href="javascript:;">找回密码</a>
+                <router-link to="/resetPassword" >找回密码</router-link>
               </div>
             </el-form>
           </div>

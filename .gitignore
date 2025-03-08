@@ -26,3 +26,4 @@ pnpm-debug.log*
 #database
 ./数据库/YiHuSystem.cdb
 ./数据库/YiHuSystem.pdb
+/springboot/target/

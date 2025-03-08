@@ -161,36 +161,26 @@ const calculateDeadline = () => {
 
 const CreateInviteURL = async () => {
   const inviteDeadline = calculateDeadline();
-  const inviteUserId = store.state.user.user_id;
+  const inviteUserId = store.state.user.id;
   const inviteData = {
     inviteUserId: inviteUserId,
-    createAt: new Date(Date.now()).toISOString(),
-    deadLine: inviteDeadline
+    createAt: new Date(Date.now()).toISOString().replace('T', ' ').slice(0, 19),
+    deadLine: inviteDeadline.replace('T', ' ').slice(0, 19)
   };
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/expert/create`, inviteData, {
-      headers: {
-        'token': `${store.state.token}`  // 新增认证头
-      }
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/expert/create`, null, {
+      params: inviteData,
+      headers: {'token': `${store.state.token}`}
     });
-    console.log(store.state.token);
-    // 新增状态码检查
-    console.log( response.data);
-    if (response.status !== 200) {
-      throw new Error(`HTTP错误 ${response.status}`);
-    }
-    // 检查业务状态码（假设后端返回格式为 { code: 200, data: ... }）
-    if (response.data?.code !== 200) {
-      throw new Error(`业务错误: ${response.data?.message || '未知错误'}`);
-    }
-
-    const inviteId = response.data.inviteSpecialisRrecord_id;
+    if (response.status !== 200) {throw new Error(`HTTP错误 ${response.status}`);}
+    if (response.data?.code !== 200) {throw new Error(`业务错误: ${response.data?.message || '未知错误'}`);}
+    const inviteId = response.data.data;
     inviteUrl.value = `${window.location.origin}/expertInvitedRegister/${inviteId}`;
     CloseCreateComponent();
     inviteUrlDialogVisible.value = true;
   } catch (error) {
     console.error('邀请失败:', error);
-    ElMessage.error('邀请失败，请稍后重试'); // 替换alert为Element Plus提示
+    ElMessage.error('邀请失败，请稍后重试');
   }
 };
 

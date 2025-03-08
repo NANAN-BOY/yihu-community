@@ -12,32 +12,22 @@ import {ElNotification} from "element-plus";
 import router from "./router";
 const restoreLoginStatus = async () => {
   try {
-    // 检查是否有 token
     if (!store.state.token) {
       return;
     }
-    // 尝试获取用户信息
     const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/restore-login`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${store.state.token}`,  // 将 token 作为 Bearer token 发送
+        'Authorization': `Bearer ${store.state.token}`,
       },
     });
-
-    // 如果响应失败，抛出错误
     if (!response.ok) {
       throw new Error('身份已过期');
     }
-
-    // 获取响应数据
     const data = await response.json();
-
-    // 如果后端返回错误信息，抛出错误
     if (data.status === 'error') {
       throw new Error(data.message);
     }
-
-    // 返回状态正常时，处理用户信息
     if (data.status === 'success' && data.user) {
       // 将用户信息存入 Vuex
       await store.dispatch('setUser', {

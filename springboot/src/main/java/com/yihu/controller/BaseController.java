@@ -80,6 +80,8 @@ public class BaseController {
             return Result.success("修改成功");
         }else if (isSuccess == -1){
             return Result.error(404,"验证码错误");
+        }else if (isSuccess == -2){
+            return Result.error(404,"手机号未注册");
         }else {
             return Result.error(500,"修改失败");
         }

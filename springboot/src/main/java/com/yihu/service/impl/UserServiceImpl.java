@@ -83,18 +83,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int resetPassword(String phone, String captcha, String newPassword) {
-        Boolean isVerify = captchaService.verifyCaptcha(phone,captcha);
-        if (isVerify){
-            String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-            int isSuccess = userMapper.resetPassword(phone,hashedPassword);
-            if (isSuccess > 0){
-                return 0;//修改成功
+        if (userMapper.selectByPhone(phone)){
+            Boolean isVerify = captchaService.verifyCaptcha(phone,captcha);
+            if (isVerify){
+                String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                int isSuccess = userMapper.resetPassword(phone,hashedPassword);
+                if (isSuccess > 0){
+                    return 0;//修改成功
+                }else {
+                    return 1;//修改失败
+                }
             }else {
-                return 1;//修改失败
+                return -1;//验证码错误
             }
         }else {
-            return -1;//验证码错误
+            return -2;//手机号未注册
         }
+
     }
 
 }

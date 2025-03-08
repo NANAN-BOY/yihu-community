@@ -17,13 +17,13 @@ public class Result {
         return result;
     }
 
-    public  static  Result success(String token){
-        Result result = new Result();
-        result.setCode(200);
-        result.setMsg("success");
-        result.setToken(token);
-        return result;
-    }
+//    public  static  Result success(String token){
+//        Result result = new Result();
+//        result.setCode(200);
+//        result.setMsg("success");
+//        result.setToken(token);
+//        return result;
+//    }
 
     public  static  Result success(Object data){
         Result result = success();

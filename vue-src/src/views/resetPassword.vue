@@ -66,9 +66,12 @@ const submitReset = async () => {
     passwordError.value = true;
     return;
   }
-
+  console.log(phone.value);
+  console.log(captcha.value);
+  console.log(newPassword.value);
+  console.log(confirmPassword.value);
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/reset-password`, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/reset-password`, null, {
       params: {
         phone: phone.value,
         captcha: captcha.value,

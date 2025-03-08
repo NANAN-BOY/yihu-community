@@ -32,4 +32,9 @@ public class ExpertServiceImpl implements ExpertService {
             return -1;
         }
     }
+
+    @Override
+    public InviteExpertRecord getRecord(int id) {
+        return expertMapper.getRecord(id);
+    }
 }

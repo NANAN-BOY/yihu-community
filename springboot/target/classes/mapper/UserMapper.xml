@@ -27,4 +27,8 @@
             SELECT * FROM user WHERE phone = #{phone}
     </select>
 
+    <update id="resetPassword">
+        UPDATE user SET password = #{newPassword} WHERE phone = #{phone}
+    </update>
+
 </mapper>

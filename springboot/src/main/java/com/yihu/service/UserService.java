@@ -13,4 +13,5 @@ public interface UserService {
 
     User login(String phone, String password);
 
+    int resetPassword(String phone, String captcha, String newPassword);
 }

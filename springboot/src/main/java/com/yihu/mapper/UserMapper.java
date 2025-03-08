@@ -13,4 +13,6 @@ public interface UserMapper {
     User login(@Param("phone") String phone);//登录
 
     Boolean selectByPhone(@Param("phone") String phone);//通过手机号查询是否已注册
+
+    int resetPassword(@Param("phone") String phone,@Param("newPassword") String newPassword);//重置密码
 }

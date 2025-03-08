@@ -15,6 +15,10 @@
         </selectKey>
     </insert>
 
+    <select id="getRecord" resultType="com.yihu.entity.InviteExpertRecord">
+        SELECT * FROM invite_expert_record WHERE id = #{id}
+    </select>
+
 
 
 </mapper>

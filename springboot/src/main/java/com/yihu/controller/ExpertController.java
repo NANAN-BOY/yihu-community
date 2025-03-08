@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/expert")
+@RequestMapping("/api")
 public class ExpertController {
 
     private final ExpertService expertService;
@@ -24,7 +24,7 @@ public class ExpertController {
         this.expertService = expertService;
     }
 
-    @PostMapping("/create")
+    @PostMapping("/expert/create-record")
     public Result createExpert(@RequestParam int inviteUserId, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date createAt, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date deadLine){
 
         User currentUser = TokenUtils.getCurrentUser();

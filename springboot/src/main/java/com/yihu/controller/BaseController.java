@@ -32,7 +32,7 @@ public class BaseController {
     }
 
     @AuthAccess
-    @PostMapping("/register")
+    @PostMapping("/user/register")
     public Result register(@RequestParam String userName, @RequestParam String password,
                            @RequestParam String phoneNumber, @RequestParam String captcha,
                            @RequestParam String location){
@@ -50,7 +50,7 @@ public class BaseController {
     }
 
     @AuthAccess
-    @PostMapping("/login")
+    @PostMapping("/user/login")
     public Result login(@RequestParam String phone, @RequestParam String password){
         User user = userService.login(phone,password);
         if (user == null){

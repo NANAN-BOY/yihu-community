@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/captcha")
+@RequestMapping("/api")
 public class CaptchaController {
     private final CaptchaService captchaService;
     @Autowired
@@ -16,7 +16,7 @@ public class CaptchaController {
     }
 
     @AuthAccess
-    @PostMapping("/generate")
+    @PostMapping("/user/captcha/generate")
     public Result generateCaptcha(@RequestParam String phone) {
         System.out.println("1");
         //生成验证码
@@ -33,7 +33,7 @@ public class CaptchaController {
             return Result.error(500,"验证码发送失败");
         }
     }
-    @PostMapping("/verify")
+    @PostMapping("/user/captcha/verify")
     public Result verifyCaptcha(String phone, String captcha) {
         //校验验证码与redis中存储的验证码是否一致测试
         Boolean isRight = captchaService.verifyCaptcha(phone, captcha);

@@ -1,16 +1,14 @@
 package com.yihu.controller;
 
 
+import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.entity.User;
 import com.yihu.service.ExpertService;
 import com.yihu.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
@@ -42,5 +40,10 @@ public class ExpertController {
             return Result.error(403, "禁止访问：权限不足");
         }
         return Result.success(expertService.createInviteRecord(inviteUserId,createAt,deadLine));
+    }
+    @AuthAccess
+    @GetMapping("/expert/get-record")
+    public Result getRecord(@RequestParam int id){
+        return Result.success(expertService.getRecord(id));
     }
 }

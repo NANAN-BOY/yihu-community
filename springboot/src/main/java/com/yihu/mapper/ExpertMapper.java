@@ -7,4 +7,6 @@ import java.util.Date;
 
 public interface ExpertMapper {
     int createInviteRecord(InviteExpertRecord record);
+
+    InviteExpertRecord getRecord(int id);
 }

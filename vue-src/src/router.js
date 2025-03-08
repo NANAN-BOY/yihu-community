@@ -4,6 +4,7 @@ import login from './views/login.vue';
 import dashboard from './views/dashboard.vue';
 import register from './views/register.vue';
 import expertInvitedRegister from './views/expertInvitedRegister.vue';
+import resetPassword from './views/resetPassword.vue';
 const routes = [
   {
     path: '/',
@@ -19,6 +20,11 @@ const routes = [
     path: '/register',
     name: 'register',
     component: register,
+  },
+  {
+    path: '/resetPassword',
+    name: 'resetPassword',
+    component: resetPassword,
   },
   {
     path: '/dashboard',

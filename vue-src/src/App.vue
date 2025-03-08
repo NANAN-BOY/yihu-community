@@ -8,53 +8,35 @@
 import { onMounted, ref, computed, getCurrentInstance } from 'vue';
 import axios from 'axios';
 import store from './store';
-import {ElNotification} from "element-plus";
+import {ElMessage, ElNotification} from "element-plus";
 import router from "./router";
 const restoreLoginStatus = async () => {
   try {
     if (!store.state.token) {
       return;
     }
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/restore-login`, {
-      method: 'GET',
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/info`, {
       headers: {
-        'Authorization': `Bearer ${store.state.token}`,
-      },
+        'token': `${store.state.token}`
+      }
     });
-    if (!response.ok) {
-      throw new Error('身份已过期');
+    if (response.data.code != 200) {
+      throw new Error('身份已过期，请重新登录。');
     }
-    const data = await response.json();
-    if (data.status === 'error') {
-      throw new Error(data.message);
+    if (response.status === 'error') {
+      throw new Error(response.message);
     }
-    if (data.status === 'success' && data.user) {
-      // 将用户信息存入 Vuex
-      await store.dispatch('setUser', {
-        user_id: data.user.user_id,
-        user_name: data.user.user_name,
-        user_phoneNumber: data.user.user_phoneNumber,
-        user_role: data.user.user_role,
-        user_accountStatus: data.user.user_accountStatus,
-      });
+    console.log(response.data);
+    if (response.data.code == '200' && response.data.data) {
+      await store.dispatch('setUser', response.data.data);
     } else {
-      throw new Error('恢复用户信息失败');
+      throw new Error('身份已过期，请重新登录。');
     }
   } catch (error) {
-    // 使用 ElNotification 显示错误信息
-    ElNotification({
-      title: '身份已过期',
-      message: '请重新登录。',
-      type: 'error',
-      duration: 3000, // 自动关闭时间
-    });
-
-    // 清除 token 和用户信息
-    localStorage.removeItem('token');  // 清除 token
-    await store.dispatch('setToken', null);  // 清空 Vuex 中的 token
-    await store.dispatch('setUser', null);  // 清空 Vuex 中的用户信息
-
-    // 跳转到登录页面
+    ElMessage.error(error.message);
+    localStorage.removeItem('token');
+    await store.dispatch('setToken', null);
+    await store.dispatch('setUser', null);
     await router.push('/login');
   }
 };

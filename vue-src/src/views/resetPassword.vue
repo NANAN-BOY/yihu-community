@@ -1,8 +1,7 @@
 <script setup>
-import { ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import {ref} from 'vue';
+import {ElMessage} from 'element-plus';
 import axios from 'axios';
-
 // 表单数据
 const phone = ref('');
 const captcha = ref('');
@@ -10,19 +9,16 @@ const newPassword = ref('');
 const confirmPassword = ref('');
 const captchaError = ref(false);
 const passwordError = ref(false);
-
 // 验证码相关
 const captchaSent = ref(false);
 const countdown = ref(0);
 let timer = null;
-
 // 发送验证码
 const sendCaptcha = async () => {
   if (!/^1[3-9]\d{9}$/.test(phone.value)) {
     ElMessage.warning('请输入有效的手机号码');
     return;
   }
-
   try {
     countdown.value = 60;
     timer = setInterval(() => {
@@ -31,13 +27,11 @@ const sendCaptcha = async () => {
         clearInterval(timer);
       }
     }, 1000);
-
     await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/captcha/generate`, null, {
       params: {
         phone: phone.value
       }
     });
-
     ElMessage.success('验证码已发送');
     captchaSent.value = true;
   } catch (error) {
@@ -58,18 +52,12 @@ const startCountdown = () => {
     }
   }, 1000);
 };
-
 // 提交重置密码
 const submitReset = async () => {
-  // 验证密码是否一致
   if (newPassword.value !== confirmPassword.value) {
     passwordError.value = true;
     return;
   }
-  console.log(phone.value);
-  console.log(captcha.value);
-  console.log(newPassword.value);
-  console.log(confirmPassword.value);
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/reset-password`, null, {
       params: {
@@ -78,7 +66,6 @@ const submitReset = async () => {
         newPassword: newPassword.value
       }
     });
-  console.log(response);
     if (response.data.code === 200) {
       ElMessage.success('密码重置成功');
       // 重置表单
@@ -100,45 +87,35 @@ const submitReset = async () => {
   <div class="container">
     <div class="card">
       <h1 class="title">找回密码</h1>
-
       <el-form label-width="80px">
-        <!-- 手机号 -->
         <el-form-item label="手机号">
-          <el-input v-model="phone" placeholder="请输入手机号" />
+          <el-input v-model="phone" placeholder="请输入手机号"/>
         </el-form-item>
-
-        <!-- 验证码 -->
         <el-form-item label="验证码">
-          <el-input v-model="captcha" placeholder="请输入验证码" />
+          <el-input v-model="captcha" placeholder="请输入验证码"/>
           <el-button
-            type="primary"
-            @click="sendCaptcha"
-            :disabled="captchaSent || countdown > 0"
+              type="primary"
+              @click="sendCaptcha"
+              :disabled="captchaSent || countdown > 0"
           >
             {{ countdown > 0 ? `${countdown}秒后重试` : '获取验证码' }}
           </el-button>
         </el-form-item>
-
-        <!-- 新密码 -->
         <el-form-item label="新密码">
           <el-input
-            v-model="newPassword"
-            type="password"
-            placeholder="请输入新密码"
+              v-model="newPassword"
+              type="password"
+              placeholder="请输入新密码"
           />
         </el-form-item>
-
-        <!-- 确认密码 -->
         <el-form-item label="确认密码">
           <el-input
-            v-model="confirmPassword"
-            type="password"
-            placeholder="请再次输入新密码"
+              v-model="confirmPassword"
+              type="password"
+              placeholder="请再次输入新密码"
           />
           <p v-if="passwordError" class="error-message">两次输入的密码不一致</p>
         </el-form-item>
-
-        <!-- 提交按钮 -->
         <el-form-item>
           <el-button type="primary" @click="submitReset">提交</el-button>
         </el-form-item>

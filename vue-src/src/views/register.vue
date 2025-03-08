@@ -143,7 +143,7 @@ const handleSubmit = async () => {
   if (selectedArea.value.length !== 6) {ElMessage.warning('请选择完整的省市区划');return;}
   loading.value = true;
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/register`, null, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/register`, null, {
       params: {
         userName: user_name.value,
         password: user_password.value,     // 修正参数位置
@@ -179,7 +179,7 @@ const sendSMSCode = async () => {
         clearInterval(timer);
       }
     }, 1000);
-    await axios.post(`${import.meta.env.VITE_BACKEND_IP}/captcha/generate`, null, {
+    await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/captcha/generate`, null, {
       params: {
         phone: user_phoneNumber.value
       }

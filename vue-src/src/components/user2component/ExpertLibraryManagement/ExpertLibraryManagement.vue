@@ -168,7 +168,7 @@ const CreateInviteURL = async () => {
     deadLine: inviteDeadline.replace('T', ' ').slice(0, 19)
   };
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/expert/create`, null, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/expert/create-record`, null, {
       params: inviteData,
       headers: {'token': `${store.state.token}`}
     });

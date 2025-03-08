@@ -90,7 +90,7 @@ const handleSubmit = async () => {
     });
 
     // 拼接带参数的 URL
-    const url = `${import.meta.env.VITE_BACKEND_IP}/api/login?${queryParams.toString()}`;
+    const url = `${import.meta.env.VITE_BACKEND_IP}/api/user/login?${queryParams.toString()}`;
 
     // 使用 Fetch API 发送 POST 请求
     const response = await fetch(url, {

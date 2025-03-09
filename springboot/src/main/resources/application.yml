@@ -19,6 +19,11 @@ spring:
           min-idle: 4
           max-wait: 1000ms
       timeout: 2000ms
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
 
 # \u914D\u7F6Emybatis\u5B9E\u4F53\u548Cxml\u6620\u5C04
 mybatis:

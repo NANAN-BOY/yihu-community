@@ -1,11 +1,15 @@
 package com.yihu.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 public class InviteExpertRecord {
     private Integer id;
     private Integer inviteUserId;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date createAt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date deadline;
     private Integer isAgree;
     private Integer expertId;

@@ -19,6 +19,10 @@
         SELECT * FROM invite_expert_record WHERE id = #{id}
     </select>
 
+    <select id="getHistoryRecord" resultType="com.yihu.entity.InviteExpertRecord">
+        SELECT * FROM invite_expert_record
+    </select>
+
 
 
 </mapper>

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ExpertServiceImpl implements ExpertService {
@@ -36,5 +37,10 @@ public class ExpertServiceImpl implements ExpertService {
     @Override
     public InviteExpertRecord getRecord(int id) {
         return expertMapper.getRecord(id);
+    }
+
+    @Override
+    public List<InviteExpertRecord> getHistoryRecord() {
+        return expertMapper.getHistoryRecord();
     }
 }

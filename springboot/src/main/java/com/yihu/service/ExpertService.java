@@ -11,4 +11,6 @@ public interface ExpertService {
     InviteExpertRecord getRecord(int id);
 
     List<InviteExpertRecord> getHistoryRecord();
+
+    int deleteRecord(int id);
 }

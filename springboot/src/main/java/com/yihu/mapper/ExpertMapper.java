@@ -12,4 +12,8 @@ public interface ExpertMapper {
     InviteExpertRecord getRecord(int id);
 
     List<InviteExpertRecord> getHistoryRecord();
+
+    Boolean isUserAgree(@Param("id") int id);
+
+    int deleteRecord(@Param("id") int id);
 }

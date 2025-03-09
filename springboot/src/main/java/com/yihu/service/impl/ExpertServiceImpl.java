@@ -43,4 +43,19 @@ public class ExpertServiceImpl implements ExpertService {
     public List<InviteExpertRecord> getHistoryRecord() {
         return expertMapper.getHistoryRecord();
     }
+
+    @Override
+    public int deleteRecord(int id) {
+        Boolean isAgree = expertMapper.isUserAgree(id);
+        if (!isAgree){
+            int isSuccess = expertMapper.deleteRecord(id);
+            if (isSuccess > 0) {
+                return 0;//取消成功
+            }else {
+                return -2;//取消失败
+            }
+        }else {
+            return -1;//已经有同意或者拒绝的记录无法被删除
+        }
+    }
 }

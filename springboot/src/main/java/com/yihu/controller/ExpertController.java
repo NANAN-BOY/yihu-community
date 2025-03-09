@@ -63,4 +63,23 @@ public class ExpertController {
         return Result.success(inviteExpertRecords);
     }
 
+    @PostMapping("expert/delete-record")
+    public Result deleteRecord(@RequestParam int id){
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权：请先登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "禁止访问：权限不足");
+        }
+        int isSuccess = expertService.deleteRecord(id);
+        if (isSuccess == 0){
+            return Result.error(200,"成功取消邀请");
+        }else if (isSuccess == -2){
+            return Result.error(500,"取消邀请失败");
+        }else {
+            return Result.error(500,"不能取消已经被接收或拒绝的邀请记录");
+        }
+    }
+
 }

@@ -23,6 +23,14 @@
         SELECT * FROM invite_expert_record
     </select>
 
+    <select id="isUserAgree" resultType="Boolean">
+        SELECT isAgree IS NOT NULL  <!-- 如果 isAgree 非空返回 true，否则 false -->
+        FROM invite_expert_record
+        WHERE id = #{id}
+    </select>
 
+    <delete id="deleteRecord">
+        DELETE FROM invite_expert_record WHERE id = #{id}
+    </delete>
 
 </mapper>

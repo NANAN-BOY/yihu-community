@@ -115,10 +115,9 @@ watch(route, (to) => {
 
 // 获取邀请信息
 const fetchInviteInfo = async () => {
-  loading.value = true; // 开始加载状态
-  queryFailed.value = false; // 重置查询失败状态
+  loading.value = true;
+  queryFailed.value = false;
   try {
-    // 调用后端接口获取邀请信息
     const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-record`, {
       params: {
         id: inviteId.value
@@ -131,7 +130,7 @@ const fetchInviteInfo = async () => {
 
       // 计算剩余时间
       const now = new Date();
-      const inviteDeadline = new Date(data.data.deadline);
+      const inviteDeadline = new Date(data.data.data.deadline);
       const diffTime = inviteDeadline - now; // 毫秒差
 
       if (diffTime > 0) {

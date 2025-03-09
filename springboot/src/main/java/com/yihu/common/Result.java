@@ -13,7 +13,7 @@ public class Result {
     public  static  Result success(){
         Result result = new Result();
         result.setCode(200);
-        result.setMsg("success");
+        result.setMsg("成功");
         return result;
     }
 

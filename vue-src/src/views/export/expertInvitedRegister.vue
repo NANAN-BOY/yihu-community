@@ -84,8 +84,8 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import router from "../router";
-import store from "../store";
+import router from "../../router";
+import store from "../../store";
 import axios from "axios";
 
 const inviteId = ref(null);

@@ -63,7 +63,7 @@ import { ref } from 'vue';
 import { useStore } from 'vuex';  // 导入 Vuex store
 import { ElNotification } from 'element-plus';  // 导入 Element Plus 消息组件
 import { useRouter } from 'vue-router';
-import request from "../utils/request.js";
+import request from "../../utils/request.js";
 // 定义响应式变量
 const userPhoneNumber = ref('');  // 用户手机号
 const userPassword = ref('');  // 用户密码

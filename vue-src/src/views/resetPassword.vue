@@ -66,7 +66,6 @@ const submitReset = async () => {
         newPassword: newPassword.value
       }
     });
-    console.log(response.data);
     if (response.data.code === 200) {
       ElMessage.success('密码重置成功');
       // 重置表单

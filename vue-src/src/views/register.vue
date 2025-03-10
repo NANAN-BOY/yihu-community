@@ -108,8 +108,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { ElNotification, ElMessage } from 'element-plus';
 import axios from "axios";
-import store from "../../store";
-import router from "../../router";
+import store from "../store";
+import router from "../router";
 import { regionData } from 'element-china-area-data';
 const loading = ref(false);
 const user_name = ref('');

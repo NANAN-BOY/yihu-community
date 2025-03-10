@@ -33,4 +33,12 @@
         DELETE FROM invite_expert_record WHERE id = #{id}
     </delete>
 
+    <update id="refuse">
+        UPDATE invite_expert_record SET isAgree = #{isAgree}, refuseReason = #{reason} WHERE id = #{id}
+    </update>
+
+    <update id="accept">
+        UPDATE invite_expert_record SET isAgree = #{isAgree}, expert_user_id = #{expertId} WHERE id = #{id}
+    </update>
+
 </mapper>

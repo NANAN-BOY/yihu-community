@@ -3,7 +3,6 @@ package com.yihu.mapper;
 import com.yihu.entity.InviteExpertRecord;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Date;
 import java.util.List;
 
 public interface ExpertMapper {
@@ -16,4 +15,8 @@ public interface ExpertMapper {
     Boolean isUserAgree(@Param("id") int id);
 
     int deleteRecord(@Param("id") int id);
+
+    int refuse(int id, int isAgree, String reason);
+
+    int accept(int id, int isAgree, int expertId);
 }

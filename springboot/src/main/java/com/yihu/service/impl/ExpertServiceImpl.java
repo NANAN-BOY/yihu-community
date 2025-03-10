@@ -58,4 +58,24 @@ public class ExpertServiceImpl implements ExpertService {
             return -1;//已经有同意或者拒绝的记录无法被删除
         }
     }
+
+    @Override
+    public int refuse(int id, int isAgree, String reason) {
+        int isSuccess = expertMapper.refuse(id,isAgree,reason);
+        if (isSuccess > 0) {
+            return 0;//拒绝成功
+        }else {
+            return -1;//拒绝失败
+        }
+    }
+
+    @Override
+    public int accept(int id, int isAgree, int expertId) {
+        int isSuccess = expertMapper.accept(id,isAgree,expertId);
+        if (isSuccess > 0) {
+            return 0;//同意成功
+        }else {
+            return -1;//同意失败
+        }
+    }
 }

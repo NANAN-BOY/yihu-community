@@ -82,4 +82,31 @@ public class ExpertController {
         }
     }
 
+    @AuthAccess
+    @PostMapping("expert/refuse")
+    public Result refuse(@RequestParam int id, @RequestParam int isAgree,@RequestParam String reason){
+        int isSuccess = expertService.refuse(id,isAgree,reason);
+        if (isSuccess == 0){
+            return Result.success("成功拒绝邀请");
+        }else {
+            return Result.error(500,"拒绝邀请失败");
+        }
+    }
+
+    @PostMapping("expert/accept")
+    public Result accept(@RequestParam int id, @RequestParam int isAgree, @RequestParam int expertId){
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权：请先登录");
+        }
+        if (currentUser.getRole() == 4) {
+            return Result.error(403, "您已经是专家，无需接受邀请");
+        }
+        int isSuccess = expertService.accept(id,isAgree,expertId);
+        if (isSuccess == 0){
+            return Result.success("成功接受邀请");
+        }else {
+            return Result.error(500,"接受邀请失败");
+        }
+    }
 }

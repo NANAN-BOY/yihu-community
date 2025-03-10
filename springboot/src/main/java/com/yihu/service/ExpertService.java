@@ -13,4 +13,8 @@ public interface ExpertService {
     List<InviteExpertRecord> getHistoryRecord();
 
     int deleteRecord(int id);
+
+    int refuse(int id, int isAgree, String reason);
+
+    int accept(int id, int isAgree, int expertId);
 }

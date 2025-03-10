@@ -5,6 +5,7 @@ import com.yihu.mapper.ExpertMapper;
 import com.yihu.service.ExpertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -70,6 +71,7 @@ public class ExpertServiceImpl implements ExpertService {
     }
 
     @Override
+    @Transactional
     public int accept(int id, int isAgree, int expertId) {
         int isSuccess = expertMapper.accept(id,isAgree,expertId);
         if (isSuccess > 0) {

@@ -38,7 +38,8 @@
     </update>
 
     <update id="accept">
-        UPDATE invite_expert_record SET isAgree = #{isAgree}, expert_user_id = #{expertId} WHERE id = #{id}
+        UPDATE invite_expert_record SET isAgree=#{isAgree}, expert_user_id=#{expertId} WHERE id=#{id};
+        UPDATE user SET role=4 WHERE id=#{expertId};
     </update>
 
 </mapper>

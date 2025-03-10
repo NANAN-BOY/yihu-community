@@ -77,7 +77,7 @@ public class BaseController {
     public Result resetPassword(@RequestParam String phone, @RequestParam String captcha, @RequestParam String newPassword){
         int isSuccess = userService.resetPassword(phone,captcha,newPassword);
         if (isSuccess == 0){
-            return Result.success();
+            return Result.success("修改成功");
         }else if (isSuccess == -1){
             return Result.error(404,"验证码错误");
         }else if (isSuccess == -2){

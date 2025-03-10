@@ -11,7 +11,6 @@
         <p v-if="remainingTime">
           剩余时间: <strong>{{ remainingTime }}</strong>
         </p>
-        <!-- 绑定拒绝邀请的函数 -->
         <el-button type="danger" @click="refuseInvitation">拒绝</el-button>
         <el-button type="success" @click="dialogVisible = true"
           >接受邀请</el-button
@@ -31,59 +30,14 @@
       <p v-if="queryFailed && !loading" class="no-invite">
         邀请信息查询失败，请稍后重试。
       </p>
-
-      <!-- 注册信息弹框 -->
-      <el-dialog
-        v-model="dialogVisible"
-        title="填写注册信息"
-        width="500"
-        :before-close="handleClose"
-      >
-        <!-- 用户名 -->
-        <el-input
-          v-model="userName"
-          style="width: 240px"
-          placeholder="用户名"
-        />
-        <!-- 手机号 -->
-        <el-input
-          v-model="userPhoneNumber"
-          style="width: 240px"
-          placeholder="手机号"
-        />
-        <!-- 密码 -->
-        <el-input
-          v-model="password"
-          type="password"
-          style="width: 240px"
-          placeholder="密码"
-        />
-        <!-- 确认密码 -->
-        <el-input
-          v-model="confirmPassword"
-          type="password"
-          style="width: 240px"
-          placeholder="确认密码"
-        />
-
-        <!-- 错误消息 -->
-        <p v-if="passwordError" class="error-message">密码和确认密码不匹配</p>
-
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="dialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="handleSubmit">提交</el-button>
-          </div>
-        </template>
-      </el-dialog>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import {ref, watch, onMounted, h} from 'vue';
 import { useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import {ElMessage, ElMessageBox} from 'element-plus';
 import router from "../router";
 import store from "../store";
 import axios from "axios";
@@ -94,14 +48,7 @@ const remainingTime = ref(null);
 const expired = ref(false);
 const loading = ref(false);
 const queryFailed = ref(false);
-const dialogVisible = ref(false);
 
-// 用户输入数据
-const userName = ref('');
-const userPhoneNumber = ref('');
-const password = ref('');
-const confirmPassword = ref('');
-const passwordError = ref(false);
 
 // 获取路由参数
 const route = useRoute();
@@ -160,94 +107,63 @@ const fetchInviteInfo = async () => {
 onMounted(() => {
   fetchInviteInfo();
 });
-
-const handleSubmit = async () => {
-  // 验证密码和确认密码是否一致
-  if (password.value !== confirmPassword.value) {
-    passwordError.value = true;
-    return;
-  }
-
-  // 如果密码一致，提交到后端 API
-  try {
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/expertRegister`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inviteId: inviteId.value,
-        userName: userName.value,
-        userPhoneNumber: userPhoneNumber.value,
-        userPassword: password.value,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      ElMessage.success('注册成功！');
-      dialogVisible.value = false; // 关闭对话框
-      await store.dispatch('setToken', data.token);
-      await store.dispatch('setUser', {
-        user_id: data.user.user_id,
-        user_name: data.user.user_name,
-        user_phoneNumber: data.user.user_phoneNumber,
-        user_role: data.user.user_role,
-        user_accountStatus: data.user.user_accountStatus,
-      });
-      // 将 token 存入 localStorage
-      localStorage.setItem('token', data.token);
-      // 跳转到首页或用户的 Dashboard
-      await router.push('/dashboard');
-    } else {
-      ElMessage.error(data.message || '注册失败，请重试');
-    }
-  } catch (error) {
-    console.error('注册请求失败:', error);
-    ElMessage.error('注册请求失败，请稍后重试');
-  }
-};
-
-// 拒绝邀请的函数
 const refuseInvitation = async () => {
-  try {
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/expertRefuseInvitation`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        "inviteSpecialisRrecord_id": inviteId.value,
-        "expertRefuseInvitationReason": "用户拒绝邀请"
+  ElMessageBox({
+    title: '提示',
+    message: h('div', [
+      h('p', '您为什么拒绝？'),
+      h('el-input', {
+        modelValue: '',
+        'onUpdate:modelValue': (val) => { /* 保留输入框逻辑 */ }
       })
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      ElMessage.success(data.message);
-      // 可以在这里做一些后续处理，比如清除邀请信息
-      inviteInfo.value = null;
-      remainingTime.value = null;
-      expired.value = false;
-    } else {
-      ElMessage.error(data.message || '拒绝邀请失败，请重试');
+    ]),
+    showCancelButton: true,
+    confirmButtonText: '提交',
+    cancelButtonText: '取消',
+    showInput: true,
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        if (!/^.{1,30}$/.test(instance.inputValue)) {
+          ElMessage.error('请输入1-30个字符')
+          return false
+        }
+        instance.confirmButtonLoading = true
+        instance.confirmButtonText = '提交中...'
+        axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/expert/refuse-invite`, {
+          id: inviteId.value,
+          reason: instance.inputValue
+        }).then(response => {
+          if (response.data.code === 200) {
+            done()
+            router.push('/')
+          } else {
+            // 请求成功但业务逻辑失败
+            ElMessage.error(response.data.msg || '提交失败')
+            instance.confirmButtonLoading = false
+            instance.confirmButtonText = '提交'
+          }
+        }).catch(error => {
+          console.error('请求失败:', error)
+          ElMessage.error(`请求失败: ${error.response?.data?.msg || error.message}`)
+          instance.confirmButtonLoading = false // 保持对话框开启
+          instance.confirmButtonText = '提交'
+        }).finally(() => {
+          // 移除done调用，只在成功时关闭对话框
+          setTimeout(() => {
+            instance.confirmButtonLoading = false
+            instance.confirmButtonText = '提交'
+          }, 300)
+        })
+      } else {
+        done()
+      }
     }
-  } catch (error) {
-    console.error('拒绝邀请请求失败:', error);
-    ElMessage.error('拒绝邀请请求失败，请稍后重试');
-  }
-};
-
-// 关闭对话框
-const handleClose = () => {
-  userName.value = '';
-  userPhoneNumber.value = '';
-  password.value = '';
-  confirmPassword.value = '';
-  passwordError.value = false;
-};
+  }).then(() => {
+    ElMessage.success('操作已提交')
+  }).catch(() => {
+    ElMessage.info('操作已取消')
+  })
+}
 </script>
 
 <style scoped>

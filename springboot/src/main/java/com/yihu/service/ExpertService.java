@@ -1,6 +1,7 @@
 package com.yihu.service;
 
 import com.yihu.entity.InviteExpertRecord;
+import com.yihu.entity.User;
 
 import java.util.Date;
 import java.util.List;

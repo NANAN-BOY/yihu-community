@@ -15,4 +15,6 @@ public interface UserMapper {
     Boolean selectByPhone(@Param("phone") String phone);//通过手机号查询是否已注册
 
     int resetPassword(@Param("phone") String phone,@Param("newPassword") String newPassword);//重置密码
+
+    User getUserInfo(int userId);
 }

@@ -9,6 +9,7 @@ import com.yihu.service.UserService;
 import com.yihu.utils.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.el.parser.Token;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -63,8 +64,8 @@ public class BaseController {
         return Result.success(user,token);
     }
 
-    @GetMapping("/user/info")
-    public Result getUserInfo(){
+    @GetMapping("/user/reLogin")
+    public Result reLogin(){
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null){
             return Result.error(401,"用户未登录");
@@ -85,5 +86,15 @@ public class BaseController {
         }else {
             return Result.error(500,"修改失败");
         }
+    }
+
+    @AuthAccess
+    @GetMapping("/user/get-info")
+    public Result getUserInfo(int userId){
+        User user = userService.getUserInfo(userId);
+        if (user.getName() == null || user.getLocation() == null){
+            return Result.error(404,"用户信息不完整");
+        }
+        return Result.success(user);
     }
 }

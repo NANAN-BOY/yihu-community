@@ -187,4 +187,9 @@ public class User {
         this.deleteId = deleteId;
         this.location = location;
     }
+
+    public User(String name, String location) {
+        this.name = name;
+        this.location = location;
+    }
 }

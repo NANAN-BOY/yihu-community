@@ -1,6 +1,6 @@
 import { createStore } from 'vuex';
 import router from './router';
-import { ElNotification } from 'element-plus'; // 导入 ElNotification
+import {ElMessage} from 'element-plus';
 
 const store = createStore({
   state: {
@@ -23,6 +23,9 @@ const store = createStore({
       isLocked: false,               // 导航栏是否锁定
       lockReason: '',                // 锁定原因
     },
+    expert: {
+      inviteId: null,
+    }
   },
   getters: {
     token: state => state.token,      // 获取 token
@@ -30,6 +33,7 @@ const store = createStore({
     userInfo: state => state.user,   // 获取用户信息
     isNavbarLocked: state => state.navbar.isLocked, // 导航栏是否锁定
     navbarLockReason: state => state.navbar.lockReason, // 获取锁定原因
+    expertInviteId: state => state.expert.inviteId, // 获取专家邀请码
   },
   mutations: {
     SET_TOKEN(state, token) {
@@ -60,6 +64,9 @@ const store = createStore({
       state.navbar.isLocked = payload.isLocked; // 设置导航栏锁定状态
       state.navbar.lockReason = payload.lockReason || ''; // 设置锁定原因
     },
+    SET_EXPERT_INVITE_ID(state, inviteId) {
+      state.expert.inviteId = inviteId; // 设置专家邀请码
+    }
   },
   actions: {
     setToken({ commit }, token) {
@@ -70,25 +77,23 @@ const store = createStore({
       commit('SET_USER', userData); // 提交设置用户信息的 mutation
     },
     logout({ commit }) {
-      localStorage.removeItem('token'); // 从本地存储移除 token
-      commit('LOGOUT'); // 提交注销的 mutation
-      // 使用 ElNotification 显示成功的登出消息
-      ElNotification({
-        title: '成功安全登出',
-        message: '您已成功登出。',
-        type: 'success',
-        duration: 3000, // 自动关闭时间
-      });
+      localStorage.removeItem('token');
+      commit('LOGOUT');
+      ElMessage.success('您已安全登出');
       router.push('/login'); // 跳转到登录页
     },
-    // 锁定导航栏
     lockNavbar({ commit }, reason) {
       commit('SET_NAVBAR_LOCK', { isLocked: true, lockReason: reason });
     },
-    // 解锁导航栏
     unlockNavbar({ commit }) {
       commit('SET_NAVBAR_LOCK', { isLocked: false, lockReason: '' });
     },
+    setExpertInviteId({ commit }, inviteId) {
+      commit('SET_EXPERT_INVITE_ID', inviteId); // 提交设置专家邀请码的 mutation
+    },
+    clearExpertInviteId({ commit }) {
+      commit('SET_EXPERT_INVITE_ID', null); // 提交清空专家邀请码的 mutation
+    }
   },
 });
 

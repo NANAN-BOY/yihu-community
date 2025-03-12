@@ -61,7 +61,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useStore } from 'vuex';  // 导入 Vuex store
-import { ElNotification } from 'element-plus';  // 导入 Element Plus 消息组件
+import {ElMessage, ElNotification} from 'element-plus';  // 导入 Element Plus 消息组件
 import { useRouter } from 'vue-router';
 import request from "../utils/request.js";
 // 定义响应式变量
@@ -80,62 +80,32 @@ const store = useStore();  // 获取 Vuex store 实例
 
 // 处理表单提交
 const handleSubmit = async () => {
-  loading.value = true;  // 开始加载状态
-
+  loading.value = true;
   try {
-    // 创建查询参数
     const queryParams = new URLSearchParams({
       phone: userPhoneNumber.value,
       password: userPassword.value,
     });
-
-    // 拼接带参数的 URL
     const url = `${import.meta.env.VITE_BACKEND_IP}/api/user/login?${queryParams.toString()}`;
-
-    // 使用 Fetch API 发送 POST 请求
     const response = await fetch(url, {
       method: 'POST',
     });
-
     const data = await response.json();
     if (data.msg === 'error') {
-      // 使用 ElNotification 显示错误信息
-      ElNotification({
-        title: '登录失败',
-        message: data.message,
-        type: 'error',
-        duration: 3000, // 自动关闭时间
-      });
+      ElMessage.error("账号或密码错误");
     } else if (data.msg === 'success') {
-      console.log(data)
-
-      // 将 token 和用户信息存入 Vuex
       await store.dispatch('setToken', data.token);
       await store.dispatch('setUser', data.data);
-
-      // 将 token 存入 localStorage
       localStorage.setItem('token', data.token);
-      // 使用 ElNotification 显示成功信息
       console.log(store.state)
-      ElNotification({
-        title: '登录成功',
-        message: '欢迎回来！',
-        type: 'success',
-        duration: 3000, // 自动关闭时间
-      });
+      ElMessage.success('登录成功');
       await router.push('/dashboard');
     }
   } catch (error) {
     console.error('Error:', error);
-    // 显示错误通知
-    ElNotification({
-      title: '提交失败',
-      message: '请稍后重试。',
-      type: 'error',
-      duration: 3000,
-    });
+    ElMessage.error('登录失败');
   } finally {
-    loading.value = false;  // 请求完成后停止加载
+    loading.value = false;
   }
 };
 </script>

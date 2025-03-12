@@ -15,7 +15,7 @@ const restoreLoginStatus = async () => {
     if (!store.state.token) {
       return;
     }
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/info`, {
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/reLogin`, {
       headers: {
         'token': `${store.state.token}`
       }
@@ -32,7 +32,7 @@ const restoreLoginStatus = async () => {
       throw new Error('身份已过期，请重新登录。');
     }
   } catch (error) {
-    ElMessage.error(error.message);
+    ElMessage.error('身份已过期，请重新登录。');
     localStorage.removeItem('token');
     await store.dispatch('setToken', null);
     await store.dispatch('setUser', null);

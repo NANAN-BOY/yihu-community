@@ -282,7 +282,7 @@ const checkExpertInvite = () => {
               }
             })
             .catch(error => {
-              ElMessage.error(`请求失败: ${error.message}`)
+              ElMessage.error(`${error.message}`)
               instance.confirmButtonLoading = false
               instance.confirmButtonText = '接受'
             })

@@ -2,26 +2,20 @@
   <div class="container">
     <div class="card">
       <h1 class="title">邀请信息</h1>
-
-      <!-- 显示邀请信息 -->
       <div v-if="inviteInfo" class="invite-info">
-        <p>
+        <p v-if="!expired">
           邀请人: <strong>{{ inviteInfo.invite_user_name }}</strong>
         </p>
         <p v-if="remainingTime">
           剩余时间: <strong>{{ remainingTime }}</strong>
         </p>
-        <el-button type="danger" @click="refuseInvitation">拒绝</el-button>
-        <el-button type="success" @click="dialogVisible = true"
+        <el-button v-if="!expired" type="danger" @click="refuseInvitation">拒绝</el-button>
+        <el-button v-if="!expired" type="success" @click="acceptInvitation"
           >接受邀请</el-button
         >
         <p v-if="expired" class="expired">该邀请已过期</p>
       </div>
-
-      <!-- 显示加载状态 -->
       <p v-if="loading" class="loading">正在加载邀请信息...</p>
-
-      <!-- 没有邀请信息时的提示 -->
       <p v-if="!inviteInfo && !loading" class="no-invite">
         没有邀请信息，请与管理员联系。
       </p>
@@ -49,18 +43,14 @@ const expired = ref(false);
 const loading = ref(false);
 const queryFailed = ref(false);
 
-
-// 获取路由参数
 const route = useRoute();
 inviteId.value = route.params.inviteId;
 
-// 监控路由变化
 watch(route, (to) => {
   inviteId.value = to.params.inviteId;
   fetchInviteInfo();
 });
 
-// 获取邀请信息
 const fetchInviteInfo = async () => {
   loading.value = true;
   queryFailed.value = false;
@@ -70,29 +60,19 @@ const fetchInviteInfo = async () => {
         id: inviteId.value
       }
     });
-    const data = response;
-    console.log(data);
-    if (data.data.code == 200 && data.data.data.id) {
-      inviteInfo.value = data; // 保存邀请信息
-
-      // 计算剩余时间
-      const now = new Date();
-      const inviteDeadline = new Date(data.data.data.deadline);
-      const diffTime = inviteDeadline - now; // 毫秒差
-
-      if (diffTime > 0) {
-        // 如果邀请未过期，计算剩余时间
-        const hours = Math.floor(diffTime / (1000 * 60 * 60));
-        const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-        remainingTime.value = `${hours}小时 ${minutes}分钟`;
+    console.log(response);
+    if (response.data.code == 200 && response.data.data.id) {
+      inviteInfo.value = response;// 保存邀请信息
+      const diffTime = (new Date(response.data.data.deadline)) - (new Date());
+      if ((diffTime > 0) && (response.data.data.isAgree == null)) {
+        remainingTime.value = `${Math.floor(diffTime / (1000 * 60 * 60))}小时
+                               ${Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60))}分钟`;
         expired.value = false;
       } else {
-        // 如果邀请已过期
         expired.value = true;
         remainingTime.value = null;
       }
     } else {
-      // 如果没有邀请信息或请求失败
       queryFailed.value = true;
     }
   } catch (error) {
@@ -163,6 +143,37 @@ const refuseInvitation = async () => {
   }).catch(() => {
     ElMessage.info('操作已取消')
   })
+}
+const acceptInvitation = async () => {
+  ElMessageBox.confirm(
+      '请选择您的加入方式',
+      '提示',
+      {
+        confirmButtonText: '注册新账号',
+        cancelButtonText: '关联现有账号',
+        type: 'info',
+        center: true,
+      }
+  )
+      .then(() => {
+        ElMessage({
+          type: 'warning',
+          message: '请注册后继续操作',
+        })
+        store.dispatch('setExpertInviteId', inviteId);
+        router.push('/register');
+
+      })
+      .catch(() => {
+        if (!store.state.user.id) {
+          ElMessage({
+            type: 'warning',
+            message: '请登录后继续操作',
+          })
+        }
+        store.dispatch('setExpertInviteId', inviteId);
+        router.push('/dashboard');
+      })
 }
 </script>
 

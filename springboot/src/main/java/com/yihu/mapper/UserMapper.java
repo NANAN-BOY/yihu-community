@@ -17,4 +17,8 @@ public interface UserMapper {
     int resetPassword(@Param("phone") String phone,@Param("newPassword") String newPassword);//重置密码
 
     User getUserInfo(int userId);
+
+    int updateUserInfo(User user);
+
+    List<User> getUserByRole(int role);
 }

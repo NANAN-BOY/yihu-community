@@ -1,5 +1,6 @@
 package com.yihu.entity;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 public class User {
@@ -20,7 +21,9 @@ public class User {
     private Integer deleteId;//删除者id（可为空）
     private String location;//用户所在位置
 
+    public User() {
 
+    }
     public Integer getId() {
         return id;
     }
@@ -188,8 +191,11 @@ public class User {
         this.location = location;
     }
 
-    public User(String name, String location) {
+    public User(Integer id, String name, String description, String location, Timestamp currentTimestamp) {
+        this.id = id;
         this.name = name;
+        this.description = description;
         this.location = location;
+        this.updateAt = currentTimestamp;
     }
 }

@@ -1,11 +1,12 @@
 package com.yihu.service;
 
+import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.User;
 
 import java.util.List;
 
 public interface UserService {
-    User getUserByPhone(int phone);
+    User getUserByPhone(String phone);
 
     List<User> getAll();
 
@@ -16,4 +17,8 @@ public interface UserService {
     int resetPassword(String phone, String captcha, String newPassword);
 
     User getUserInfo(int userId);
+
+    int updateUserInfo(Integer id, UserUpdateDTO updateDTO);
+
+    List<User> getUserByRole(int role);
 }

@@ -1,5 +1,7 @@
 package com.yihu.common;
 
+import java.util.Map;
+
 /*
 * 统一返回包装类
 * */

@@ -2,19 +2,15 @@ package com.yihu.controller;
 
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
+import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.User;
 import com.yihu.exception.ServiceException;
-import com.yihu.service.CaptchaService;
 import com.yihu.service.UserService;
 import com.yihu.utils.TokenUtils;
-import jakarta.servlet.http.HttpServletRequest;
-import org.apache.el.parser.Token;
-import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api")
@@ -90,11 +86,44 @@ public class BaseController {
 
     @AuthAccess
     @GetMapping("/user/get-info")
-    public Result getUserInfo(int userId){
+    public Result getUserInfo(@RequestParam int userId){
         User user = userService.getUserInfo(userId);
         if (user.getName() == null || user.getLocation() == null){
             return Result.error(404,"用户信息不完整");
         }
         return Result.success(user);
+    }
+
+    @PostMapping("/user/update-info")
+    public Result updateUserInfo(@RequestBody UserUpdateDTO updateDTO) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401,"未授权，请登录");
+        }
+
+        int isSuccess = userService.updateUserInfo(currentUser.getId(), updateDTO);
+        if (isSuccess == 0) {
+            return Result.success("更新成功");
+        }else {
+            return Result.error(500,"更新失败");
+        }
+    }
+
+    @GetMapping("/user/get-role")
+    public Result getUserRole(@RequestParam int role){
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401,"未授权，请登录");
+        }
+        if (currentUser.getRole() != 1){
+            return Result.error(403,"权限不足");
+        }
+
+        List<User> users = userService.getUserByRole(role);
+        if (users == null){
+            return Result.error(404,"未找到相关用户");
+        }else {
+            return Result.success(users);
+        }
     }
 }

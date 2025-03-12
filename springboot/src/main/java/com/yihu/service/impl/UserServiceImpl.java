@@ -1,5 +1,6 @@
 package com.yihu.service.impl;
 
+import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.User;
 import com.yihu.mapper.UserMapper;
 import com.yihu.service.CaptchaService;
@@ -27,7 +28,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User getUserByPhone(int phone) {
+    public User getUserByPhone(String phone) {
         return null;
     }
 
@@ -106,4 +107,24 @@ public class UserServiceImpl implements UserService {
     public User getUserInfo(int userId) {
         return userMapper.getUserInfo(userId);
     }
+
+    @Override
+    public int updateUserInfo(Integer id, UserUpdateDTO updateDTO) {
+        Date currentDate = new Date(); // 获取当前日期时间
+        Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
+        User user = new User(id, updateDTO.getName(), updateDTO.getDescription(), updateDTO.getLocation(), currentTimestamp);
+        int isSuccess = userMapper.updateUserInfo(user);
+        if (isSuccess > 0){
+            return 0;//修改成功
+        }else {
+            return -1;//修改失败
+        }
+    }
+
+    @Override
+    public List<User> getUserByRole(int role) {
+        return userMapper.getUserByRole(role);
+    }
+
+
 }

@@ -63,7 +63,7 @@ public class ExpertController {
         return Result.success(inviteExpertRecords);
     }
 
-    @PostMapping("expert/delete-record")
+    @PostMapping("/expert/delete-record")
     public Result deleteRecord(@RequestParam int id){
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
@@ -83,7 +83,7 @@ public class ExpertController {
     }
 
     @AuthAccess
-    @PostMapping("expert/refuse")
+    @PostMapping("/expert/refuse")
     public Result refuse(@RequestParam int id, @RequestParam int isAgree,@RequestParam String reason){
         int isSuccess = expertService.refuse(id,isAgree,reason);
         if (isSuccess == 0){
@@ -93,7 +93,7 @@ public class ExpertController {
         }
     }
 
-    @PostMapping("expert/accept")
+    @PostMapping("/expert/accept")
     public Result accept(@RequestParam int id, @RequestParam int isAgree, @RequestParam int expertId){
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {

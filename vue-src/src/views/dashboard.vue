@@ -147,6 +147,8 @@ import user2SocialOrganizationManagement
 import user3ProjectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue';
 import WaitingOptimizationProject from '../components/user4component/WaitingOptimizationProject.vue';
 
+import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
+
 import {Avatar, Document, Expand, Tickets, UserFilled} from "@element-plus/icons-vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import axios from "axios";
@@ -161,6 +163,7 @@ const currentComponent = ref(null);
 const menus = [
   {role: 1, index: '1-1', icon: Document, title: '专家库管理'},
   {role: 1, index: '1-2', icon: Avatar, title: '系统管理'},
+  {role: 1, index: '1-3', icon: Document, title: '关于我的信息'},
   {role: 2, index: '2-1', icon: Document, title: '项目管理'},
   {role: 2, index: '2-2', icon: Avatar, title: '专家库管理'},
   {
@@ -190,6 +193,9 @@ const handleSelect = (index) => {
       break;
     case '1-2':
       router.push('/user1component/ExpertLibraryManagement/ExpertLibraryManagement');
+      break;
+    case '1-3':
+      currentComponent.value = aboutMyInfo;
       break;
     case '2-1':
       currentComponent.value = user2ProjectManagement;

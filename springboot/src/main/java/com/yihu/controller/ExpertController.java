@@ -99,8 +99,8 @@ public class ExpertController {
         if (currentUser == null) {
             return Result.error(401, "未授权：请先登录");
         }
-        if (currentUser.getRole() == 4) {
-            return Result.error(403, "您已经是专家，无需接受邀请");
+        if (currentUser.getRole() != 3) {
+            return Result.error(403, "您的账号无法接受邀请");
         }
         int isSuccess = expertService.accept(id,isAgree,expertId);
         if (isSuccess == 0){

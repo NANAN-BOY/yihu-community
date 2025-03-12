@@ -3,14 +3,14 @@
     <div class="card">
       <h1 class="title">邀请信息</h1>
       <div v-if="inviteInfo" class="invite-info">
-        <p>
+        <p v-if="!expired">
           邀请人: <strong>{{ inviteInfo.invite_user_name }}</strong>
         </p>
         <p v-if="remainingTime">
           剩余时间: <strong>{{ remainingTime }}</strong>
         </p>
-        <el-button type="danger" @click="refuseInvitation">拒绝</el-button>
-        <el-button type="success" @click="acceptInvitation"
+        <el-button v-if="!expired" type="danger" @click="refuseInvitation">拒绝</el-button>
+        <el-button v-if="!expired" type="success" @click="acceptInvitation"
           >接受邀请</el-button
         >
         <p v-if="expired" class="expired">该邀请已过期</p>
@@ -60,10 +60,11 @@ const fetchInviteInfo = async () => {
         id: inviteId.value
       }
     });
+    console.log(response);
     if (response.data.code == 200 && response.data.data.id) {
       inviteInfo.value = response;// 保存邀请信息
       const diffTime = (new Date(response.data.data.deadline)) - (new Date());
-      if (diffTime > 0) {
+      if ((diffTime > 0) && (response.data.data.isAgree == null)) {
         remainingTime.value = `${Math.floor(diffTime / (1000 * 60 * 60))}小时
                                ${Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60))}分钟`;
         expired.value = false;

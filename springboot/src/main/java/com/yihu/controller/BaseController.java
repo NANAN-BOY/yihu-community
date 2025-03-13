@@ -23,6 +23,7 @@ public class BaseController {
         this.userService = userService;
     }
 
+    @AuthAccess
     @GetMapping ("/login")
     public Result test(){
         List<User> userList =  userService.getAll();

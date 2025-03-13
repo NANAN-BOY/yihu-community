@@ -1,7 +1,14 @@
+# 添加全局class文件忽略规则
+*.class
+
+# 通用target目录忽略（覆盖所有层级）
+**/target/
+**/build/  # 如果是Gradle项目需要额外添加
+
+# ---- 你原有的规则保持不动 ----
 .DS_Store
 vue-src/node_modules
 /dist
-
 
 # local env files
 .env.local
@@ -21,9 +28,7 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-/server/node_modules/
-/Server_src/node_modules/
-#database
+
+# database
 ./数据库/YiHuSystem.cdb
 ./数据库/YiHuSystem.pdb
-/springboot/target/

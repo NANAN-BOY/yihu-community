@@ -12,7 +12,7 @@ public interface ExpertService {
 
     InviteExpertRecord getRecord(int id);
 
-    List<InviteExpertRecord> getHistoryRecord();
+    PageInfo<InviteExpertRecord> getHistoryRecord(Integer pageNum, Integer pageSize);
 
     int deleteRecord(int id);
 

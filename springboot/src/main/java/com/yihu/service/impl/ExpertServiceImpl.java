@@ -43,8 +43,9 @@ public class ExpertServiceImpl implements ExpertService {
     }
 
     @Override
-    public List<InviteExpertRecord> getHistoryRecord() {
-        return expertMapper.getHistoryRecord();
+    public PageInfo<InviteExpertRecord> getHistoryRecord(Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(expertMapper.getHistoryRecord());
     }
 
     @Override

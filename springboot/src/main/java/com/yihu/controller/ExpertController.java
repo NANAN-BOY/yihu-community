@@ -51,7 +51,8 @@ public class ExpertController {
     }
 
     @GetMapping("/expert/get-historyRecord")
-    public Result getHistoryRecord(){
+    public Result getHistoryRecord(@RequestParam(defaultValue = "1") int pageNum,
+                                   @RequestParam(defaultValue = "10") int pageSize){
         User currentUser = TokenUtils.getCurrentUser();
 
         if (currentUser == null) {
@@ -60,7 +61,10 @@ public class ExpertController {
         if (currentUser.getRole() != 1) {
             return Result.error(403, "禁止访问：权限不足");
         }
-        List<InviteExpertRecord> inviteExpertRecords = expertService.getHistoryRecord();
+        PageInfo<InviteExpertRecord> inviteExpertRecords = expertService.getHistoryRecord(pageNum,pageSize);
+        if (inviteExpertRecords.getList().isEmpty()){
+            return Result.error(404,"没有更多数据");
+        }
         return Result.success(inviteExpertRecords);
     }
 

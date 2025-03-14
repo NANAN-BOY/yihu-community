@@ -1,6 +1,7 @@
 package com.yihu.controller;
 
 
+import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.entity.InviteExpertRecord;
@@ -108,5 +109,23 @@ public class ExpertController {
         }else {
             return Result.error(500,"接受邀请失败");
         }
+    }
+
+    @GetMapping("/expert/get-createRecord")
+    public Result getCreateRecord( @RequestParam(defaultValue = "1") Integer pageNum,
+                                   @RequestParam(defaultValue = "10") Integer pageSize){
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权：请先登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "禁止访问：权限不足");
+        }
+
+        PageInfo<InviteExpertRecord> pageInfo = expertService.getCreateRecord(pageNum,pageSize);
+        if (pageInfo.getList().isEmpty()) {
+            return Result.error(404, "没有更多数据");
+        }
+        return Result.success(pageInfo);
     }
 }

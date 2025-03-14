@@ -20,4 +20,5 @@ public interface ExpertMapper {
 
     int accept(int id, int isAgree, int expertId);
 
+    List<InviteExpertRecord> getCreateRecord();
 }

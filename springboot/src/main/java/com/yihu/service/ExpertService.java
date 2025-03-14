@@ -1,5 +1,6 @@
 package com.yihu.service;
 
+import com.github.pagehelper.PageInfo;
 import com.yihu.entity.InviteExpertRecord;
 import com.yihu.entity.User;
 
@@ -19,4 +20,5 @@ public interface ExpertService {
 
     int accept(int id, int isAgree, int expertId);
 
+    PageInfo<InviteExpertRecord> getCreateRecord(Integer pageNum, Integer pageSize);
 }

@@ -1,5 +1,7 @@
 package com.yihu.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.User;
 import com.yihu.mapper.UserMapper;
@@ -122,8 +124,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getUserByRole(int role) {
-        return userMapper.getUserByRole(role);
+    public PageInfo<User> getUserByRoleWithPage(int role, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(userMapper.getUserByRole(role));
     }
 
 

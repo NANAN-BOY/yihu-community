@@ -1,5 +1,7 @@
 package com.yihu.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yihu.entity.InviteExpertRecord;
 import com.yihu.mapper.ExpertMapper;
 import com.yihu.service.ExpertService;
@@ -79,5 +81,11 @@ public class ExpertServiceImpl implements ExpertService {
         }else {
             return -1;//同意失败
         }
+    }
+
+    @Override
+    public PageInfo<InviteExpertRecord> getCreateRecord(Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(expertMapper.getCreateRecord());
     }
 }

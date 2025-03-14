@@ -42,4 +42,8 @@
         UPDATE user SET role=4 WHERE id=#{expertId};
     </update>
 
+    <select id="getCreateRecord" resultType="com.yihu.entity.InviteExpertRecord">
+        SELECT * FROM invite_expert_record WHERE isAgree IS NULL
+    </select>
+
 </mapper>

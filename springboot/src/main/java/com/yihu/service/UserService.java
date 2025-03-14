@@ -22,4 +22,8 @@ public interface UserService {
     int updateUserInfo(Integer id, UserUpdateDTO updateDTO);
 
     PageInfo<User> getUserByRoleWithPage(int role, int pageNum, int pageSize);
+
+    int banUser(int userId, int updateId);
+
+    int unbanUser(int userId, Integer id);
 }

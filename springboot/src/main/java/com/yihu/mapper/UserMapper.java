@@ -3,6 +3,8 @@ package com.yihu.mapper;
 import com.yihu.entity.User;
 import org.apache.ibatis.annotations.Param;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 public interface UserMapper {
@@ -16,9 +18,13 @@ public interface UserMapper {
 
     int resetPassword(@Param("phone") String phone,@Param("newPassword") String newPassword);//重置密码
 
-    User getUserInfo(int userId);
+    User getUserInfo(@Param("userId") Integer userId);
 
     int updateUserInfo(User user);
 
-    List<User> getUserByRole(int role);
+    List<User> getUserByRole(@Param("role") int role);
+
+    int banUser(@Param("userId") int userId,@Param("updateId") Integer updateId,@Param("updateTime") Date updateTime);
+
+    int unbanUser(@Param("userId")int userId,@Param("updateId") Integer id,@Param("updateTime") Timestamp currentTimestamp);
 }

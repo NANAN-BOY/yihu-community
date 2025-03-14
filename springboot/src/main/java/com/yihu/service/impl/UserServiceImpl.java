@@ -66,7 +66,6 @@ public class UserServiceImpl implements UserService {
         User user = null;
         try {
             user = userMapper.login(phone);
-            System.out.println("查询结果：" + user);  // 打印 user
         } catch (Exception e) {
             System.out.println("数据库查询异常：" + e.getMessage());
             e.printStackTrace();
@@ -127,6 +126,30 @@ public class UserServiceImpl implements UserService {
     public PageInfo<User> getUserByRoleWithPage(int role, int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         return new PageInfo<>(userMapper.getUserByRole(role));
+    }
+
+    @Override
+    public int banUser(int userId, int updateId) {
+        Date currentDate = new Date(); // 获取当前日期时间
+        Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
+        int isSuccess = userMapper.banUser(userId,updateId, currentTimestamp);
+        if (isSuccess > 0){
+            return 0;//封号
+        }else {
+            return -1;//封号失败
+        }
+    }
+
+    @Override
+    public int unbanUser(int userId, Integer id) {
+        Date currentDate = new Date(); // 获取当前日期时间
+        Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
+        int isSuccess = userMapper.unbanUser(userId, id, currentTimestamp);
+        if (isSuccess > 0){
+            return 0;//解封
+        }else {
+            return -1;//解封失败
+        }
     }
 
 

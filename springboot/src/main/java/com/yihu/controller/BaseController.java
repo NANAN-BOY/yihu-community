@@ -57,6 +57,9 @@ public class BaseController {
         if (user == null){
             throw new ServiceException("用户名或密码错误");
         }
+        if(user.getStatus() == 1){
+            return Result.error(404,"用户已被封禁，请联系管理员");
+        }
         //生成token
         String token = TokenUtils.getToken(user.getPhone(), user.getPassword(), user.getRole());
         return Result.success(user,token);
@@ -128,6 +131,40 @@ public class BaseController {
             return Result.error(404, "未找到相关用户");
         } else {
             return Result.success(pageInfo);
+        }
+    }
+
+    @PostMapping("/user/ban")//封号
+    public Result banUser(@RequestParam int userId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "权限不足");
+        }
+        int isSuccess = userService.banUser(userId, currentUser.getId());
+        if (isSuccess == 0) {
+            return Result.success("封号成功");
+        }else {
+            return Result.error(500,"封号失败");
+        }
+    }
+
+    @PostMapping("/user/unban")//解封
+    public Result unbanUser(@RequestParam int userId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "权限不足");
+        }
+        int isSuccess = userService.unbanUser(userId, currentUser.getId());
+        if (isSuccess == 0) {
+            return Result.success("解封成功");
+        }else{
+            return Result.error(500,"解封失败");
         }
     }
 }

@@ -57,4 +57,12 @@
         SELECT * FROM user WHERE role = #{role}
     </select>
 
+    <update id="banUser">
+            UPDATE user SET status = 1, updater_id = #{updateId}, update_at = #{updateTime} WHERE id = #{userId}
+    </update>
+
+    <update id="unbanUser">
+            UPDATE user SET status = 0, updater_id = #{updateId}, update_at = #{updateTime} WHERE id = #{userId}
+    </update>
+
 </mapper>

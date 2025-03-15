@@ -1,10 +1,32 @@
 <script setup>
 import {useStore} from 'vuex'
-import {computed} from 'vue'
-import {ElMessage, ElMessageBox} from 'element-plus'
+import {computed, h, ref} from 'vue'
+import {ElCascader, ElMessage, ElMessageBox} from 'element-plus'
 import {ElIcon} from 'element-plus';
 import {Edit} from "@element-plus/icons-vue";
 import axios from "axios";
+import {regionData} from "element-china-area-data";
+
+function getRegionName(regionCode) {
+  const codeToNameMap = {};
+
+  // 遍历省级数据
+  regionData.forEach((province) => {
+    codeToNameMap[province.value] = province.label;
+
+    // 遍历市级数据
+    province.children.forEach((city) => {
+      codeToNameMap[city.value] = `${province.label} ${city.label}`;
+
+      // 遍历县级数据
+      city.children.forEach((county) => {
+        codeToNameMap[county.value] = `${province.label} ${city.label} ${county.label}`;
+      });
+    });
+  });
+
+  return codeToNameMap[regionCode] || 'Error';
+}
 
 const store = useStore()
 const user = computed(() => store.state.user)
@@ -162,6 +184,84 @@ const editMyDescription = () => {
         ElMessage.info('您已取消修改');
       });
 };
+
+// 定义地区选择相关数据
+const selectedArea = ref([]);
+const areaOptions = ref(regionData);
+const areaProps = {
+  value: 'value',
+  label: 'label',
+  children: 'children',
+  emitPath: false,
+};
+const editMyLocation = () => {
+  ElMessageBox({
+    title: '选择地区',
+    message: () => {
+      return h(ElCascader, {
+        modelValue: selectedArea.value,
+        'onUpdate:modelValue': (newValue) => (selectedArea.value = newValue),
+        options: areaOptions.value,
+        props: areaProps,
+        showAllLevels: true,
+        placeholder: '请选择所在地区',
+        clearable: true,
+        style: 'width: 100%',
+      });
+    },
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        const value = selectedArea.value;
+        instance.confirmButtonLoading = true;
+        instance.confirmButtonText = '加载中...';
+        axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/update-info`, {
+              id: store.state.user.id,
+              name: store.state.user.name,
+              description: store.state.user.description,
+              location: value,
+            }, {
+              headers: {
+                'token': `${store.state.token}`,
+              },
+            },
+        )
+            .then((response) => {
+              if (response.data.code === 200) {
+                store.state.user.location = value;
+                ElMessage.success(response.data.data);
+                // 成功后关闭窗口
+                done();
+                setTimeout(() => {
+                  instance.confirmButtonLoading = false;
+                  instance.confirmButtonText = '提交';
+                }, 300);
+              } else {
+                ElMessage.error(response.data.data);
+                // 失败则取消加载状态，不关闭窗口
+                instance.confirmButtonLoading = false;
+                instance.confirmButtonText = '提交';
+              }
+            })
+            .catch((error) => {
+              ElMessage.error('请求出错：' + error.message);
+              // 出错则取消加载状态，不关闭窗口
+              instance.confirmButtonLoading = false;
+              instance.confirmButtonText = '提交';
+            });
+      } else {
+        done();
+      }
+    },
+  }).then((action) => {
+    if (action === 'confirm') {
+      // 这里可以根据需要添加额外逻辑
+    }
+  }).catch(() => {
+    ElMessage.info('您已取消修改');
+  });
+}
 </script>
 <template>
   <div v-loading="!user.id" class="user-info-container">
@@ -206,11 +306,11 @@ const editMyDescription = () => {
         </el-icon>
       </el-form-item>
       <el-form-item label="地区">
-        {{ user.location || '未设置地区' }}
+        {{ getRegionName(user.location) || '未设置地区' }}
         <el-icon
             :size="21"
             color="blue"
-            @click="editMyInfo"
+            @click="editMyLocation"
             class="interactive-icon">
           <Edit/>
         </el-icon>

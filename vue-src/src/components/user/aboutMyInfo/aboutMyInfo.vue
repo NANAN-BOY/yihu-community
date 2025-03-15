@@ -42,12 +42,13 @@ const formatDate = (timestamp) => {
   }
 }
 
-const editMyInfo = () => {
-  ElMessageBox.prompt('请输入要修改的新昵称', '编辑名称', {
+const editMyName = () => {
+  ElMessageBox.prompt('请输入要修改的新名称', '编辑名称', {
     confirmButtonText: '提交',
     cancelButtonText: '取消',
     inputPattern: /^[\w\u4e00-\u9fa5]{1,30}$/,
     inputErrorMessage: '请输入1 - 30个字符',
+    inputValue: store.state.user.name,
     beforeClose: (action, instance, done) => {
       if (action === 'confirm') {
         const value = instance.inputValue;
@@ -65,7 +66,6 @@ const editMyInfo = () => {
             },
         )
             .then((response) => {
-              console.log(response.data)
               if (response.data.code === 200) {
                 store.state.user.name = value;
                 ElMessage.success(response.data.data);
@@ -99,10 +99,69 @@ const editMyInfo = () => {
         }
       })
       .catch(() => {
-        ElMessage.info('已取消修改');
+        ElMessage.info('您已取消修改');
       });
 };
-
+const editMyDescription = () => {
+  ElMessageBox.prompt('请输入要修改的新简介', '编辑简介', {
+    confirmButtonText: '提交',
+    cancelButtonText: '取消',
+    inputPattern: /^[\w\u4e00-\u9fa5]{1,50}$/,
+    inputErrorMessage: '请输入1 - 50个字符',
+    inputValue: store.state.user.description,
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        const value = instance.inputValue;
+        instance.confirmButtonLoading = true;
+        instance.confirmButtonText = '加载中...';
+        axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/user/update-info`, {
+              id: store.state.user.id,
+              name: store.state.user.name,
+              description: value,
+              location: store.state.user.location,
+            }, {
+              headers: {
+                'token': `${store.state.token}`,
+              },
+            },
+        )
+            .then((response) => {
+              if (response.data.code === 200) {
+                store.state.user.description = value;
+                ElMessage.success(response.data.data);
+                // 成功后关闭窗口
+                done();
+                setTimeout(() => {
+                  instance.confirmButtonLoading = false;
+                  instance.confirmButtonText = '提交';
+                }, 300);
+              } else {
+                ElMessage.error(response.data.data);
+                // 失败则取消加载状态，不关闭窗口
+                instance.confirmButtonLoading = false;
+                instance.confirmButtonText = '提交';
+              }
+            })
+            .catch((error) => {
+              ElMessage.error('请求出错：' + error.message);
+              // 出错则取消加载状态，不关闭窗口
+              instance.confirmButtonLoading = false;
+              instance.confirmButtonText = '提交';
+            });
+      } else {
+        done();
+      }
+    },
+  })
+      .then((action) => {
+        if (action === 'confirm') {
+          // 这里可以根据需要添加额外逻辑
+        }
+      })
+      .catch(() => {
+        ElMessage.info('您已取消修改');
+      });
+};
 </script>
 <template>
   <div v-loading="!user.id" class="user-info-container">
@@ -116,28 +175,45 @@ const editMyInfo = () => {
           <el-icon
               :size="21"
               color="blue"
-              @click="editMyInfo"
+              @click="editMyName"
               class="interactive-icon">
             <Edit/>
           </el-icon>
         </h2>
-
         <p class="role-tag">{{ role }}</p>
       </div>
     </div>
     <el-form label-width="100px" class="detail-section">
       <el-form-item label="关联手机号">
-        <el-input :model-value="user.phone ? user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '未绑定手机'"
-                  readonly/>
+        {{ user.phone ? user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '未绑定手机' }}
+        <el-icon
+            :size="21"
+            color="blue"
+            @click="editMyInfo"
+            class="interactive-icon">
+          <Edit/>
+        </el-icon>
       </el-form-item>
 
-      <el-form-item label="个人简介">
-        <el-input
-            :model-value="user.description || '暂无简介'"
-            type="textarea"
-            :rows="3"
-            readonly
-        />
+      <el-form-item label="简介">
+        {{ user.description || '暂无简介' }}
+        <el-icon
+            :size="21"
+            color="blue"
+            @click="editMyDescription"
+            class="interactive-icon">
+          <Edit/>
+        </el-icon>
+      </el-form-item>
+      <el-form-item label="地区">
+        {{ user.location || '未设置地区' }}
+        <el-icon
+            :size="21"
+            color="blue"
+            @click="editMyInfo"
+            class="interactive-icon">
+          <Edit/>
+        </el-icon>
       </el-form-item>
 
       <!-- 账户信息 -->

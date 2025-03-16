@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.OrderMapper">
+
+    <insert id="insertOrder" parameterType="com.yihu.entity.Order">
+        INSERT INTO `order` (order_no, buyer_id, type, payment_amount, status, create_at)
+        VALUES (
+                 #{orderNo}, #{buyerId}, #{type}, #{paymentAmount}, #{status}, #{createAt}
+                 )
+    </insert>
+
+    <select id="findOrderById" resultType="com.yihu.entity.Order">
+        SELECT * FROM `order` WHERE order_no = #{orderNo}
+    </select>
+
+
+</mapper>

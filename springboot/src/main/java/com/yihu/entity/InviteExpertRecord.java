@@ -1,9 +1,13 @@
 package com.yihu.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
 
+@Setter
+@Getter
 public class InviteExpertRecord {
     private Integer id;
     private Integer inviteUserId;
@@ -16,62 +20,6 @@ public class InviteExpertRecord {
     private String refuseReason;
 
     public InviteExpertRecord() {
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getInviteUserId() {
-        return inviteUserId;
-    }
-
-    public void setInviteUserId(Integer inviteUserId) {
-        this.inviteUserId = inviteUserId;
-    }
-
-    public Date getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
-    }
-
-    public Date getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(Date deadline) {
-        this.deadline = deadline;
-    }
-
-    public Integer getIsAgree() {
-        return isAgree;
-    }
-
-    public void setIsAgree(Integer isAgree) {
-        this.isAgree = isAgree;
-    }
-
-    public Integer getExpertId() {
-        return expertId;
-    }
-
-    public void setExpertId(Integer expertId) {
-        this.expertId = expertId;
-    }
-
-    public String getRefuseReason() {
-        return refuseReason;
-    }
-
-    public void setRefuseReason(String refuseReason) {
-        this.refuseReason = refuseReason;
     }
 
     public InviteExpertRecord(Integer id, Integer inviteUserId, Date createAt, Date deadline, Integer isAgree, Integer expertId, String refuseReason) {

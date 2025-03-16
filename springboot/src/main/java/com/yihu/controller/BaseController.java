@@ -6,6 +6,7 @@ import com.yihu.common.Result;
 import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.User;
 import com.yihu.exception.ServiceException;
+import com.yihu.service.OrderService;
 import com.yihu.service.UserService;
 import com.yihu.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +19,21 @@ import java.util.List;
 public class BaseController {
 
     private final UserService userService;
+    private final OrderService orderService;
 
     @Autowired
-    public BaseController(UserService userService) {
+    public BaseController(UserService userService, OrderService orderService) {
         this.userService = userService;
+        this.orderService = orderService;
     }
 
     @AuthAccess
     @GetMapping ("/login")
     public Result test(){
-        List<User> userList =  userService.getAll();
-        System.out.println(userList);
-        return Result.success(userList);
+//        List<User> userList =  userService.getAll();
+//        System.out.println(userList);
+//        return Result.success(userList);
+        return Result.success(orderService.generateOrderNo());
     }
 
     @AuthAccess

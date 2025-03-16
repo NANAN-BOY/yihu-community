@@ -2,12 +2,8 @@
   <el-breadcrumb separator="/">
     <el-breadcrumb-item><strong>专家库管理</strong></el-breadcrumb-item>
   </el-breadcrumb>
-
   <br />
-
-  <!-- 邀请专家按钮 -->
   <el-button type="primary" @click="OpenInviteComponent">邀请专家</el-button>&nbsp;
-
   <!-- 创建邀请弹窗 -->
   <el-dialog title="创建邀请链接" v-model="dialogVisible" width="380px" @close="CloseCreateComponent">
     <div>
@@ -21,17 +17,12 @@
       <el-button type="success" @click="CreateInviteURL">确认邀请</el-button>
     </span>
   </el-dialog>
-
   <!-- 显示邀请链接和二维码的弹窗 -->
   <el-dialog title="邀请链接与二维码" v-model="inviteUrlDialogVisible" width="380px" @close="CloseInviteUrlDialog">
     <div>
       <p>邀请链接已成功生成：</p>
       <el-input v-model="inviteUrl" type="text" readonly style="width: 100%;" />
-
-      <!-- 复制按钮 -->
       <el-button @click="copyInviteUrl" size="mini" style="margin-top: 10px;">复制链接</el-button>
-
-      <!-- 使用 qrcode.vue 生成二维码 -->
       <div style="text-align: center; margin-top: 20px;">
         <QRCode :value="inviteUrl" size="200" />
       </div>
@@ -40,9 +31,7 @@
     <el-button type="primary" @click="CloseInviteUrlDialog">关闭</el-button>
   </span>
   </el-dialog>
-
   <h1>当前在职专家</h1>
-
   <!-- 专家卡片列表 -->
   <div class="expert-list">
     <div v-for="user in users" :key="user.user_id" class="expert-card" @click="viewExpertDetails(user.user_id)">
@@ -54,7 +43,17 @@
       </div>
     </div>
   </div>
-
+  <div class="infinite-list-wrapper" style="overflow: auto">
+    <ul
+        v-infinite-scroll="load"
+        class="list"
+        :infinite-scroll-disabled="disabled"
+    >
+      <li v-for="i in count" :key="i" class="list-item">{{ i }}</li>
+    </ul>
+    <p v-if="loading">Loading...</p>
+    <p v-if="noMore">No more</p>
+  </div>
   <!-- 查看专家详细信息的弹窗 -->
   <el-dialog title="专家详细信息" v-model="expertDialogVisible" width="50%">
     <div v-if="expertDetails">
@@ -72,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import {ref, onMounted, computed} from 'vue';
 import { ElDialog, ElButton, ElSelect, ElOption, ElInput, ElMessage } from 'element-plus';
 import axios from 'axios';
 import store from "../../../store";
@@ -84,6 +83,19 @@ const inviteUrl = ref('');
 const users = ref([]);
 const expertDialogVisible = ref(false);
 const expertDetails = ref(null);
+
+const count = ref(10)
+const loading = ref(false)
+const noMore = computed(() => count.value >= 20)
+const disabled = computed(() => loading.value || noMore.value)
+const load = () => {
+  loading.value = true
+  setTimeout(() => {
+    count.value += 2
+    loading.value = false
+  }, 2000)
+}
+
 
 
 // 格式化时间，去掉毫秒和时区
@@ -256,5 +268,28 @@ const closeExpertDialog = () => {
 .card-body {
   font-size: 14px;
   color: #666;
+}
+
+.infinite-list-wrapper {
+  height: 300px;
+  text-align: center;
+}
+
+.infinite-list-wrapper .list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.infinite-list-wrapper .list-item {
+  display: flex;
+  align-items: center;
+//justify-content: center; height: 50px;
+  background: var(--el-color-danger-light-9);
+  color: var(--el-color-danger);
+}
+
+.infinite-list-wrapper .list-item + .list-item {
+  margin-top: 10px;
 }
 </style>

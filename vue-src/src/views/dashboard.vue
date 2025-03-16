@@ -137,7 +137,7 @@ import {useRouter} from 'vue-router';
 import store from '../store';
 import user2ProjectManagement from '../components/user2component/ProjectManagement/user2ProjectManagement.vue';
 import user1ExpertLibraryManagement
-  from '../components/user2component/ExpertLibraryManagement/ExpertLibraryManagement.vue';
+  from '../components/user1component/ExpertLibraryManagement/ExpertLibraryManagement.vue';
 import user2ProjectTemplateManagement
   from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue';
 import user2ActivityTemplateManagement

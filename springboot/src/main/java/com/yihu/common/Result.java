@@ -47,6 +47,12 @@ public class Result {
         return result;
     }
 
+    public  static  Result error(Object data){
+        Result result = error();
+        result.setData(data);
+        return result;
+    }
+
     public  static  Result error(int code,String msg){
         Result result = new Result();
         result.setCode(code);

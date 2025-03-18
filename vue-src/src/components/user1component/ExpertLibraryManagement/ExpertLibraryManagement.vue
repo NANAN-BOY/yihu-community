@@ -52,7 +52,11 @@
               :infinite-scroll-disabled="InviteHistoryRecordDisabled"
           >
             <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-item">
-              <div>{{ InviteHistoryRecord.name }}</div>
+              <el-tag type="warning" v-if="InviteHistoryRecord.isAgree === null">未处理</el-tag>
+              <el-tag type="success" v-if="InviteHistoryRecord.isAgree === 1">已接受</el-tag>
+              <el-tag type="danger" v-if="InviteHistoryRecord.isAgree === 0">已拒绝</el-tag>
+              <div>{{ InviteHistoryRecord.createAt }}发起的邀请</div>
+              <!--              <div>{{ InviteHistoryRecord.inviteUserId }}邀请了{{ InviteHistoryRecord.expertId }}加入项目</div>-->
             </li>
             <li v-if="InviteHistoryRecordLoading" v-loading="InviteHistoryRecordLoading" class="list-item"></li>
           </ul>
@@ -123,7 +127,7 @@ const userListLoad = async () => {
     loading.value = true
     error.value = ''
 
-    const response = await axios.get('http://localhost:8080/api/user/get-role', {
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/get-role`, {
       params: {
         role: 4,
         pageNum: currentPage.value,
@@ -162,9 +166,8 @@ const InviteHistoryRecordListload = async () => {
     InviteHistoryRecordLoading.value = true
     InviteHistoryRecordError.value = ''
 
-    const response = await axios.get('http://localhost:8080/api/user/get-role', {
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-historyRecord`, {
       params: {
-        role: 4,
         pageNum: InviteHistoryRecordCurrentPage.value,
         pageSize: 10
       },
@@ -256,7 +259,7 @@ const CreateInviteURL = async () => {
     }
     const inviteId = response.data.data;
     inviteUrl.value = `${window.location.origin}/expertInvitedRegister/${inviteId}`;
-    CloseCreateComponent();
+    CloseCreateInviteLinkComponent();
     inviteUrlDialogVisible.value = true;
   } catch (error) {
     console.error('邀请失败:', error);

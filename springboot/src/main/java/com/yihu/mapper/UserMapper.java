@@ -1,5 +1,6 @@
 package com.yihu.mapper;
 
+import com.yihu.dto.UserQueryDTO;
 import com.yihu.entity.User;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,7 +23,7 @@ public interface UserMapper {
 
     int updateUserInfo(User user);
 
-    List<User> getUserByRole(@Param("role") int role);
+    List<User> query(UserQueryDTO userQueryDTO);
 
     int banUser(@Param("userId") int userId,@Param("updateId") Integer updateId,@Param("updateTime") Date updateTime);
 

@@ -1,6 +1,7 @@
 package com.yihu.service;
 
 import com.github.pagehelper.PageInfo;
+import com.yihu.dto.UserQueryDTO;
 import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.User;
 
@@ -21,7 +22,7 @@ public interface UserService {
 
     int updateUserInfo(Integer id, UserUpdateDTO updateDTO);
 
-    PageInfo<User> getUserByRoleWithPage(int role, int pageNum, int pageSize);
+    PageInfo<User> query(UserQueryDTO userQueryDTO, int pageNum, int pageSize);
 
     int banUser(int userId, int updateId);
 

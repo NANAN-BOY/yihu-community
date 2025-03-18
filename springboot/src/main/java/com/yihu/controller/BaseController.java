@@ -119,7 +119,7 @@ public class BaseController {
         }
     }
 
-    @GetMapping("/user/query")
+    @PostMapping("/user/query")
     public Result query(@RequestBody UserQueryDTO userQueryDTO,
                               @RequestParam(defaultValue = "1") int pageNum,
                               @RequestParam(defaultValue = "10") int pageSize) {

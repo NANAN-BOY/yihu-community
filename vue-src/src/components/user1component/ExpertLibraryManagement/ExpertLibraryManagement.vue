@@ -127,16 +127,25 @@ const userListLoad = async () => {
     loading.value = true
     error.value = ''
 
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/get-role`, {
-      params: {
-        role: 4,
-        pageNum: currentPage.value,
-        pageSize: 10
-      },
-      headers: {
-        token: store.state.token
-      }
-    })
+    const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_IP}/api/user/query`,
+        {
+          name: null,
+          phone: null,
+          role: 4,
+          location: null
+        },
+        {
+          params: {
+            pageNum: currentPage.value,
+            pageSize: 10
+          },
+          headers: {
+            token: store.state.token
+          }
+        }
+    )
+
 
     if (response.data.code === 200) {
       userList.value = [...userList.value, ...response.data.data.list]

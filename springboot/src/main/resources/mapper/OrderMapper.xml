@@ -22,4 +22,13 @@
         WHERE order_no = #{orderNo} AND status = #{oldStatus}
     </update>
 
+    <select id="findBuyId" resultType="java.lang.Integer">
+        SELECT buyer_id FROM `order` WHERE order_no = #{orderNo}
+    </select>
+
+    <insert id="insertVip" parameterType="com.yihu.entity.MemberShip">
+        INSERT INTO membership (order_no, user_id, buy_date, deadline, grade)
+        VALUES (#{orderNo}, #{userId}, #{buyDate}, #{deadline}, #{grade})
+    </insert>
+
 </mapper>

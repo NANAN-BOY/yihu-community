@@ -1,9 +1,11 @@
 package com.yihu.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import com.yihu.mapper.OrderMapper;
 import com.yihu.service.OrderService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.Date;
 
+@Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -69,6 +72,15 @@ public class OrderServiceImpl implements OrderService {
                 order.getEndAt()
         );
         if (affectedRows != 0) {
+            Integer buyerId = orderMapper.findBuyId(order.getOrderNo());
+            MemberShip memberShip = new MemberShip(order.getOrderNo(),
+                    buyerId, order.getPayAt(), order.getEndAt(), 1);
+            int isSuccess = orderMapper.insertVip(memberShip);
+            if (isSuccess > 0) {
+                log.info("会员信息: {}", memberShip);
+            }else {
+                log.error("会员信息插入失败: {}", memberShip);
+            }
             System.out.println("订单状态更新成功");
         }else {
             throw new RuntimeException("订单状态更新冲突或订单不存在: " + order.getOrderNo());

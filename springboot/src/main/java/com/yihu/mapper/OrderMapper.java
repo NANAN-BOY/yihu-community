@@ -1,5 +1,6 @@
 package com.yihu.mapper;
 
+import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import io.lettuce.core.dynamic.annotation.Param;
 
@@ -21,4 +22,8 @@ public interface OrderMapper {
                           @Param("payAt") Date payAt,
                           @Param("paymentType") Integer paymentType,
                           @Param("endAt") Date endAt);
+
+    Integer findBuyId(@Param("orderNo") String orderNo);
+
+    int insertVip(MemberShip memberShip);
 }

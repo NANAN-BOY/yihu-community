@@ -53,8 +53,23 @@
         WHERE id = #{id}
     </update>
 
-    <select id="getUserByRole" resultType="com.yihu.entity.User">
-        SELECT * FROM user WHERE role = #{role}
+    <select id="query" resultType="com.yihu.entity.User">
+        SELECT * FROM user
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+            <if test="location != null and location != ''">
+                AND location LIKE CONCAT('%', #{location}, '%')
+            </if>
+        </where>
+        ORDER BY id DESC
     </select>
 
     <update id="banUser">

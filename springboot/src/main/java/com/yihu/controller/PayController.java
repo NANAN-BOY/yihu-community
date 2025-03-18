@@ -24,12 +24,13 @@ import java.util.Date;
 @RestController
 @Slf4j
 @AllArgsConstructor
+@RequestMapping("/api/alipay")
 public class PayController {
 
     private final Config config;
     private final OrderService orderService; // 注入订单服务
 
-    @GetMapping("/alipay")
+    @GetMapping("/create")
     public String alipay(@RequestParam Integer type, @RequestParam float paymentAmount, @RequestParam Integer status) {
         Factory.setOptions(config);
         User currentUser = TokenUtils.getCurrentUser(); // 获取当前用户信息
@@ -92,6 +93,7 @@ public class PayController {
             order.setStatus(1);
             order.setPayAt(new Date());
             order.setOtherOrderNo(tradeNo); // 保存支付宝订单号
+            order.setPaymentType(1); // 支付方式：支付宝
             orderService.updateOrder(order);
 
             // TODO 触发业务逻辑（如发货）
@@ -110,4 +112,5 @@ public class PayController {
         AlipayTradeQueryResponse response = Factory.Payment.Common().query("1901270280992219136");
         return response.getHttpBody();
     }
+
 }

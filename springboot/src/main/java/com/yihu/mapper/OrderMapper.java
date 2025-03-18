@@ -18,5 +18,6 @@ public interface OrderMapper {
                           @Param("oldStatus") Integer oldStatus,
                           @Param("newStatus") Integer newStatus,
                           @Param("otherOrderNo") String otherOrderNo,
-                          @Param("payAt") Date payAt);
+                          @Param("payAt") Date payAt,
+                          @Param("paymentType") Integer paymentType);
 }

@@ -60,10 +60,11 @@ public class OrderServiceImpl implements OrderService {
         // 执行乐观锁更新
         int affectedRows = orderMapper.updateOrderStatus(
                 order.getOrderNo(),
-                order.getStatus() - 1,  // 示例：假设新状态=旧状态+1（按实际状态流转规则调整）
+                order.getStatus() - 1,  // 示例：假设新状态=旧状态+1
                 order.getStatus(),
                 order.getOtherOrderNo(),
-                order.getPayAt()
+                order.getPayAt(),
+                order.getPaymentType()
         );
 
         if (affectedRows == 0) {

@@ -12,9 +12,14 @@
                  )
     </insert>
 
-    <select id="findOrderById" resultType="com.yihu.entity.Order">
+    <select id="findByOrderNo" resultType="com.yihu.entity.Order">
         SELECT * FROM `order` WHERE order_no = #{orderNo}
     </select>
+
+    <update id="updateOrderStatus">
+        UPDATE `order` SET status = #{newStatus}, other_order_no = #{otherOrderNo}, pay_at = #{payAt}, payment_type = #{paymentType}
+        WHERE order_no = #{orderNo} AND status = #{oldStatus}
+    </update>
 
 
 </mapper>

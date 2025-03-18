@@ -3,6 +3,7 @@ package com.yihu.controller;
 import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
+import com.yihu.dto.UserQueryDTO;
 import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.User;
 import com.yihu.exception.ServiceException;
@@ -118,8 +119,8 @@ public class BaseController {
         }
     }
 
-    @GetMapping("/user/get-role")
-    public Result getUserRole(@RequestParam int role,
+    @GetMapping("/user/query")
+    public Result query(@RequestBody UserQueryDTO userQueryDTO,
                               @RequestParam(defaultValue = "1") int pageNum,
                               @RequestParam(defaultValue = "10") int pageSize) {
         User currentUser = TokenUtils.getCurrentUser();
@@ -130,7 +131,7 @@ public class BaseController {
             return Result.error(403, "权限不足");
         }
 
-        PageInfo<User> pageInfo = userService.getUserByRoleWithPage(role, pageNum, pageSize);
+        PageInfo<User> pageInfo = userService.query(userQueryDTO, pageNum, pageSize);
         if (pageInfo.getList().isEmpty()) {
             return Result.error(404, "未找到相关用户");
         } else {

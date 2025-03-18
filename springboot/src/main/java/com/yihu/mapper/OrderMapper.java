@@ -14,10 +14,11 @@ public interface OrderMapper {
 
     Order findByOrderNo(@Param("orderNo") String orderNo);
 
-    int updateOrderStatus(@Param("orderNo") String orderNo,
+    int vipOrder(@Param("orderNo") String orderNo,
                           @Param("oldStatus") Integer oldStatus,
                           @Param("newStatus") Integer newStatus,
                           @Param("otherOrderNo") String otherOrderNo,
                           @Param("payAt") Date payAt,
-                          @Param("paymentType") Integer paymentType);
+                          @Param("paymentType") Integer paymentType,
+                          @Param("endAt") Date endAt);
 }

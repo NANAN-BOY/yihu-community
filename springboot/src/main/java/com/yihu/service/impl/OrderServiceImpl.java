@@ -57,18 +57,20 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("订单号和状态不能为空");
         }
 
+        //购买vip
         // 执行乐观锁更新
-        int affectedRows = orderMapper.updateOrderStatus(
+        int affectedRows = orderMapper.vipOrder(
                 order.getOrderNo(),
                 order.getStatus() - 1,  // 示例：假设新状态=旧状态+1
                 order.getStatus(),
                 order.getOtherOrderNo(),
                 order.getPayAt(),
-                order.getPaymentType()
+                order.getPaymentType(),
+                order.getEndAt()
         );
-
-        if (affectedRows == 0) {
-            // 更新失败：可能订单不存在或状态不匹配
+        if (affectedRows != 0) {
+            System.out.println("订单状态更新成功");
+        }else {
             throw new RuntimeException("订单状态更新冲突或订单不存在: " + order.getOrderNo());
         }
     }

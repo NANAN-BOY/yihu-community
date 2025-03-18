@@ -16,10 +16,10 @@
         SELECT * FROM `order` WHERE order_no = #{orderNo}
     </select>
 
-    <update id="updateOrderStatus">
-        UPDATE `order` SET status = #{newStatus}, other_order_no = #{otherOrderNo}, pay_at = #{payAt}, payment_type = #{paymentType}
+    <update id="vipOrder">
+        UPDATE `order` SET status = #{newStatus}, other_order_no = #{otherOrderNo}, pay_at = #{payAt},
+                           payment_type = #{paymentType}, end_at = #{endAt}
         WHERE order_no = #{orderNo} AND status = #{oldStatus}
     </update>
-
 
 </mapper>

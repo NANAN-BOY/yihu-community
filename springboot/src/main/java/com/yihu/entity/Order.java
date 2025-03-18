@@ -1,5 +1,6 @@
 package com.yihu.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,8 +19,11 @@ public class Order {
     private Float drawProportion;//抽成比例
     private Float receivedAmount;;//应收金额（抽成完后收的金额）
     private Integer status;//订单状态（未支付：0 已支付：1 进行中：2 已完结：3）
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date createAt;//创建时间
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date payAt;//支付时间
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date endAt;//结束时间
     private Integer deleteFlag;
     private Date deleteAt;

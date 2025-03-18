@@ -46,4 +46,8 @@
         SELECT * FROM invite_expert_record WHERE isAgree IS NULL
     </select>
 
+    <select id="getByTime" resultType="com.yihu.entity.InviteExpertRecord">
+        SELECT * FROM invite_expert_record WHERE create_at BETWEEN #{startTime} AND #{endTime}
+    </select>
+
 </mapper>

@@ -89,4 +89,10 @@ public class ExpertServiceImpl implements ExpertService {
         PageHelper.startPage(pageNum, pageSize);
         return new PageInfo<>(expertMapper.getCreateRecord());
     }
+
+    @Override
+    public PageInfo<InviteExpertRecord> getByTime(Integer pageNum, Integer pageSize, Date startTime, Date endTime) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(expertMapper.getByTime(startTime,endTime));
+    }
 }

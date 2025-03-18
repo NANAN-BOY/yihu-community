@@ -132,4 +132,24 @@ public class ExpertController {
         }
         return Result.success(pageInfo);
     }
+
+    @GetMapping("/expert/get-byTime")
+    public Result getByTime(@RequestParam(defaultValue = "1") Integer pageNum,
+                           @RequestParam(defaultValue = "10") Integer pageSize,
+                            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
+                            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime){
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权：请先登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "禁止访问：权限不足");
+        }
+
+        PageInfo<InviteExpertRecord> pageInfo = expertService.getByTime(pageNum,pageSize,startTime,endTime);
+        if (pageInfo.getList().isEmpty()) {
+            return Result.error(404, "没有更多数据");
+        }
+        return Result.success(pageInfo);
+    }
 }

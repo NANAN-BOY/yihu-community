@@ -21,4 +21,6 @@ public interface ExpertService {
     int accept(int id, int isAgree, int expertId);
 
     PageInfo<InviteExpertRecord> getCreateRecord(Integer pageNum, Integer pageSize);
+
+    PageInfo<InviteExpertRecord> getByTime(Integer pageNum, Integer pageSize, Date startTime, Date endTime);
 }

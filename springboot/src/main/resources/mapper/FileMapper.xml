@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.FileMapper">
+    <insert id="insert" parameterType="com.yihu.entity.File">
+        insert into file(name,storage_path,original_name,file_type,file_size,create_time,md5,quote_count)
+        values(#{name},#{storagePath},#{originalName},#{fileType},#{fileSize},#{createTime},#{md5},#{quoteCount})
+    </insert>
+    
+    <update id="updateQuoteByid" parameterType="com.yihu.entity.File">
+        update file set quote_count = #{quoteCount} where id = #{id}
+    </update>
+
+    <select id="findByMd5" resultType="com.yihu.entity.File">
+        select * from file where md5 = #{md5} limit 1
+    </select>
+
+    <select id="selectById" resultType="com.yihu.entity.File">
+        select * from file where id = #{id}
+    </select>
+
+
+</mapper>

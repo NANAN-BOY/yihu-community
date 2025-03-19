@@ -51,7 +51,8 @@
               class="list"
               :infinite-scroll-disabled="InviteHistoryRecordDisabled"
           >
-            <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-item">
+            <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-item"
+                @click="viewInviteHistoryRecordDetails(InviteHistoryRecord)">
               <el-tag type="warning" v-if="InviteHistoryRecord.isAgree === null">未处理</el-tag>
               <el-tag type="success" v-if="InviteHistoryRecord.isAgree === 1">已接受</el-tag>
               <el-tag type="danger" v-if="InviteHistoryRecord.isAgree === 0">已拒绝</el-tag>
@@ -94,7 +95,9 @@
       <p><strong>加入时间:</strong> {{ formatDate(expertDetails.user_createDate) }}</p>
     </div>
     <div v-else v-loading="expertDetailsLoading">
-      <p>加载中...</p>
+      <p>...</p>
+      <p>...</p>
+      <p>...</p>
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button type="primary" @click="closeExpertDetailsDialog">关闭</el-button>
@@ -103,8 +106,8 @@
 </template>
 
 <script setup>
-import {ref, onMounted, computed, reactive} from 'vue';
-import {ElDialog, ElButton, ElSelect, ElOption, ElInput, ElMessage} from 'element-plus';
+import {ref, onMounted, computed, reactive, h} from 'vue';
+import {ElDialog, ElButton, ElSelect, ElOption, ElInput, ElMessage, ElMessageBox} from 'element-plus';
 import axios from 'axios';
 import store from "../../../store.js";
 import QRCode from 'qrcode.vue';
@@ -330,6 +333,47 @@ const CloseInviteRecordComponent = () => {
   InviteRecordDialogVisible.value = false;
 };
 
+const viewInviteHistoryRecordDetails = async (record) => {
+  console.log(record);
+  await ElMessageBox({
+    title: record.createAt + '创建的记录',
+    message: h('div', {style: 'line-height: 1.8;'}, [
+      // 标题
+      h('h3', {style: 'color: #409EFF; margin: 0 0 12px 0;'}, '详细信息'),
+
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '创建时间: '),
+        record.createAt?.substring(0, 16) || '-'
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '截止时间: '),
+        record.deadline?.substring(0, 16) || '-'
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '专家ID: '),
+        record.expertId || '无'
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '邀请人ID: '),
+        record.inviteUserId
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '处理状态: '),
+        record.isAgree === 0 ? '未处理' :
+            record.isAgree === 1 ? '已同意' : '已拒绝'
+      ]),
+
+      // 仅当拒绝时显示原因
+      record.isAgree === 2 && h('p', {style: 'margin: 6px 0; color: #F56C6C;'}, [
+        h('strong', '拒绝原因: '),
+        record.refuseReason || '无说明'
+      ])
+    ].filter(Boolean)), // 过滤掉 false 值
+
+    confirmButtonText: '关闭',
+    customClass: 'simple-message-box'
+  })
+}
 
 </script>
 

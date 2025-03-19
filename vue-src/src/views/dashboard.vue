@@ -294,6 +294,7 @@ const checkExpertInvite = () => {
             })
         return false
       } else {
+        store.dispatch('setExpertInviteId', null);
         done()
       }
     }

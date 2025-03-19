@@ -26,6 +26,21 @@
       </p>
     </div>
   </div>
+  <el-dialog
+      v-model="acceptInvitationDialogVisible"
+      title="提示"
+      width="500"
+      align-center
+  >
+    <span>请选择您的加入方式</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="handleRegister">注册新账号</el-button>
+        <el-button @click="handleAssociate">关联现有账号</el-button>
+        <el-button @click="handleCancel">稍后再说</el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -147,37 +162,28 @@ const refuseInvitation = async () => {
   }).catch(() => {
   })
 }
+const acceptInvitationDialogVisible = ref(false);
 const acceptInvitation = async () => {
-  ElMessageBox.confirm(
-      '请选择您的加入方式',
-      '提示',
-      {
-        confirmButtonText: '注册新账号',
-        cancelButtonText: '关联现有账号',
-        type: 'info',
-        center: true,
-      }
-  )
-      .then(() => {
-        ElMessage({
-          type: 'warning',
-          message: '请注册后继续操作',
-        })
-        store.dispatch('setExpertInviteId', inviteId);
-        router.push('/register');
-
-      })
-      .catch(() => {
-        if (!store.state.user.id) {
-          ElMessage({
-            type: 'warning',
-            message: '请登录后继续操作',
-          })
-        }
-        store.dispatch('setExpertInviteId', inviteId);
-        router.push('/dashboard');
-      })
+  acceptInvitationDialogVisible.value = true;
 }
+const handleRegister = () => {
+  ElMessage.warning('请注册后继续操作');
+  store.dispatch('setExpertInviteId', inviteId);
+  acceptInvitationDialogVisible.value = false;
+  router.push('/register');
+};
+const handleAssociate = () => {
+  if (!store.state.user.id) {
+    ElMessage.warning('请登录后继续操作');
+  }
+  store.dispatch('setExpertInviteId', inviteId);
+  acceptInvitationDialogVisible.value = false;
+  router.push('/dashboard');
+};
+const handleCancel = () => {
+  acceptInvitationDialogVisible.value = false;
+};
+
 </script>
 
 <style scoped>

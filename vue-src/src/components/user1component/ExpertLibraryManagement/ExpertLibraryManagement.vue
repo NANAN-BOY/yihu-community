@@ -75,7 +75,7 @@
         class="list"
         :infinite-scroll-disabled="disabled"
     >
-      <li v-for="user in userList" :key="user.id" class="list-item">
+      <li v-for="user in userList" :key="user.id" class="list-item" @click="viewExpertDetails(user.id)">
         <div>{{ user.name }}</div>
       </li>
       <li v-if="loading" v-loading="loading" class="list-item"></li>
@@ -85,16 +85,19 @@
     <p v-if="error" style="color: red">{{ error }}</p>
   </div>
   <!-- 查看专家详细信息的弹窗 -->
-  <el-dialog title="专家详细信息" v-model="expertDialogVisible" width="50%">
-    <div v-if="expertDetails">
-      <p><strong>专家姓名:</strong> {{ expertDetails.user_name }}</p>
-      <p><strong>用户 ID:</strong> {{ expertDetails.user_id }}</p>
-      <p><strong>注册手机号:</strong> {{ expertDetails.user_phoneNumber }}</p>
+  <el-dialog title="专家详细信息" v-model="expertDialogVisible" width="50%" @close="closeExpertDetailsDialog">
+    <div v-if="expertDetails" v-loading="expertDetailsLoading">
+      <p><strong>专家姓名:</strong> {{ expertDetails.name }}</p>
+      <p><strong>用户 ID:</strong> {{ expertDetails.id }}</p>
+      <p><strong>注册手机号:</strong> {{ expertDetails.phone }}</p>
       <p><strong>邀请人:</strong> {{ expertDetails.inviteUserInfo.invite_user_name }}</p>
       <p><strong>加入时间:</strong> {{ formatDate(expertDetails.user_createDate) }}</p>
     </div>
+    <div v-else v-loading="expertDetailsLoading">
+      <p>加载中...</p>
+    </div>
     <span slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="closeExpertDialog">关闭</el-button>
+      <el-button type="primary" @click="closeExpertDetailsDialog">关闭</el-button>
     </span>
   </el-dialog>
 </template>
@@ -109,8 +112,7 @@ import QRCode from 'qrcode.vue';
 
 const inviteUrl = ref('');
 const users = ref([]);
-const expertDialogVisible = ref(false);
-const expertDetails = ref(null);
+
 
 // 当前在职专家无限滚动列表所需数据
 const userList = ref([])
@@ -276,24 +278,28 @@ const CreateInviteURL = async () => {
   }
 };
 
-
+const expertDialogVisible = ref(false);
+const expertDetails = ref(null);
+const expertDetailsLoading = ref(false);
 const viewExpertDetails = async (userId) => {
+  expertDialogVisible.value = true;
+  expertDetailsLoading.value = true
   try {
     // 同时发起两个请求，一个获取专家信息，一个获取邀请人信息
     const [userResponse, inviteUserResponse] = await Promise.all([
-      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/users/getUserInfo/${userId}`),
-      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/inviteUserInfo/${userId}`)
+      await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/get-info?userId=${userId}`),
+      await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-record?${userId}`),
     ]);
-
+    console.log(userResponse.data);
+    console.log(inviteUserResponse.data);
     // 判断专家信息是否存在
-    if (userResponse.data) {
+    if (userResponse.data.code === 200) {
       // 获取到专家的详细信息
-      expertDetails.value = userResponse.data.user;
+      expertDetails.value = userResponse.data.data;
     } else {
       ElMessage.error('未找到专家详细信息');
       return;
     }
-
     // 判断邀请人信息是否存在
     if (inviteUserResponse.data) {
       // 获取到邀请人的信息并保存到专家详细信息中
@@ -301,14 +307,18 @@ const viewExpertDetails = async (userId) => {
     } else {
       ElMessage.error('未找到邀请人信息');
     }
-
-    // 显示专家对话框
-    expertDialogVisible.value = true;
+    expertDetailsLoading.value = false;
   } catch (error) {
     console.error('获取专家详细信息失败:', error);
     ElMessage.error('获取专家详细信息失败，请稍后重试');
   }
 };
+const closeExpertDetailsDialog = () => {
+  expertDialogVisible.value = false;
+  expertDetails.value = null;
+};
+
+
 
 const InviteRecordDialogVisible = ref(false);
 const OpenInviteRecordComponent = () => {
@@ -318,11 +328,7 @@ const CloseInviteRecordComponent = () => {
   InviteRecordDialogVisible.value = false;
 };
 
-// 关闭专家详细信息弹窗
-const closeExpertDialog = () => {
-  expertDialogVisible.value = false;
-  expertDetails.value = null;
-};
+
 </script>
 
 <style scoped>

@@ -89,9 +89,7 @@
   <el-dialog title="专家详细信息" v-model="expertDialogVisible" :width='dialogWidth' @close="closeExpertDetailsDialog">
     <div v-if="expertDetails" v-loading="expertDetailsLoading">
       <p><strong>专家姓名:</strong> {{ expertDetails.name }}</p>
-      <p><strong>用户 ID:</strong> {{ expertDetails.id }}</p>
-      <p><strong>注册手机号:</strong> {{ expertDetails.phone }}</p>
-      <p><strong>邀请人:</strong> {{ expertDetails.inviteUserInfo.invite_user_name }}</p>
+      <p><strong>地区：</strong> {{ getRegionName(expertDetails.location) }}</p>
       <p><strong>加入时间:</strong> {{ formatDate(expertDetails.user_createDate) }}</p>
     </div>
     <div v-else v-loading="expertDetailsLoading">
@@ -111,7 +109,27 @@ import {ElDialog, ElButton, ElSelect, ElOption, ElInput, ElMessage, ElMessageBox
 import axios from 'axios';
 import store from "../../../store.js";
 import QRCode from 'qrcode.vue';
+import {regionData} from "element-china-area-data";
+function getRegionName(regionCode) {
+  const codeToNameMap = {};
 
+  // 遍历省级数据
+  regionData.forEach((province) => {
+    codeToNameMap[province.value] = province.label;
+
+    // 遍历市级数据
+    province.children.forEach((city) => {
+      codeToNameMap[city.value] = `${province.label} ${city.label}`;
+
+      // 遍历县级数据
+      city.children.forEach((county) => {
+        codeToNameMap[county.value] = `${province.label} ${city.label} ${county.label}`;
+      });
+    });
+  });
+
+  return codeToNameMap[regionCode] || 'Error';
+}
 
 const inviteUrl = ref('');
 const users = ref([]);

@@ -375,6 +375,12 @@ const CloseInviteRecordComponent = () => {
   list-style: none;
 }
 
+.infinite-list-wrapper .list-item:hover {
+  background: #b6b6b6;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
 .infinite-list-wrapper .list-item {
   border-radius: 10px;
   padding: 10px;

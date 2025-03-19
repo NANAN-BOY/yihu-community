@@ -51,7 +51,8 @@
               class="list"
               :infinite-scroll-disabled="InviteHistoryRecordDisabled"
           >
-            <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-item">
+            <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-item"
+                @click="viewInviteHistoryRecordDetails(InviteHistoryRecord)">
               <el-tag type="warning" v-if="InviteHistoryRecord.isAgree === null">未处理</el-tag>
               <el-tag type="success" v-if="InviteHistoryRecord.isAgree === 1">已接受</el-tag>
               <el-tag type="danger" v-if="InviteHistoryRecord.isAgree === 0">已拒绝</el-tag>
@@ -75,7 +76,7 @@
         class="list"
         :infinite-scroll-disabled="disabled"
     >
-      <li v-for="user in userList" :key="user.id" class="list-item">
+      <li v-for="user in userList" :key="user.id" class="list-item" @click="viewExpertDetails(user.id)">
         <div>{{ user.name }}</div>
       </li>
       <li v-if="loading" v-loading="loading" class="list-item"></li>
@@ -85,32 +86,56 @@
     <p v-if="error" style="color: red">{{ error }}</p>
   </div>
   <!-- 查看专家详细信息的弹窗 -->
-  <el-dialog title="专家详细信息" v-model="expertDialogVisible" width="50%">
-    <div v-if="expertDetails">
-      <p><strong>专家姓名:</strong> {{ expertDetails.user_name }}</p>
-      <p><strong>用户 ID:</strong> {{ expertDetails.user_id }}</p>
-      <p><strong>注册手机号:</strong> {{ expertDetails.user_phoneNumber }}</p>
-      <p><strong>邀请人:</strong> {{ expertDetails.inviteUserInfo.invite_user_name }}</p>
+  <el-dialog title="专家详细信息" v-model="expertDialogVisible" :width='dialogWidth' @close="closeExpertDetailsDialog">
+    <div v-if="expertDetails" v-loading="expertDetailsLoading">
+      <p><strong>专家姓名:</strong> {{ expertDetails.name }}</p>
+      <p><strong>地区：</strong> {{ getRegionName(expertDetails.location) }}</p>
       <p><strong>加入时间:</strong> {{ formatDate(expertDetails.user_createDate) }}</p>
     </div>
+    <div v-else v-loading="expertDetailsLoading">
+      <p>...</p>
+      <p>...</p>
+      <p>...</p>
+    </div>
     <span slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="closeExpertDialog">关闭</el-button>
+      <el-button type="primary" @click="closeExpertDetailsDialog">关闭</el-button>
     </span>
   </el-dialog>
 </template>
 
 <script setup>
-import {ref, onMounted, computed, reactive} from 'vue';
-import {ElDialog, ElButton, ElSelect, ElOption, ElInput, ElMessage} from 'element-plus';
+import {ref, onMounted, computed, reactive, h} from 'vue';
+import {ElDialog, ElButton, ElSelect, ElOption, ElInput, ElMessage, ElMessageBox} from 'element-plus';
 import axios from 'axios';
 import store from "../../../store.js";
 import QRCode from 'qrcode.vue';
+import {regionData} from "element-china-area-data";
+function getRegionName(regionCode) {
+  const codeToNameMap = {};
 
+  // 遍历省级数据
+  regionData.forEach((province) => {
+    codeToNameMap[province.value] = province.label;
+
+    // 遍历市级数据
+    province.children.forEach((city) => {
+      codeToNameMap[city.value] = `${province.label} ${city.label}`;
+
+      // 遍历县级数据
+      city.children.forEach((county) => {
+        codeToNameMap[county.value] = `${province.label} ${city.label} ${county.label}`;
+      });
+    });
+  });
+
+  return codeToNameMap[regionCode] || 'Error';
+}
 
 const inviteUrl = ref('');
 const users = ref([]);
-const expertDialogVisible = ref(false);
-const expertDetails = ref(null);
+const dialogWidth = computed(() => {
+  return window.innerWidth <= 768 ? '90%' : '50%';
+});
 
 // 当前在职专家无限滚动列表所需数据
 const userList = ref([])
@@ -276,24 +301,28 @@ const CreateInviteURL = async () => {
   }
 };
 
-
+const expertDialogVisible = ref(false);
+const expertDetails = ref(null);
+const expertDetailsLoading = ref(false);
 const viewExpertDetails = async (userId) => {
+  expertDialogVisible.value = true;
+  expertDetailsLoading.value = true
   try {
     // 同时发起两个请求，一个获取专家信息，一个获取邀请人信息
     const [userResponse, inviteUserResponse] = await Promise.all([
-      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/users/getUserInfo/${userId}`),
-      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/ExpertLibrary/inviteUserInfo/${userId}`)
+      await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/get-info?userId=${userId}`),
+      await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-record?${userId}`),
     ]);
-
+    console.log(userResponse.data);
+    console.log(inviteUserResponse.data);
     // 判断专家信息是否存在
-    if (userResponse.data) {
+    if (userResponse.data.code === 200) {
       // 获取到专家的详细信息
-      expertDetails.value = userResponse.data.user;
+      expertDetails.value = userResponse.data.data;
     } else {
       ElMessage.error('未找到专家详细信息');
       return;
     }
-
     // 判断邀请人信息是否存在
     if (inviteUserResponse.data) {
       // 获取到邀请人的信息并保存到专家详细信息中
@@ -301,14 +330,18 @@ const viewExpertDetails = async (userId) => {
     } else {
       ElMessage.error('未找到邀请人信息');
     }
-
-    // 显示专家对话框
-    expertDialogVisible.value = true;
+    expertDetailsLoading.value = false;
   } catch (error) {
     console.error('获取专家详细信息失败:', error);
     ElMessage.error('获取专家详细信息失败，请稍后重试');
   }
 };
+const closeExpertDetailsDialog = () => {
+  expertDialogVisible.value = false;
+  expertDetails.value = null;
+};
+
+
 
 const InviteRecordDialogVisible = ref(false);
 const OpenInviteRecordComponent = () => {
@@ -318,45 +351,51 @@ const CloseInviteRecordComponent = () => {
   InviteRecordDialogVisible.value = false;
 };
 
-// 关闭专家详细信息弹窗
-const closeExpertDialog = () => {
-  expertDialogVisible.value = false;
-  expertDetails.value = null;
-};
+const viewInviteHistoryRecordDetails = async (record) => {
+  console.log(record);
+  await ElMessageBox({
+    title: record.createAt + '创建的记录',
+    message: h('div', {style: 'line-height: 1.8;'}, [
+      // 标题
+      h('h3', {style: 'color: #409EFF; margin: 0 0 12px 0;'}, '详细信息'),
+
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '创建时间: '),
+        record.createAt?.substring(0, 16) || '-'
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '截止时间: '),
+        record.deadline?.substring(0, 16) || '-'
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '专家ID: '),
+        record.expertId || '无'
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '邀请人ID: '),
+        record.inviteUserId
+      ]),
+      h('p', {style: 'margin: 6px 0;'}, [
+        h('strong', '处理状态: '),
+        record.isAgree === 0 ? '未处理' :
+            record.isAgree === 1 ? '已同意' : '已拒绝'
+      ]),
+
+      // 仅当拒绝时显示原因
+      record.isAgree === 2 && h('p', {style: 'margin: 6px 0; color: #F56C6C;'}, [
+        h('strong', '拒绝原因: '),
+        record.refuseReason || '无说明'
+      ])
+    ].filter(Boolean)), // 过滤掉 false 值
+
+    confirmButtonText: '关闭',
+    customClass: 'simple-message-box'
+  })
+}
+
 </script>
 
 <style scoped>
-/* 专家卡片列表样式 */
-.expert-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.expert-card {
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  padding: 16px;
-  width: 240px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-
-.expert-card:hover {
-  background-color: #f5f5f5;
-}
-
-.card-header {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.card-body {
-  font-size: 14px;
-  color: #666;
-}
 
 .infinite-list-wrapper {
   height: 80vh;
@@ -367,6 +406,12 @@ const closeExpertDialog = () => {
   padding: 0;
   margin: 0;
   list-style: none;
+}
+
+.infinite-list-wrapper .list-item:hover {
+  background: #b6b6b6;
+  transition: background 0.3s ease;
+  cursor: pointer;
 }
 
 .infinite-list-wrapper .list-item {
@@ -381,5 +426,15 @@ const closeExpertDialog = () => {
 
 .infinite-list-wrapper .list-item + .list-item {
   margin-top: 10px;
+}
+
+.responsive-dialog {
+  width: 90%;
+}
+
+@media (max-width: 768px) {
+  .responsive-dialog {
+    width: 100%;
+  }
 }
 </style>

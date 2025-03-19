@@ -94,7 +94,8 @@ const refuseInvitation = async () => {
       h('p', '您为什么拒绝？'),
       h('el-input', {
         modelValue: '',
-        'onUpdate:modelValue': (val) => { /* 保留输入框逻辑 */ }
+        'onUpdate:modelValue': (val) => {
+        }
       })
     ]),
     showCancelButton: true,
@@ -109,26 +110,30 @@ const refuseInvitation = async () => {
         }
         instance.confirmButtonLoading = true
         instance.confirmButtonText = '提交中...'
-        axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/expert/refuse-invite`, {
-          id: inviteId.value,
-          reason: instance.inputValue
+        axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/expert/refuse`, {},
+            {
+              params: {
+                id: inviteId.value,
+                isAgree: 0,
+                reason: instance.inputValue
+              }
         }).then(response => {
           if (response.data.code === 200) {
+            ElMessage.success(response.data.data);
             done()
             router.push('/')
           } else {
             // 请求成功但业务逻辑失败
-            ElMessage.error(response.data.msg || '提交失败')
+            ElMessage.error(response.data.data || '提交失败')
             instance.confirmButtonLoading = false
             instance.confirmButtonText = '提交'
           }
         }).catch(error => {
           console.error('请求失败:', error)
-          ElMessage.error(`请求失败: ${error.response?.data?.msg || error.message}`)
+          ElMessage.error(`请求失败: ${error.response?.data?.data || error.message}`)
           instance.confirmButtonLoading = false // 保持对话框开启
           instance.confirmButtonText = '提交'
         }).finally(() => {
-          // 移除done调用，只在成功时关闭对话框
           setTimeout(() => {
             instance.confirmButtonLoading = false
             instance.confirmButtonText = '提交'
@@ -139,9 +144,7 @@ const refuseInvitation = async () => {
       }
     }
   }).then(() => {
-    ElMessage.success('操作已提交')
   }).catch(() => {
-    ElMessage.info('操作已取消')
   })
 }
 const acceptInvitation = async () => {

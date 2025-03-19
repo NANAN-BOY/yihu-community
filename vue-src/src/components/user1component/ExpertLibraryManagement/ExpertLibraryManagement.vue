@@ -85,7 +85,7 @@
     <p v-if="error" style="color: red">{{ error }}</p>
   </div>
   <!-- 查看专家详细信息的弹窗 -->
-  <el-dialog title="专家详细信息" v-model="expertDialogVisible" width="50%" @close="closeExpertDetailsDialog">
+  <el-dialog title="专家详细信息" v-model="expertDialogVisible" :width='dialogWidth' @close="closeExpertDetailsDialog">
     <div v-if="expertDetails" v-loading="expertDetailsLoading">
       <p><strong>专家姓名:</strong> {{ expertDetails.name }}</p>
       <p><strong>用户 ID:</strong> {{ expertDetails.id }}</p>
@@ -112,7 +112,9 @@ import QRCode from 'qrcode.vue';
 
 const inviteUrl = ref('');
 const users = ref([]);
-
+const dialogWidth = computed(() => {
+  return window.innerWidth <= 768 ? '90%' : '50%';
+});
 
 // 当前在职专家无限滚动列表所需数据
 const userList = ref([])
@@ -332,37 +334,6 @@ const CloseInviteRecordComponent = () => {
 </script>
 
 <style scoped>
-/* 专家卡片列表样式 */
-.expert-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.expert-card {
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  padding: 16px;
-  width: 240px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-
-.expert-card:hover {
-  background-color: #f5f5f5;
-}
-
-.card-header {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.card-body {
-  font-size: 14px;
-  color: #666;
-}
 
 .infinite-list-wrapper {
   height: 80vh;
@@ -393,5 +364,15 @@ const CloseInviteRecordComponent = () => {
 
 .infinite-list-wrapper .list-item + .list-item {
   margin-top: 10px;
+}
+
+.responsive-dialog {
+  width: 90%;
+}
+
+@media (max-width: 768px) {
+  .responsive-dialog {
+    width: 100%;
+  }
 }
 </style>

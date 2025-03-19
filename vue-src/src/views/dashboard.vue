@@ -316,7 +316,7 @@ onMounted(() => {
 
 <style scoped>
 .top-navbar {
-  background-color: #3ec474;
+  background-color: #3e72f5;
   color: white;
   padding: 0;
   display: flex;

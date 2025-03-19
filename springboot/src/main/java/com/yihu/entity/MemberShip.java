@@ -25,4 +25,13 @@ public class MemberShip {
         this.deadline = deadline;
         this.grade = grade;
     }
+
+    public MemberShip(Integer memberShipId, String orderNo, Integer userId, Date buyDate, Date deadline, Integer grade) {
+        this.memberShipId = memberShipId;
+        this.orderNo = orderNo;
+        this.userId = userId;
+        this.buyDate = buyDate;
+        this.deadline = deadline;
+        this.grade = grade;
+    }
 }

@@ -6,8 +6,10 @@ import com.alipay.easysdk.kernel.Config;
 import com.alipay.easysdk.payment.common.models.AlipayTradeQueryResponse;
 import com.alipay.easysdk.payment.facetoface.models.AlipayTradePrecreateResponse;
 import com.yihu.common.AuthAccess;
+import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import com.yihu.entity.User;
+import com.yihu.service.MemberShipService;
 import com.yihu.service.OrderService;
 import com.yihu.utils.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +32,7 @@ public class PayController {
 
     private final Config config;
     private final OrderService orderService;
+    private final MemberShipService memberShipService;
 
     @GetMapping("/create")
     public String alipay(@RequestParam Integer type) {
@@ -100,20 +103,33 @@ public class PayController {
             order.setOtherOrderNo(tradeNo);
             order.setPaymentType(1);
 
-            // 计算会员截止日期
-            Date payAt = order.getPayAt();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(payAt);
+            MemberShip ms = memberShipService.isMemberValid(order.getBuyerId());
 
-            if (order.getType() == 1) {
-                calendar.add(Calendar.MONTH, 1);
-            } else if (order.getType() == 2) {
-                calendar.add(Calendar.YEAR, 1);
+            if (ms != null) {
+                Date endAt = ms.getDeadline();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(endAt);
+                if (order.getType() == 1) {
+                    calendar.add(Calendar.MONTH, 1);
+                } else if (order.getType() == 2) {
+                    calendar.add(Calendar.YEAR, 1);
+                }
+                order.setEndAt(calendar.getTime());
+            } else {
+                // 计算会员截止日期
+                Date payAt = order.getPayAt();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(payAt);
+
+                if (order.getType() == 1) {
+                    calendar.add(Calendar.MONTH, 1);
+                } else if (order.getType() == 2) {
+                    calendar.add(Calendar.YEAR, 1);
+                }
+                order.setEndAt(calendar.getTime());
             }
 
-            order.setEndAt(calendar.getTime());
-
-            orderService.updateOrder(order);
+            orderService.updateOrder(order, ms);
 
             log.info("订单支付成功处理完成: {}", orderNo);
         } else {

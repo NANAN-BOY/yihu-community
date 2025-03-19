@@ -3,6 +3,7 @@ package com.yihu.service.impl;
 import cn.hutool.core.util.IdUtil;
 import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
+import com.yihu.mapper.MemberShipMapper;
 import com.yihu.mapper.OrderMapper;
 import com.yihu.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +20,12 @@ import java.util.Date;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
+    private final MemberShipMapper memberShipMapper;
 
     @Autowired
-    public OrderServiceImpl(OrderMapper orderMapper) {
+    public OrderServiceImpl(OrderMapper orderMapper, MemberShipMapper memberShipMapper) {
         this.orderMapper = orderMapper;
+        this.memberShipMapper = memberShipMapper;
     }
 
 
@@ -54,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateOrder(Order order) {
+    public void updateOrder(Order order, MemberShip ms) {
         // 参数校验
         if (order.getOrderNo() == null || order.getStatus() == null) {
             throw new IllegalArgumentException("订单号和状态不能为空");
@@ -69,17 +72,28 @@ public class OrderServiceImpl implements OrderService {
                 order.getOtherOrderNo(),
                 order.getPayAt(),
                 order.getPaymentType(),
-                order.getEndAt()
+                order.getPayAt()
         );
         if (affectedRows != 0) {
-            Integer buyerId = orderMapper.findBuyId(order.getOrderNo());
-            MemberShip memberShip = new MemberShip(order.getOrderNo(),
-                    buyerId, order.getPayAt(), order.getEndAt(), 1);
-            int isSuccess = orderMapper.insertVip(memberShip);
-            if (isSuccess > 0) {
-                log.info("会员信息: {}", memberShip);
-            }else {
-                log.error("会员信息插入失败: {}", memberShip);
+            if (ms == null) {
+                MemberShip memberShip = new MemberShip(order.getOrderNo(),
+                        order.getBuyerId(), order.getPayAt(), order.getEndAt(), 1);
+                int isSuccess = orderMapper.insertVip(memberShip);
+                if (isSuccess > 0) {
+                    log.info("会员信息: {}", memberShip);
+                } else {
+                    log.error("会员信息插入失败: {}", memberShip);
+                }
+            } else {
+                log.info("会员信息已存在: {}", order.getBuyerId());
+                MemberShip memberShip = new MemberShip(order.getOrderNo(),
+                        order.getBuyerId(), order.getPayAt(), order.getEndAt(), 1);
+                int isSuccess = orderMapper.updateVip(memberShip);
+                if (isSuccess > 0) {
+                    log.info("会员信息更新成功: {}", memberShip);
+                } else {
+                    log.error("会员信息更新失败: {}", memberShip);
+                }
             }
             System.out.println("订单状态更新成功");
         }else {

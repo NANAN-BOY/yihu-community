@@ -1,5 +1,6 @@
 package com.yihu.service;
 
+import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 
 public interface OrderService {
@@ -10,5 +11,5 @@ public interface OrderService {
 
     Order findByOrderNo(String orderNo);
 
-    void updateOrder(Order order);
+    void updateOrder(Order order, MemberShip ms);
 }

@@ -23,7 +23,7 @@ public interface OrderMapper {
                           @Param("paymentType") Integer paymentType,
                           @Param("endAt") Date endAt);
 
-    Integer findBuyId(@Param("orderNo") String orderNo);
-
     int insertVip(MemberShip memberShip);
+
+    int updateVip(MemberShip memberShip);
 }

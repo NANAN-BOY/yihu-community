@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.entity.InviteExpertRecord;
+import com.yihu.entity.Order;
 import com.yihu.entity.User;
 import com.yihu.service.ExpertService;
 import com.yihu.utils.TokenUtils;
@@ -151,5 +152,40 @@ public class ExpertController {
             return Result.error(404, "没有更多数据");
         }
         return Result.success(pageInfo);
+    }
+
+    @GetMapping("/expert/orderList")
+    public Result orderList(@RequestParam(defaultValue = "1") Integer pageNum,
+                            @RequestParam(defaultValue = "10") Integer pageSize) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权：请先登录");
+        }
+        if (currentUser.getRole() != 4) {
+            return Result.error(403, "禁止访问：权限不足");
+        }
+
+        PageInfo<Order> pageInfo = expertService.getOrderList(pageNum, pageSize);
+        if (pageInfo.getList().isEmpty()) {
+            return Result.error(404, "没有更多数据");
+        }
+        return Result.success(pageInfo);
+    }
+
+    @PostMapping("/expert/preemptOrder")
+    public Result preemptOrder(@RequestParam String orderNo, @RequestParam int buyerId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权：请先登录");
+        }
+        if (currentUser.getRole() != 4) {
+            return Result.error(403, "禁止访问：权限不足");
+        }
+        int isSuccess = expertService.preemptOrder(orderNo, buyerId, currentUser.getId());
+        if (isSuccess == 0) {
+            return Result.success("成功接受订单");
+        } else {
+            return Result.error(500, "接受订单失败");
+        }
     }
 }

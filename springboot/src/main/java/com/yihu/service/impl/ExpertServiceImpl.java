@@ -2,23 +2,32 @@ package com.yihu.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yihu.entity.Business;
 import com.yihu.entity.InviteExpertRecord;
+import com.yihu.entity.Order;
+import com.yihu.mapper.BusinessMapper;
 import com.yihu.mapper.ExpertMapper;
+import com.yihu.mapper.OrderMapper;
 import com.yihu.service.ExpertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
 @Service
 public class ExpertServiceImpl implements ExpertService {
     private final ExpertMapper expertMapper;
+    private final OrderMapper orderMapper;
+    private final BusinessMapper businessMapper;
 
     @Autowired
-    public ExpertServiceImpl(ExpertMapper expertMapper) {
+    public ExpertServiceImpl(ExpertMapper expertMapper, OrderMapper orderMapper, BusinessMapper businessMapper) {
         this.expertMapper = expertMapper;
+        this.orderMapper = orderMapper;
+        this.businessMapper = businessMapper;
     }
 
     @Override
@@ -94,5 +103,26 @@ public class ExpertServiceImpl implements ExpertService {
     public PageInfo<InviteExpertRecord> getByTime(Integer pageNum, Integer pageSize, Date startTime, Date endTime) {
         PageHelper.startPage(pageNum, pageSize);
         return new PageInfo<>(expertMapper.getByTime(startTime,endTime));
+    }
+
+    @Override
+    public PageInfo<Order> getOrderList(Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(orderMapper.getOrderList());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int preemptOrder(String orderNo, int buyerId, Integer expertId) {
+        Date currentDate = new Date(); // 获取当前日期时间
+        Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
+        int isSuccess = orderMapper.updateExpertOrder(orderNo, expertId);
+        Business business = new Business(orderNo, buyerId, expertId, 1, currentTimestamp);
+        int isBusiness = businessMapper.insertBusiness(business);
+        if (isSuccess > 0 && isBusiness > 0) {
+            return 0;//成功
+        } else {
+            return -1;//失败
+        }
     }
 }

@@ -9,4 +9,5 @@
         from membership
         where user_id = #{userId}
     </select>
+
 </mapper>

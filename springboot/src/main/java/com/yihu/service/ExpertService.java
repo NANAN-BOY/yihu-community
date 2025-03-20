@@ -2,6 +2,7 @@ package com.yihu.service;
 
 import com.github.pagehelper.PageInfo;
 import com.yihu.entity.InviteExpertRecord;
+import com.yihu.entity.Order;
 import com.yihu.entity.User;
 
 import java.util.Date;
@@ -23,4 +24,8 @@ public interface ExpertService {
     PageInfo<InviteExpertRecord> getCreateRecord(Integer pageNum, Integer pageSize);
 
     PageInfo<InviteExpertRecord> getByTime(Integer pageNum, Integer pageSize, Date startTime, Date endTime);
+
+    PageInfo<Order> getOrderList(Integer pageNum, Integer pageSize);
+
+    int preemptOrder(String orderNo, int buyerId, Integer id);
 }

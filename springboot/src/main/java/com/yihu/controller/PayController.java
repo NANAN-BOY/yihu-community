@@ -54,6 +54,9 @@ public class PayController {
         } else if (type == 2) {
             productName = "包年易互会员";
             paymentAmount = 120.00f;
+        } else if (type == 0) {
+            productName = "专家定制服务";
+            paymentAmount = 2000.00f;
         } else {
             throw new RuntimeException("无效的商品类型");
         }
@@ -106,33 +109,37 @@ public class PayController {
             order.setOtherOrderNo(tradeNo);
             order.setPaymentType(1);
 
-            MemberShip ms = memberShipService.isMemberValid(order.getBuyerId());
+            if (order.getType() != 0) {
+                MemberShip ms = memberShipService.isMemberValid(order.getBuyerId());
 
-            if (ms != null) {
-                Date endAt = ms.getDeadline();
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(endAt);
-                if (order.getType() == 1) {
-                    calendar.add(Calendar.MONTH, 1);
-                } else if (order.getType() == 2) {
-                    calendar.add(Calendar.YEAR, 1);
+                if (ms != null) {
+                    Date endAt = ms.getDeadline();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(endAt);
+                    if (order.getType() == 1) {
+                        calendar.add(Calendar.MONTH, 1);
+                    } else if (order.getType() == 2) {
+                        calendar.add(Calendar.YEAR, 1);
+                    }
+                    order.setEndAt(calendar.getTime());
+                } else {
+                    // 计算会员截止日期
+                    Date payAt = order.getPayAt();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(payAt);
+
+                    if (order.getType() == 1) {
+                        calendar.add(Calendar.MONTH, 1);
+                    } else if (order.getType() == 2) {
+                        calendar.add(Calendar.YEAR, 1);
+                    }
+                    order.setEndAt(calendar.getTime());
                 }
-                order.setEndAt(calendar.getTime());
+
+                orderService.updateOrder(order, ms);
             } else {
-                // 计算会员截止日期
-                Date payAt = order.getPayAt();
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(payAt);
-
-                if (order.getType() == 1) {
-                    calendar.add(Calendar.MONTH, 1);
-                } else if (order.getType() == 2) {
-                    calendar.add(Calendar.YEAR, 1);
-                }
-                order.setEndAt(calendar.getTime());
+                orderService.updateOrder(order, null);
             }
-
-            orderService.updateOrder(order, ms);
 
             log.info("订单支付成功处理完成: {}", orderNo);
         } else {

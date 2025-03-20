@@ -62,6 +62,24 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderNo() == null || order.getStatus() == null) {
             throw new IllegalArgumentException("订单号和状态不能为空");
         }
+        //专家服务订单
+        if (order.getType() == 0) {
+            // 执行乐观锁更新
+            int affectedRows = orderMapper.ExpertOrder(
+                    order.getOrderNo(),
+                    order.getStatus() - 1,  // 示例：假设新状态=旧状态+1
+                    order.getStatus(),
+                    order.getOtherOrderNo(),
+                    order.getPayAt(),
+                    order.getPaymentType()
+            );
+            if (affectedRows != 0) {
+                log.info("订单状态更新成功");
+                return;
+            } else {
+                throw new RuntimeException("订单状态更新冲突或订单不存在: " + order.getOrderNo());
+            }
+        }
 
         //购买vip
         // 执行乐观锁更新

@@ -37,4 +37,28 @@
         WHERE user_id = #{userId}
     </update>
 
+    <update id="ExpertOrder">
+        UPDATE `order`
+        SET status         = #{newStatus},
+            other_order_no = #{otherOrderNo},
+            pay_at         = #{payAt},
+            payment_type   = #{paymentType}
+        WHERE order_no = #{orderNo}
+          AND status = #{oldStatus}
+    </update>
+
+    <select id="getOrderList" resultType="com.yihu.entity.Order">
+        SELECT *
+        FROM `order`
+        WHERE type = 0
+          AND payee_id IS NULL
+          AND status = 1
+    </select>
+
+    <update id="updateExpertOrder">
+        UPDATE `order`
+        SET payee_id = #{expertId}
+        WHERE order_no = #{orderNo}
+    </update>
+
 </mapper>

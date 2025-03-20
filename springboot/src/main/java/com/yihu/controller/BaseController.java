@@ -5,8 +5,10 @@ import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.dto.UserQueryDTO;
 import com.yihu.dto.UserUpdateDTO;
+import com.yihu.entity.MemberShip;
 import com.yihu.entity.User;
 import com.yihu.exception.ServiceException;
+import com.yihu.service.MemberShipService;
 import com.yihu.service.OrderService;
 import com.yihu.service.UserService;
 import com.yihu.utils.TokenUtils;
@@ -21,11 +23,13 @@ public class BaseController {
 
     private final UserService userService;
     private final OrderService orderService;
+    private final MemberShipService memberShipService;
 
     @Autowired
-    public BaseController(UserService userService, OrderService orderService) {
+    public BaseController(UserService userService, OrderService orderService, MemberShipService memberShipService) {
         this.userService = userService;
         this.orderService = orderService;
+        this.memberShipService = memberShipService;
     }
 
     @AuthAccess
@@ -171,5 +175,14 @@ public class BaseController {
         }else{
             return Result.error(500,"解封失败");
         }
+    }
+
+    @GetMapping("/user/vip")
+    public Result isVip(@RequestParam int userId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        return Result.success(memberShipService.isMemberValid(userId));
     }
 }

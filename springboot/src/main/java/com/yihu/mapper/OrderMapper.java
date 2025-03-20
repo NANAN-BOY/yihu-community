@@ -5,6 +5,7 @@ import com.yihu.entity.Order;
 import io.lettuce.core.dynamic.annotation.Param;
 
 import java.util.Date;
+import java.util.List;
 
 
 public interface OrderMapper {
@@ -26,4 +27,15 @@ public interface OrderMapper {
     int insertVip(MemberShip memberShip);
 
     int updateVip(MemberShip memberShip);
+
+    int ExpertOrder(@Param("orderNo") String orderNo,
+                    @Param("oldStatus") Integer oldStatus,
+                    @Param("newStatus") Integer newStatus,
+                    @Param("otherOrderNo") String otherOrderNo,
+                    @Param("payAt") Date payAt,
+                    @Param("paymentType") Integer paymentType);
+
+    List<Order> getOrderList();
+
+    int updateExpertOrder(@Param("orderNo") String orderNo, @Param("expertId") Integer expertId);
 }

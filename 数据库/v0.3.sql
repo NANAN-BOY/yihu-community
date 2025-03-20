@@ -12,7 +12,7 @@ drop table if exists membership;
 
 drop table if exists `order`;
 
-drop table if exists service;
+drop table if exists business;
 
 drop table if exists setting;
 
@@ -81,9 +81,9 @@ create table `order`
 );
 
 /*==============================================================*/
-/* Table: service                                               */
+/* Table: business                                               */
 /*==============================================================*/
-create table service
+create table business
 (
    id                   int not null,
    order_id             int not null,
@@ -139,7 +139,7 @@ alter table communication add constraint FK_send_user_id foreign key (send_user_
       references user (id) on delete restrict on update restrict;
 
 alter table communication add constraint FK_server_id foreign key (server_id)
-      references service (id) on delete restrict on update restrict;
+    references business (id) on delete restrict on update restrict;
 
 alter table communication_file add constraint FK_communication_id foreign key (id)
       references communication (id) on delete restrict on update restrict;
@@ -159,7 +159,8 @@ alter table `order` add constraint FK_delete_by_id foreign key (delete_by_id)
 alter table `order` add constraint FK_payee_id foreign key (id)
       references user (id) on delete restrict on update restrict;
 
-alter table service add constraint FK_order_id foreign key (order_id)
+alter table business
+    add constraint FK_order_id foreign key (order_id)
       references `order` (id) on delete restrict on update restrict;
 
 alter table setting add constraint FK_change_userid foreign key (id)

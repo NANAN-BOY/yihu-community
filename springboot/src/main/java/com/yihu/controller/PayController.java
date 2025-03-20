@@ -6,6 +6,7 @@ import com.alipay.easysdk.kernel.Config;
 import com.alipay.easysdk.payment.common.models.AlipayTradeQueryResponse;
 import com.alipay.easysdk.payment.facetoface.models.AlipayTradePrecreateResponse;
 import com.yihu.common.AuthAccess;
+import com.yihu.common.Result;
 import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import com.yihu.entity.User;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -141,9 +144,19 @@ public class PayController {
 
     @AuthAccess
     @GetMapping("/query")
-    public String query() throws Exception {
+    public Result query(@RequestParam String orderNo,
+                        @RequestParam(required = false) Boolean forceAlipay) throws Exception {
+
+        // 默认优先查本地数据库
+        if (forceAlipay == null || !forceAlipay) {
+            Order order = orderService.findByOrderNo(orderNo);
+            if (order != null) {
+                return Result.success(order);
+            }
+        }
+
         Factory.setOptions(config);
-        AlipayTradeQueryResponse response = Factory.Payment.Common().query("1901270280992219136");
-        return response.getHttpBody();
+        AlipayTradeQueryResponse response = Factory.Payment.Common().query(orderNo);
+        return Result.success(response.getHttpBody());
     }
 }

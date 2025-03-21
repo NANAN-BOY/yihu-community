@@ -4,27 +4,25 @@
     <el-header class="top-navbar">
       <div class="header-content">
         <!-- MobilePhoneMenuButton -->
-        <el-button
-            v-if="isMobile"
-            class="mobile-menu-button"
-            @click="drawerVisible = true"
-        >
+        <el-button v-if="isMobile" class="mobile-menu-button" @click="drawerVisible = true">
           <el-icon>
             <Expand/>
           </el-icon>
         </el-button>
-        <!-- 左侧标题 -->
-        <el-col :span="isMobile ? 24 : 20" class="left-menu">
-          <span :class="isMobile ? 'menu-title-mobile' : 'menu-title'"
-          ><strong>易互</strong></span
-          >
+        <!-- Logo -->
+        <el-col :span="isMobile ? 19 : 20" class="left-menu">
+          <span :class="isMobile ? 'menu-title-mobile' : 'menu-title'"><strong>易互</strong></span>
         </el-col>
-        <!-- 电脑端登出按钮 -->
-        <el-col v-if="!isMobile" :span="4" class="right-menu">
-          <el-button type="primary" @click="handleLogout" class="logout-button"
-          >安全登出
-          </el-button
-          >
+        <el-col :span="1" class="right-menu">
+          <el-button @click="openVIPAreaDialogVisible" type="warning" class="logout-button" color="warning">
+            <div v-if="MembershipInfo == null && MembershipLevel===0">不是会员</div>
+            <div v-if="MembershipInfo !== null && MembershipLevel===0">会员已过期</div>
+            <div v-if="MembershipLevel===1">普通会员</div>
+            <div v-if="MembershipError">请重试</div>
+            <div v-if="MembershipStatusLoading">加载中..</div>
+          </el-button>
+          <!-- LogoutButton -->
+          <el-button v-if="!isMobile" type="primary" @click="handleLogout" class="logout-button">安全登出</el-button>
         </el-col>
       </div>
     </el-header>
@@ -64,13 +62,6 @@
               <span>{{ menu.title }}</span>
             </el-menu-item>
           </template>
-          <!-- 桌面端手机登出按钮 -->
-          <el-menu-item v-if="isMobile" index="logout" @click="handleLogout">
-            <el-button type="primary" class="mobile-logout-button"
-            >安全登出
-            </el-button
-            >
-          </el-menu-item>
         </el-menu>
       </el-aside>
       <!-- 主内容区 -->
@@ -81,12 +72,7 @@
       </el-container>
     </el-container>
     <!-- 手机端侧边栏 -->
-    <el-drawer
-        v-model="drawerVisible"
-        :size="'250px'"
-        direction="ltr"
-        :before-close="handleDrawerClose"
-    >
+    <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
       <el-menu class="el-menu-vertical-demo" @select="handleSelect">
         <template v-for="menu in menus">
           <el-sub-menu
@@ -129,10 +115,48 @@
       </el-menu>
     </el-drawer>
   </div>
+  <!-- VIPArea -->
+  <el-dialog
+      v-model="VIPAreaDialogVisible"
+      title="会员中心"
+      width="500"
+      align-center
+  >
+    <span v-if="MembershipLevel !== 0">
+        <p>购买日期: {{ MembershipInfo.buyDate }}</p>
+        <p>到期时间: {{ MembershipInfo.deadline }}</p>
+        <p>剩余天数: {{
+            Math.ceil((new Date(MembershipInfo.deadline) - new Date()) / (1000 * 60 * 60 * 24)) > 0 ? Math.ceil((new Date(MembershipInfo.deadline) - new Date()) / (1000 * 60 * 60 * 24)) : 0
+          }}</p>
+        <p>会员等级: {{
+            MembershipInfo.grade === 1 ? '普通会员' : MembershipInfo.grade === 2 ? '高级会员' : 'VIP会员'
+          }}</p>
+    </span>
+    <span v-else-if="MembershipInfo !== null && MembershipLevel===0">
+        <p>您的会员已经过期{{
+            Math.ceil((new Date() - new Date(MembershipInfo.deadline)) / (1000 * 60 * 60 * 24))
+          }}天了</p>
+        <p>请及时续费</p>
+    </span>
+    <span v-else>
+        <p>您还不是会员，点击立即购买</p>
+    </span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="VIPAreaDialogVisible = false">{{
+            MembershipLevel === 0 ? '立即购买' : '续费会员'
+          }}
+        </el-button>
+        <el-button type="primary" @click="VIPAreaDialogVisible = false">
+          确定
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import {ref, onMounted, h} from 'vue';
+import {ref, onMounted, h, watch, onUnmounted} from 'vue';
 import {useRouter} from 'vue-router';
 import store from '../store';
 import user2ProjectManagement from '../components/user2component/ProjectManagement/user2ProjectManagement.vue';
@@ -303,6 +327,70 @@ const checkExpertInvite = () => {
   })
 
 }
+//VIPArea
+const MembershipStatusLoading = ref(false);
+const MembershipLevel = ref(null);
+const MembershipError = ref(false);
+const MembershipInfo = ref(null);
+const checkMembershipStatus = () => {
+  MembershipStatusLoading.value = true;
+  MembershipError.value = false;
+  if (store.state.user.id === null) {
+    MembershipStatusLoading.value = false;
+    MembershipError.value = true;
+    return;
+  }
+  axios.get(
+      `${import.meta.env.VITE_BACKEND_IP}/api/user/vip`,
+      {
+        params: {
+          userId: store.state.user.id
+        },
+        headers: {
+          'token': store.state.token
+        }
+      }
+  )
+      .then(response => {
+        if (response.data.code === 200) {
+          if (response.data.data === null) {
+            MembershipLevel.value = 0;
+          } else {
+            MembershipLevel.value = response.data.data.grade;
+            if (new Date(response.data.data.deadline) < new Date()) {
+              MembershipLevel.value = 0;
+            }
+            MembershipInfo.value = response.data.data;
+          }
+          MembershipStatusLoading.value = false;
+        }
+      })
+      .catch(error => {
+        MembershipStatusLoading.value = false;
+        MembershipError.value = true;
+        ElMessage.error(`${error.message}`)
+      })
+}
+const VIPAreaDialogVisible = ref(false);
+const openVIPAreaDialogVisible = () => {
+  if (MembershipError.value === true) {
+    checkMembershipStatus();
+    return;
+  }
+  VIPAreaDialogVisible.value = true;
+}
+const stopWatch = watch(
+    () => store.state.user.id, // 监听 user.id
+    (newId, oldId) => {
+      // 当 id 从 null 变为有效值时触发检查
+      if (newId !== null && newId !== oldId) {
+        checkMembershipStatus()
+      }
+    }
+)
+onUnmounted(() => {
+  stopWatch()
+})
 onMounted(() => {
   const handleResize = () => {
     isMobile.value = window.innerWidth <= 768;
@@ -311,6 +399,7 @@ onMounted(() => {
   window.addEventListener('resize', handleResize);
   handleResize();
   checkExpertInvite();
+  checkMembershipStatus();
 });
 </script>
 
@@ -343,15 +432,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-}
-
-.menu-title {
-  margin-left: 10px;
-}
-
-.menu-title-mobile {
-  width: 100%;
-  text-align: center;
 }
 
 .right-menu {

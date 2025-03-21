@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 
 @Slf4j
@@ -57,11 +58,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateOrder(Order order, MemberShip ms) {
+    public Boolean updateOrder(String orderNo, String tradeNo) {
+
+        Order order = this.findByOrderNo(orderNo);
+        MemberShip ms = memberShipMapper.selectByUserID(order.getBuyerId());
         // 参数校验
         if (order.getOrderNo() == null || order.getStatus() == null) {
             throw new IllegalArgumentException("订单号和状态不能为空");
         }
+
+        order.setStatus(1);
+        order.setPayAt(new Date());
+        order.setOtherOrderNo(tradeNo);
+        order.setPaymentType(1);
         //专家服务订单
         if (order.getType() == 0) {
             // 执行乐观锁更新
@@ -70,52 +79,49 @@ public class OrderServiceImpl implements OrderService {
                     order.getStatus() - 1,  // 示例：假设新状态=旧状态+1
                     order.getStatus(),
                     order.getOtherOrderNo(),
-                    order.getPayAt(),
+                    new Date(),
                     order.getPaymentType()
             );
             if (affectedRows != 0) {
                 log.info("订单状态更新成功");
-                return;
+                return true;
             } else {
-                throw new RuntimeException("订单状态更新冲突或订单不存在: " + order.getOrderNo());
+                return false;
             }
         }
 
         //购买vip
+        Calendar calendar = Calendar.getInstance();
+        if (ms == null) {
+            calendar.setTime(order.getPayAt());
+        } else {
+            calendar.setTime(ms.getDeadline());
+        }
         // 执行乐观锁更新
         int affectedRows = orderMapper.vipOrder(
                 order.getOrderNo(),
                 order.getStatus() - 1,  // 示例：假设新状态=旧状态+1
                 order.getStatus(),
                 order.getOtherOrderNo(),
-                order.getPayAt(),
+                new Date(),
                 order.getPaymentType(),
-                order.getPayAt()
+                new Date()
         );
         if (affectedRows != 0) {
-            if (ms == null) {
-                MemberShip memberShip = new MemberShip(order.getOrderNo(),
-                        order.getBuyerId(), order.getPayAt(), order.getEndAt(), 1);
-                int isSuccess = orderMapper.insertVip(memberShip);
-                if (isSuccess > 0) {
-                    log.info("会员信息: {}", memberShip);
-                } else {
-                    log.error("会员信息插入失败: {}", memberShip);
-                }
-            } else {
-                log.info("会员信息已存在: {}", order.getBuyerId());
-                MemberShip memberShip = new MemberShip(order.getOrderNo(),
-                        order.getBuyerId(), order.getPayAt(), order.getEndAt(), 1);
-                int isSuccess = orderMapper.updateVip(memberShip);
-                if (isSuccess > 0) {
-                    log.info("会员信息更新成功: {}", memberShip);
-                } else {
-                    log.error("会员信息更新失败: {}", memberShip);
-                }
+            if (order.getType() == 1) {
+                calendar.add(Calendar.MONTH, 1);
+            } else if (order.getType() == 2) {
+                calendar.add(Calendar.YEAR, 1);
             }
-            System.out.println("订单状态更新成功");
+            MemberShip memberShip = new MemberShip(order.getOrderNo(),
+                    order.getBuyerId(), order.getPayAt(), calendar.getTime(), 1);
+            if (ms == null) {
+                return orderMapper.insertVip(memberShip) > 0;
+            } else {
+                return orderMapper.updateVip(memberShip) > 0;
+            }
         }else {
-            throw new RuntimeException("订单状态更新冲突或订单不存在: " + order.getOrderNo());
+            return false;
         }
     }
 

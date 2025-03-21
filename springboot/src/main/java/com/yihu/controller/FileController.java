@@ -106,8 +106,6 @@ public class FileController {
         }
     }
 
-
-
     @AuthAccess
     @GetMapping("/getFileStoragePath/{id}")
     public Result getFileStoragePath(@PathVariable Integer id) {

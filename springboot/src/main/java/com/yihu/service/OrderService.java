@@ -11,6 +11,6 @@ public interface OrderService {
 
     Order findByOrderNo(String orderNo);
 
-    void updateOrder(Order order, MemberShip ms);
+    Boolean updateOrder(String orderNo, String tradeNo);
 
 }

@@ -1,4 +1,5 @@
 <template>
+  <!-- Dashboard -->
   <div>
     <!-- TopNavbar -->
     <el-header class="top-navbar">
@@ -26,96 +27,100 @@
         </el-col>
       </div>
     </el-header>
+    <!-- Content -->
     <el-container style="height: auto">
-      <!-- 侧边栏 -->
-      <el-aside :width="sidebarWidth" class="sidebar">
-        <el-menu class="el-menu-vertical-demo" @select="handleSelect">
-          <template v-for="menu in menus">
-            <el-sub-menu
-                v-if="menu.children && store.state.user.role === menu.role"
-                :index="menu.index"
-                :key="`sub-${menu.index}`"
-            >
-              <template #title>
+      <!-- LeftSidebar -->
+      <div>
+        <!-- DesktopSidebar -->
+        <el-aside :width="sidebarWidth" class="sidebar">
+          <el-menu class="el-menu-vertical-demo" @select="handleSelect">
+            <template v-for="menu in menus">
+              <el-sub-menu
+                  v-if="menu.children && store.state.user.role === menu.role"
+                  :index="menu.index"
+                  :key="`sub-${menu.index}`"
+              >
+                <template #title>
+                  <el-icon>
+                    <component :is="menu.icon"/>
+                  </el-icon>
+                  <span>{{ menu.title }}</span>
+                </template>
+                <el-menu-item
+                    v-for="child in menu.children"
+                    :key="child.index"
+                    :index="child.index"
+                >
+                  {{ child.title }}
+                </el-menu-item>
+              </el-sub-menu>
+
+              <el-menu-item
+                  v-else-if="store.state.user.role === menu.role"
+                  :index="menu.index"
+                  :key="`item-${menu.index}`"
+              >
                 <el-icon>
                   <component :is="menu.icon"/>
                 </el-icon>
                 <span>{{ menu.title }}</span>
-              </template>
-              <el-menu-item
-                  v-for="child in menu.children"
-                  :key="child.index"
-                  :index="child.index"
-              >
-                {{ child.title }}
               </el-menu-item>
-            </el-sub-menu>
+            </template>
+          </el-menu>
+        </el-aside>
+        <!-- MobileSidebar -->
+        <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
+          <el-menu class="el-menu-vertical-demo" @select="handleSelect">
+            <template v-for="menu in menus">
+              <el-sub-menu
+                  v-if="menu.children && store.state.user.role === menu.role"
+                  :index="menu.index"
+                  :key="`m-sub-${menu.index}`"
+              >
+                <template #title>
+                  <el-icon>
+                    <component :is="menu.icon"/>
+                  </el-icon>
+                  <span>{{ menu.title }}</span>
+                </template>
+                <el-menu-item
+                    v-for="child in menu.children"
+                    :key="child.index"
+                    :index="child.index"
+                >
+                  {{ child.title }}
+                </el-menu-item>
+              </el-sub-menu>
 
-            <el-menu-item
-                v-else-if="store.state.user.role === menu.role"
-                :index="menu.index"
-                :key="`item-${menu.index}`"
-            >
-              <el-icon>
-                <component :is="menu.icon"/>
-              </el-icon>
-              <span>{{ menu.title }}</span>
+              <el-menu-item
+                  v-else-if="store.state.user.role === menu.role"
+                  :index="menu.index"
+                  :key="`m-item-${menu.index}`"
+              >
+                <el-icon>
+                  <component :is="menu.icon"/>
+                </el-icon>
+                <span>{{ menu.title }}</span>
+              </el-menu-item>
+            </template>
+            <!-- OnlyMobileLogoutButton -->
+            <el-menu-item v-if="isMobile" index="logout" @click="handleLogout">
+              <el-button type="primary" class="mobile-logout-button">
+                安全登出
+              </el-button>
             </el-menu-item>
-          </template>
-        </el-menu>
-      </el-aside>
-      <!-- 主内容区 -->
+          </el-menu>
+        </el-drawer>
+      </div>
+      <!-- MainContent -->
       <el-container>
         <el-main class="main-content">
           <component :is="currentComponent"/>
         </el-main>
       </el-container>
     </el-container>
-    <!-- 手机端侧边栏 -->
-    <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
-      <el-menu class="el-menu-vertical-demo" @select="handleSelect">
-        <template v-for="menu in menus">
-          <el-sub-menu
-              v-if="menu.children && store.state.user.role === menu.role"
-              :index="menu.index"
-              :key="`m-sub-${menu.index}`"
-          >
-            <template #title>
-              <el-icon>
-                <component :is="menu.icon"/>
-              </el-icon>
-              <span>{{ menu.title }}</span>
-            </template>
-            <el-menu-item
-                v-for="child in menu.children"
-                :key="child.index"
-                :index="child.index"
-            >
-              {{ child.title }}
-            </el-menu-item>
-          </el-sub-menu>
-
-          <el-menu-item
-              v-else-if="store.state.user.role === menu.role"
-              :index="menu.index"
-              :key="`m-item-${menu.index}`"
-          >
-            <el-icon>
-              <component :is="menu.icon"/>
-            </el-icon>
-            <span>{{ menu.title }}</span>
-          </el-menu-item>
-        </template>
-        <!-- 移动端登出按钮 -->
-        <el-menu-item v-if="isMobile" index="logout" @click="handleLogout">
-          <el-button type="primary" class="mobile-logout-button">
-            安全登出
-          </el-button>
-        </el-menu-item>
-      </el-menu>
-    </el-drawer>
   </div>
-  <!-- VIPArea -->
+  <!-- MyVIPArea -->
   <el-dialog
       v-model="VIPAreaDialogVisible"
       title="会员中心"
@@ -153,6 +158,8 @@
       </div>
     </template>
   </el-dialog>
+  <!-- BuyVIPArea -->
+
 </template>
 
 <script setup>
@@ -327,7 +334,7 @@ const checkExpertInvite = () => {
   })
 
 }
-//VIPArea
+//MyVIPArea
 const MembershipStatusLoading = ref(false);
 const MembershipLevel = ref(null);
 const MembershipError = ref(false);
@@ -378,6 +385,14 @@ const openVIPAreaDialogVisible = () => {
     return;
   }
   VIPAreaDialogVisible.value = true;
+}
+//BuyVipArea
+const BuyVIPAreaDialogVisible = ref(false);
+const openBuyVIPAreaDialogVisible = () => {
+  BuyVIPAreaDialogVisible.value = true;
+}
+const closeBuyVIPAreaDialogVisible = () => {
+  BuyVIPAreaDialogVisible.value = false;
 }
 const stopWatch = watch(
     () => store.state.user.id, // 监听 user.id
@@ -456,6 +471,7 @@ onMounted(() => {
 .main-content {
   padding: 20px;
   background-color: #ffffff;
+  min-height: calc(100vh - 60px);
 }
 
 .mobile-logout-button {
@@ -466,9 +482,10 @@ onMounted(() => {
   .header-content {
     justify-content: center;
   }
-
   .el-col {
     justify-content: center;
   }
 }
+
+
 </style>

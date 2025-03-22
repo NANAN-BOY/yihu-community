@@ -39,7 +39,7 @@
       v-model="InviteRecordDialogVisible"
       title="邀请记录"
       width="1000"
-      :before-close="handleClose"
+      :before-close="CloseInviteRecordComponent"
       align-center
   >
     <span>This is a message</span>
@@ -185,42 +185,7 @@ const userListLoad = async () => {
 }
 
 
-// 已经接受的历史记录无限滚动列表所需数据
-const InviteHistoryRecordList = ref([])
-const InviteHistoryRecordCurrentPage = ref(1)
-const InviteHistoryRecordLoading = ref(false)
-const InviteHistoryRecordError = ref('')
-const InviteHistoryRecordHasMore = ref(true)
-const InviteHistoryRecordNoMore = computed(() => !InviteHistoryRecordHasMore.value)
-const InviteHistoryRecordDisabled = computed(() => InviteHistoryRecordLoading.value || InviteHistoryRecordNoMore.value)
-const InviteHistoryRecordListload = async () => {
-  if (InviteHistoryRecordDisabled.value) return
 
-  try {
-    InviteHistoryRecordLoading.value = true
-    InviteHistoryRecordError.value = ''
-
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-historyRecord`, {
-      params: {
-        pageNum: InviteHistoryRecordCurrentPage.value,
-        pageSize: 10
-      },
-      headers: {
-        token: store.state.token
-      }
-    })
-
-    if (response.data.code === 200) {
-      InviteHistoryRecordList.value = [...InviteHistoryRecordList.value, ...response.data.data.list]
-      InviteHistoryRecordHasMore.value = response.data.data.hasNextPage
-      InviteHistoryRecordCurrentPage.value++
-    }
-  } catch (err) {
-    InviteHistoryRecordError.value = '数据加载失败，请稍后再试'
-  } finally {
-    InviteHistoryRecordLoading.value = false
-  }
-}
 
 // 格式化时间，去掉毫秒和时区
 const formatDate = (date) => {
@@ -349,7 +314,43 @@ const OpenInviteRecordComponent = () => {
 };
 const CloseInviteRecordComponent = () => {
   InviteRecordDialogVisible.value = false;
+
 };
+// 已经接受的历史记录无限滚动列表所需数据
+const InviteHistoryRecordList = ref([])
+const InviteHistoryRecordCurrentPage = ref(1)
+const InviteHistoryRecordLoading = ref(false)
+const InviteHistoryRecordError = ref('')
+const InviteHistoryRecordHasMore = ref(true)
+const InviteHistoryRecordNoMore = computed(() => !InviteHistoryRecordHasMore.value)
+const InviteHistoryRecordDisabled = computed(() => InviteHistoryRecordLoading.value || InviteHistoryRecordNoMore.value)
+const InviteHistoryRecordListload = async () => {
+  if (InviteHistoryRecordDisabled.value) return
+  try {
+    InviteHistoryRecordLoading.value = true
+    InviteHistoryRecordError.value = ''
+
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-historyRecord`, {
+      params: {
+        pageNum: InviteHistoryRecordCurrentPage.value,
+        pageSize: 10
+      },
+      headers: {
+        token: store.state.token
+      }
+    })
+
+    if (response.data.code === 200) {
+      InviteHistoryRecordList.value = [...InviteHistoryRecordList.value, ...response.data.data.list]
+      InviteHistoryRecordHasMore.value = response.data.data.hasNextPage
+      InviteHistoryRecordCurrentPage.value++
+    }
+  } catch (err) {
+    InviteHistoryRecordError.value = '数据加载失败，请稍后再试'
+  } finally {
+    InviteHistoryRecordLoading.value = false
+  }
+}
 
 const viewInviteHistoryRecordDetails = async (record) => {
   console.log(record);

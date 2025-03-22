@@ -185,4 +185,22 @@ public class BaseController {
         }
         return Result.success(memberShipService.isMemberValid(userId));
     }
+
+    @PostMapping("/user/update-phone")
+    public Result updatePhone(@RequestParam String oldPhone, @RequestParam String newPhone,
+                              @RequestParam String captcha) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        int isSuccess = userService.updatePhone(currentUser.getId(), oldPhone, newPhone, captcha);
+        if (isSuccess == 0) {
+            return Result.success("修改成功");
+        } else if (isSuccess == -2) {
+            return Result.error(500, "验证码错误");
+        } else {
+            return Result.error(500, "修改失败");
+        }
+    }
 }
+

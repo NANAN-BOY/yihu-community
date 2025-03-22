@@ -27,4 +27,6 @@ public interface UserService {
     int banUser(int userId, int updateId);
 
     int unbanUser(int userId, Integer id);
+
+    int updatePhone(Integer userId, String oldPhone, String newPhone, String captcha);
 }

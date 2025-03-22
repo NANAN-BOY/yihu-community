@@ -28,4 +28,7 @@ public interface UserMapper {
     int banUser(@Param("userId") int userId,@Param("updateId") Integer updateId,@Param("updateTime") Date updateTime);
 
     int unbanUser(@Param("userId")int userId,@Param("updateId") Integer id,@Param("updateTime") Timestamp currentTimestamp);
+
+    int updatePhone(@Param("userId") Integer userId, @Param("oldPhone") String oldPhone,
+                    @Param("newPhone") String newPhone, @Param("updateTime") Timestamp currentTimestamp);
 }

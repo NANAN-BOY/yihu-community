@@ -12,6 +12,7 @@ import jakarta.annotation.Resource;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -150,6 +151,25 @@ public class UserServiceImpl implements UserService {
             return 0;//解封
         }else {
             return -1;//解封失败
+        }
+    }
+
+
+    @Override
+    @Transactional
+    public int updatePhone(Integer userId, String oldPhone, String newPhone, String captcha) {
+        Boolean isValid = captchaService.verifyCaptcha(newPhone, captcha);
+        if (isValid) {
+            Date currentDate = new Date();
+            Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
+            int isSuccess = userMapper.updatePhone(userId, oldPhone, newPhone, currentTimestamp);
+            if (isSuccess > 0) {
+                return 0;//修改成功
+            } else {
+                return -1;//修改失败
+            }
+        } else {
+            return -2;//验证码错误
         }
     }
 

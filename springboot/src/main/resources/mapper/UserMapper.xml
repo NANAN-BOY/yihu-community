@@ -80,4 +80,13 @@
             UPDATE user SET status = 0, updater_id = #{updateId}, update_at = #{updateTime} WHERE id = #{userId}
     </update>
 
+    <update id="updatePhone">
+        UPDATE user
+        SET phone      = #{newPhone},
+            updater_id = #{userId},
+            update_at  = #{updateTime}
+        WHERE id = #{userId}
+          And phone = #{oldPhone}
+    </update>
+
 </mapper>

@@ -204,10 +204,13 @@ const menus = [
     ]
   },
   {role: 2, index: '2-4', icon: UserFilled, title: '社会组织管理'},
+  {role: 2, index: '2-5', icon: Document, title: '关于我的信息'},
   {role: 3, index: '3-1', icon: Document, title: '项目管理'},
   {role: 3, index: '3-2', icon: Document, title: '活动管理'},
+  {role: 3, index: '3-3', icon: Document, title: '关于我的信息'},
   {role: 4, index: '4-1', icon: Document, title: '项目库'},
-  {role: 4, index: '4-2', icon: Document, title: '待优化项目'}
+  {role: 4, index: '4-2', icon: Document, title: '待优化项目'},
+  {role: 4, index: '4-3', icon: Document, title: '关于我的信息'}
 ];
 
 // 处理菜单项选择
@@ -243,17 +246,26 @@ const handleSelect = (index) => {
     case '2-4':
       currentComponent.value = user2SocialOrganizationManagement;
       break;
+    case '2-5':
+      currentComponent.value = aboutMyInfo;
+      break;
     case '3-1':
       currentComponent.value = user3ProjectManagement;
       break;
     case '3-2':
       currentComponent.value = user2ProjectManagement;
       break;
+    case '3-3':
+      currentComponent.value = aboutMyInfo;
+      break;
     case '4-1':
       currentComponent.value = ProjectLibrary;
       break;
     case '4-2':
       currentComponent.value = WaitingOptimizationProject;
+      break;
+    case '4-3':
+      currentComponent.value = aboutMyInfo;
       break;
     default:
       currentComponent.value = null;

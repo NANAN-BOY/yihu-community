@@ -148,7 +148,7 @@
     </span>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="VIPAreaDialogVisible = false">{{
+        <el-button @click="VIPAreaDialogVisible = false;openBuyVIPAreaDialogVisible();">{{
             MembershipLevel === 0 ? '立即购买' : '续费会员'
           }}
         </el-button>
@@ -159,7 +159,40 @@
     </template>
   </el-dialog>
   <!-- BuyVIPArea -->
-
+  <el-dialog
+      v-model="BuyVIPAreaDialogVisible"
+      title="购买会员"
+      width="500"
+      align-center
+  >
+    <el-form v-loading="BuyYiHuLoading" ref="buyVIPForm" label-width="100px">
+      <h1><el-icon><Star /></el-icon>一个月易互会员<el-button type="info" @click="BuyYiHu_Vip(1)" >立即购买</el-button> </h1>
+      <h1><el-icon><Star /></el-icon><el-icon><Star /></el-icon><el-icon><Star /></el-icon>包年易互会员<el-button type="success" @click="BuyYiHu_Vip(2)">立即购买</el-button></h1>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="BuyVIPAreaDialogVisible = false">取消</el-button>
+      </div>
+    </template>
+  </el-dialog>
+  <!-- PayInfo -->
+  <el-dialog
+      v-model="PayInfoDialogVisible"
+      title="支付信息"
+      width="500"
+      align-center
+  >
+      <div>
+        <p>请您使用支付宝支付：</p>
+        <div style="text-align: center; margin-top: 20px;">
+          <QRCode :value="PayInfo.qr_code" size="200"/>
+        </div>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="CheckPayStatus">我已付款</el-button>
+        <el-button type="primary" @click="closePayInfoDialogVisible">关闭</el-button>
+      </span>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -180,7 +213,7 @@ import WaitingOptimizationProject from '../components/user4component/WaitingOpti
 
 import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
 
-import {Avatar, Document, Expand, Tickets, UserFilled} from "@element-plus/icons-vue";
+import {Avatar, Document, Expand, Star, Tickets, UserFilled} from "@element-plus/icons-vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import axios from "axios";
 
@@ -406,12 +439,88 @@ const openBuyVIPAreaDialogVisible = () => {
 const closeBuyVIPAreaDialogVisible = () => {
   BuyVIPAreaDialogVisible.value = false;
 }
+//PayInfo
+const PayInfoDialogVisible = ref(false);
+const openPayInfoDialogVisible = () => {
+  PayInfoDialogVisible.value = true;
+}
+const closePayInfoDialogVisible = () => {
+  PayInfoDialogVisible.value = false;
+}
+import QRCode from 'qrcode.vue';
+const PayInfo =ref(null);
+const BuyYiHuLoading = ref(false);
+const BuyYiHu_Vip = (type) => {
+  BuyYiHuLoading.value = true;
+  axios.get(
+      `${import.meta.env.VITE_BACKEND_IP}/api/pay/create`,
+      {
+        params: {
+          type: type,
+        },
+        headers: {
+          'token': store.state.token
+        }
+      }
+  )
+      .then(response => {
+        if (response.data.alipay_trade_precreate_response) {
+          if (response.data.alipay_trade_precreate_response.code === "10000") {
+            PayInfo.value = response.data.alipay_trade_precreate_response;
+            openPayInfoDialogVisible();
+            BuyYiHuLoading.value = false;
+          } else {
+            throw new Error(response.data.msg || '购买失败');
+            BuyYiHuLoading.value = false;
+          }
+        }
+        else{
+          throw new Error(response.data.msg || '购买失败');
+          BuyYiHuLoading.value = false;
+        }
+      })
+      .catch(error => {
+        ElMessage.error(`${error.message}`);
+        BuyYiHuLoading.value = false;
+      });
+};
+const CheckPayStatus = () => {
+  axios.get(
+      `${import.meta.env.VITE_BACKEND_IP}/api/pay/query`,
+      {
+        params: {
+          orderNo: PayInfo.value.out_trade_no,
+        },
+        headers: {
+          'token': store.state.token
+        }
+      }
+  )
+      .then(response => {
+        if (response.data.code === 200) {
+            if (response.data.data.status === 1) {
+              ElMessage.success('支付成功，感谢您的购买。');
+              closePayInfoDialogVisible();
+              closeBuyVIPAreaDialogVisible();
+              checkMembershipStatus();
+              return;
+            }
+            else{
+              ElMessage.error('没有查询到您的支付信息！');
+            }
+        }
+      })
+      .catch(error => {
+        ElMessage.error(`${error.message}`);
+      });
+};
+
 const stopWatch = watch(
     () => store.state.user.id, // 监听 user.id
     (newId, oldId) => {
       // 当 id 从 null 变为有效值时触发检查
       if (newId !== null && newId !== oldId) {
-        checkMembershipStatus()
+        checkMembershipStatus();
       }
     }
 )

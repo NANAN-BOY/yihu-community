@@ -205,7 +205,7 @@ public class BaseController {
         }
     }
 
-    @GetMapping("/user/get-myOrderList")
+    @PostMapping("/user/get-myOrderList")
     public Result getMyOrderList(@RequestBody OrderQueryDTO orderQueryDTO,
                                  @RequestParam(defaultValue = "1") int pageNum,
                                  @RequestParam(defaultValue = "10") int pageSize) {

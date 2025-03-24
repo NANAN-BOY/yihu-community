@@ -1,9 +1,11 @@
 package com.yihu.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.PaymentService;
 import com.yihu.common.ProductType;
 import com.yihu.common.Result;
+import com.yihu.dto.OrderQueryDTO;
 import com.yihu.entity.Order;
 import com.yihu.entity.User;
 import com.yihu.service.OrderService;
@@ -73,7 +75,7 @@ public class OrderController {
         // 默认优先查本地数据库
         if (forceAlipay == null || !forceAlipay) {
             Order order = orderService.findByOrderNo(orderNo);
-            if (order.getStatus() == 1 || order.getStatus() == 3) {
+            if (order.getStatus() == 1 || order.getStatus() == 2 || order.getStatus() == 3) {
                 return Result.success("支付成功");
             } else {
                 return Result.error("支付失败");
@@ -100,6 +102,21 @@ public class OrderController {
         } else {
             return Result.error("订单不属于当前用户");
         }
+    }
+
+    @PostMapping("/get-myOrderList")
+    public Result getMyOrderList(@RequestBody OrderQueryDTO orderQueryDTO,
+                                 @RequestParam(defaultValue = "1") int pageNum,
+                                 @RequestParam(defaultValue = "10") int pageSize) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        PageInfo<Order> pageInfo = orderService.queryOrder(orderQueryDTO, currentUser.getId(), pageNum, pageSize);
+        if (pageInfo.getList().isEmpty()) {
+            return Result.error(404, "未找到相关订单");
+        }
+        return Result.success(pageInfo);
     }
 
 

@@ -205,20 +205,5 @@ public class BaseController {
         }
     }
 
-    @PostMapping("/user/get-myOrderList")
-    public Result getMyOrderList(@RequestBody OrderQueryDTO orderQueryDTO,
-                                 @RequestParam(defaultValue = "1") int pageNum,
-                                 @RequestParam(defaultValue = "10") int pageSize) {
-        User currentUser = TokenUtils.getCurrentUser();
-        if (currentUser == null) {
-            return Result.error(401, "未授权，请登录");
-        }
-        PageInfo<Order> pageInfo = orderService.queryOrder(orderQueryDTO, currentUser.getId(), pageNum, pageSize);
-        if (pageInfo.getList().isEmpty()) {
-            return Result.error(404, "未找到相关订单");
-        }
-        return Result.success(pageInfo);
-    }
-
 }
 

@@ -116,7 +116,12 @@ public class ExpertServiceImpl implements ExpertService {
     public int preemptOrder(String orderNo, int buyerId, Integer expertId) {
         Date currentDate = new Date(); // 获取当前日期时间
         Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
-        int isSuccess = orderMapper.updateExpertOrder(orderNo, expertId);
+        Order order = orderMapper.findByOrderNo(orderNo);
+        int isSuccess = orderMapper.updateExpertOrder(
+                orderNo,
+                expertId,
+                order.getStatus() + 1,//新状态＝旧状态+1
+                order.getStatus());//旧状态
         Business business = new Business(orderNo, buyerId, expertId, 1, currentTimestamp);
         int isBusiness = businessMapper.insertBusiness(business);
         if (isSuccess > 0 && isBusiness > 0) {

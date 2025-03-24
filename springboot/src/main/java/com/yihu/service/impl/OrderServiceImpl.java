@@ -1,6 +1,9 @@
 package com.yihu.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yihu.dto.OrderQueryDTO;
 import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import com.yihu.mapper.MemberShipMapper;
@@ -80,11 +83,12 @@ public class OrderServiceImpl implements OrderService {
             // 执行乐观锁更新
             int affectedRows = orderMapper.ExpertOrder(
                     order.getOrderNo(),
-                    order.getStatus() - 1,  // 旧状态=新状态-1
-                    order.getStatus(),
+                    order.getStatus() - 1,  // 旧状态=已支付状态-1
+                    order.getStatus(), //新状态=已支付状态
                     order.getOtherOrderNo(),
-                    new Date(),
+                    new Date(),// payAt=当前时间
                     order.getPaymentType()
+                    //endAt在服务结束后再通过别的方法写入
             );
             if (affectedRows != 0) {
                 log.info("订单状态更新成功");
@@ -104,12 +108,12 @@ public class OrderServiceImpl implements OrderService {
         // 执行乐观锁更新
         int affectedRows = orderMapper.vipOrder(
                 order.getOrderNo(),
-                order.getStatus() - 1,  // 旧状态=新状态-1
-                order.getStatus(),
+                order.getStatus() - 1,  // 旧状态=已支付状态-1
+                order.getStatus() + 2, // 新状态=已支付状态+2
                 order.getOtherOrderNo(),
-                new Date(),
+                new Date(),// payAt=当前时间
                 order.getPaymentType(),
-                new Date()
+                new Date() //endAt=当前时间
         );
         if (affectedRows != 0) {
             if (order.getType() == 1) {
@@ -127,6 +131,12 @@ public class OrderServiceImpl implements OrderService {
         }else {
             return false;
         }
+    }
+
+    @Override
+    public PageInfo<Order> queryOrder(OrderQueryDTO orderQueryDTO, Integer id, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(orderMapper.queryOrder(orderQueryDTO, id));
     }
 
 }

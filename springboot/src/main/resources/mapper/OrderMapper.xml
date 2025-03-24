@@ -57,8 +57,21 @@
 
     <update id="updateExpertOrder">
         UPDATE `order`
-        SET payee_id = #{expertId}
+        SET payee_id = #{expertId},
+            status   = #{newStatus}
         WHERE order_no = #{orderNo}
+          AND status = #{oldStatus}
     </update>
+
+    <select id="queryOrder" resultType="com.yihu.entity.Order">
+        SELECT * FROM `order`
+        WHERE buyer_id = #{userId}
+        <if test="orderQueryDTO.type != null">
+            AND type = #{orderQueryDTO.type}
+        </if>
+        <if test="orderQueryDTO.status != null">
+            AND status = #{orderQueryDTO.status}
+        </if>
+    </select>
 
 </mapper>

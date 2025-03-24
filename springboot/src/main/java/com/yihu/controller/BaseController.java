@@ -3,9 +3,11 @@ package com.yihu.controller;
 import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
+import com.yihu.dto.OrderQueryDTO;
 import com.yihu.dto.UserQueryDTO;
 import com.yihu.dto.UserUpdateDTO;
 import com.yihu.entity.MemberShip;
+import com.yihu.entity.Order;
 import com.yihu.entity.User;
 import com.yihu.exception.ServiceException;
 import com.yihu.service.MemberShipService;
@@ -202,5 +204,21 @@ public class BaseController {
             return Result.error(500, "修改失败");
         }
     }
+
+    @GetMapping("/user/get-myOrderList")
+    public Result getMyOrderList(@RequestBody OrderQueryDTO orderQueryDTO,
+                                 @RequestParam(defaultValue = "1") int pageNum,
+                                 @RequestParam(defaultValue = "10") int pageSize) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        PageInfo<Order> pageInfo = orderService.queryOrder(orderQueryDTO, currentUser.getId(), pageNum, pageSize);
+        if (pageInfo.getList().isEmpty()) {
+            return Result.error(404, "未找到相关订单");
+        }
+        return Result.success(pageInfo);
+    }
+
 }
 

@@ -1,6 +1,7 @@
 package com.yihu.service;
 
-import com.yihu.entity.MemberShip;
+import com.github.pagehelper.PageInfo;
+import com.yihu.dto.OrderQueryDTO;
 import com.yihu.entity.Order;
 
 public interface OrderService {
@@ -13,4 +14,5 @@ public interface OrderService {
 
     Boolean updateOrder(String orderNo, String tradeNo);
 
+    PageInfo<Order> queryOrder(OrderQueryDTO orderQueryDTO, Integer id, int pageNum, int pageSize);
 }

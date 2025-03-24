@@ -1,5 +1,6 @@
 package com.yihu.mapper;
 
+import com.yihu.dto.OrderQueryDTO;
 import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -37,5 +38,11 @@ public interface OrderMapper {
 
     List<Order> getOrderList();
 
-    int updateExpertOrder(@Param("orderNo") String orderNo, @Param("expertId") Integer expertId);
+    int updateExpertOrder(@Param("orderNo") String orderNo,
+                          @Param("expertId") Integer expertId,
+                          @Param("newStatus") Integer newStatus,
+                          @Param("oldStatus") Integer oldStatus);
+
+    List<Order> queryOrder(OrderQueryDTO orderQueryDTO,
+                           @Param("userId") Integer userId);
 }

@@ -4,6 +4,7 @@ import com.yihu.common.AuthAccess;
 import com.yihu.common.PaymentService;
 import com.yihu.common.ProductType;
 import com.yihu.common.Result;
+import com.yihu.entity.Order;
 import com.yihu.entity.User;
 import com.yihu.service.OrderService;
 import com.yihu.utils.TokenUtils;
@@ -15,12 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 @AllArgsConstructor
-@RequestMapping("/api/pay")
-public class PayController {
+@RequestMapping("/api/order")
+public class OrderController {
     private final PaymentService paymentService;
     private final OrderService orderService;
 
-    @GetMapping("/create")
+    @GetMapping("/pay/create")
     public String createOrder(@RequestParam Integer type) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
@@ -47,7 +48,7 @@ public class PayController {
     }
 
     @AuthAccess
-    @PostMapping("/notify")
+    @PostMapping("/pay/notify")
     public String notify(HttpServletRequest request) {
         String orderNo = request.getParameter("out_trade_no");
         String tradeNo = request.getParameter("trade_no");
@@ -71,14 +72,34 @@ public class PayController {
                         @RequestParam(required = false) Boolean forceAlipay) throws Exception {
         // 默认优先查本地数据库
         if (forceAlipay == null || !forceAlipay) {
-            Object order = orderService.findByOrderNo(orderNo);
-            if (order != null) {
-                return Result.success(order);
+            Order order = orderService.findByOrderNo(orderNo);
+            if (order.getStatus() == 1) {
+                return Result.success("支付成功");
+            } else {
+                return Result.error("支付失败");
             }
         }
 
         String response = paymentService.queryOrderStatus(orderNo);
         return Result.success(response);
+    }
+
+    @GetMapping("/queryOrder")
+    public Result queryOrder(@RequestParam String orderNo) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error("用户未登录");
+        }
+
+        Order order = orderService.findByOrderNo(orderNo);
+        if (order == null) {
+            return Result.error("订单不存在");
+        }
+        if (order.getBuyerId().equals(currentUser.getId()) || order.getPayeeId().equals(currentUser.getId())) {
+            return Result.success(order);
+        } else {
+            return Result.error("订单不属于当前用户");
+        }
     }
 
 

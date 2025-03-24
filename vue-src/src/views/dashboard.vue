@@ -208,12 +208,15 @@ import user2ActivityTemplateManagement
   from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue';
 import user2SocialOrganizationManagement
   from '../components/user2component/SocialOrganizationManagement/SocialOrganizationManagement.vue';
+//User3Component
 import user3ProjectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue';
+import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
+//User4Component
 import WaitingOptimizationProject from '../components/user4component/WaitingOptimizationProject.vue';
-
+//AllUserComponent
 import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
 
-import {Avatar, Document, Expand, Star, Tickets, UserFilled} from "@element-plus/icons-vue";
+import {Avatar, Document, Expand, Star, StarFilled, Tickets, UserFilled} from "@element-plus/icons-vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import axios from "axios";
 
@@ -223,11 +226,12 @@ const sidebarWidth = ref('250px');
 const isMobile = ref(false);
 const currentComponent = ref(null);
 
-// 菜单配置
+// MENUConfig
 const menus = [
   {role: 1, index: '1-1', icon: Document, title: '专家库管理'},
   {role: 1, index: '1-2', icon: Avatar, title: '系统管理'},
   {role: 1, index: '1-3', icon: Document, title: '关于我的信息'},
+
   {role: 2, index: '2-1', icon: Document, title: '项目管理'},
   {role: 2, index: '2-2', icon: Avatar, title: '专家库管理'},
   {
@@ -238,15 +242,17 @@ const menus = [
   },
   {role: 2, index: '2-4', icon: UserFilled, title: '社会组织管理'},
   {role: 2, index: '2-5', icon: Document, title: '关于我的信息'},
+
   {role: 3, index: '3-1', icon: Document, title: '项目管理'},
-  {role: 3, index: '3-2', icon: Document, title: '活动管理'},
+  {role: 3, index: '3-2', icon: StarFilled, title: '专家定制'},
   {role: 3, index: '3-3', icon: Document, title: '关于我的信息'},
+
   {role: 4, index: '4-1', icon: Document, title: '项目库'},
   {role: 4, index: '4-2', icon: Document, title: '待优化项目'},
   {role: 4, index: '4-3', icon: Document, title: '关于我的信息'}
 ];
 
-// 处理菜单项选择
+// HandleMENUSelect
 const handleSelect = (index) => {
   const navbarState = store.getters.isNavbarLocked;
   if (navbarState) {
@@ -286,7 +292,7 @@ const handleSelect = (index) => {
       currentComponent.value = user3ProjectManagement;
       break;
     case '3-2':
-      currentComponent.value = user2ProjectManagement;
+      currentComponent.value = ExpertCustomization;
       break;
     case '3-3':
       currentComponent.value = aboutMyInfo;
@@ -503,6 +509,7 @@ const CheckPayStatus = () => {
               closePayInfoDialogVisible();
               closeBuyVIPAreaDialogVisible();
               checkMembershipStatus();
+              openVIPAreaDialogVisible();
               return;
             }
             else{

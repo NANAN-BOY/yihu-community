@@ -73,7 +73,7 @@ public class OrderController {
         // 默认优先查本地数据库
         if (forceAlipay == null || !forceAlipay) {
             Order order = orderService.findByOrderNo(orderNo);
-            if (order.getStatus() == 1) {
+            if (order.getStatus() == 1 || order.getStatus() == 3) {
                 return Result.success("支付成功");
             } else {
                 return Result.error("支付失败");

@@ -459,7 +459,7 @@ const BuyYiHuLoading = ref(false);
 const BuyYiHu_Vip = (type) => {
   BuyYiHuLoading.value = true;
   axios.get(
-      `${import.meta.env.VITE_BACKEND_IP}/api/pay/create`,
+      `${import.meta.env.VITE_BACKEND_IP}/api/order/pay/create`,
       {
         params: {
           type: type,
@@ -492,7 +492,7 @@ const BuyYiHu_Vip = (type) => {
 };
 const CheckPayStatus = () => {
   axios.get(
-      `${import.meta.env.VITE_BACKEND_IP}/api/pay/query`,
+      `${import.meta.env.VITE_BACKEND_IP}/api/order/query`,
       {
         params: {
           orderNo: PayInfo.value.out_trade_no,
@@ -503,18 +503,21 @@ const CheckPayStatus = () => {
       }
   )
       .then(response => {
+        console.log(response.data);
         if (response.data.code === 200) {
-            if (response.data.data.status === 1) {
-              ElMessage.success('支付成功，感谢您的购买。');
-              closePayInfoDialogVisible();
-              closeBuyVIPAreaDialogVisible();
-              checkMembershipStatus();
-              openVIPAreaDialogVisible();
-              return;
-            }
-            else{
-              ElMessage.error('没有查询到您的支付信息！');
-            }
+          console.log(response.data);
+          if (response.data.msg === "success") {
+            ElMessage.success('支付成功，感谢您的购买。');
+            closePayInfoDialogVisible();
+            closeBuyVIPAreaDialogVisible();
+            checkMembershipStatus();
+            openVIPAreaDialogVisible();
+            return;
+          } else {
+            ElMessage.error('没有查询到您的支付信息！');
+          }
+        } else {
+          ElMessage.error('没有查询到您的支付信息！');
         }
       })
       .catch(error => {

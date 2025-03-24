@@ -56,6 +56,10 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.findByOrderNo(orderNo);
     }
 
+    private Boolean compareTime(Date deadLine) {
+        return deadLine.compareTo(new Date()) > 0;
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateOrder(String orderNo, String tradeNo) {
@@ -76,7 +80,7 @@ public class OrderServiceImpl implements OrderService {
             // 执行乐观锁更新
             int affectedRows = orderMapper.ExpertOrder(
                     order.getOrderNo(),
-                    order.getStatus() - 1,  // 示例：假设新状态=旧状态+1
+                    order.getStatus() - 1,  // 旧状态=新状态-1
                     order.getStatus(),
                     order.getOtherOrderNo(),
                     new Date(),
@@ -92,15 +96,15 @@ public class OrderServiceImpl implements OrderService {
 
         //购买vip
         Calendar calendar = Calendar.getInstance();
-        if (ms == null) {
-            calendar.setTime(order.getPayAt());
-        } else {
+        if (ms != null && compareTime(ms.getDeadline())) {
             calendar.setTime(ms.getDeadline());
+        } else {
+            calendar.setTime(order.getPayAt());
         }
         // 执行乐观锁更新
         int affectedRows = orderMapper.vipOrder(
                 order.getOrderNo(),
-                order.getStatus() - 1,  // 示例：假设新状态=旧状态+1
+                order.getStatus() - 1,  // 旧状态=新状态-1
                 order.getStatus(),
                 order.getOtherOrderNo(),
                 new Date(),

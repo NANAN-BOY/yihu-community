@@ -212,7 +212,7 @@ import user2SocialOrganizationManagement
 import user3ProjectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue';
 import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
 //User4Component
-import WaitingOptimizationProject from '../components/user4component/WaitingOptimizationProject.vue';
+import ReceiveOrder from '../components/user4component/ReceiveOrder/ReceiveOrder.vue';
 //AllUserComponent
 import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
 
@@ -247,8 +247,8 @@ const menus = [
   {role: 3, index: '3-2', icon: StarFilled, title: '专家定制'},
   {role: 3, index: '3-3', icon: Document, title: '关于我的信息'},
 
-  {role: 4, index: '4-1', icon: Document, title: '项目库'},
-  {role: 4, index: '4-2', icon: Document, title: '待优化项目'},
+  {role: 4, index: '4-1', icon: Document, title: '接单广场'},
+  {role: 4, index: '4-2', icon: Document, title: '我的订单'},
   {role: 4, index: '4-3', icon: Document, title: '关于我的信息'}
 ];
 
@@ -298,7 +298,7 @@ const handleSelect = (index) => {
       currentComponent.value = aboutMyInfo;
       break;
     case '4-1':
-      currentComponent.value = ProjectLibrary;
+      currentComponent.value = ReceiveOrder;
       break;
     case '4-2':
       currentComponent.value = WaitingOptimizationProject;

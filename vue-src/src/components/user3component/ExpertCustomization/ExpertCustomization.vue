@@ -19,7 +19,7 @@ const OrderListLoad = async () => {
     loading.value = true
     error.value = ''
     const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_IP}/api/user/get-myOrderList`,
+        `${import.meta.env.VITE_BACKEND_IP}/api/order/get-myOrderList`,
         {
           type: null,
           status: null,

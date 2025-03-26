@@ -117,6 +117,9 @@ public class ExpertServiceImpl implements ExpertService {
         Date currentDate = new Date(); // 获取当前日期时间
         Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
         Order order = orderMapper.findByOrderNo(orderNo);
+        if (order.getStatus() != 1) {
+            return -2;//订单已被接受
+        }
         int isSuccess = orderMapper.updateExpertOrder(
                 orderNo,
                 expertId,

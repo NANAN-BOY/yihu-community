@@ -185,9 +185,9 @@ public class ExpertController {
         if (isSuccess == 0) {
             return Result.success("成功接受订单");
         } else if (isSuccess == -2) {
-            return Result.error(500, "接受订单失败");
-        } else {
             return Result.error(500, "该订单已被接受");
+        } else {
+            return Result.error(500, "接受订单失败");
         }
     }
 }

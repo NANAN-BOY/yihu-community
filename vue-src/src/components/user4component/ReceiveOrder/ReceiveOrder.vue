@@ -1,7 +1,8 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, h, ref} from "vue";
 import axios from "axios";
 import store from "../../../store";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 const OrderList = ref([])
 const currentPage = ref(1)
@@ -12,6 +13,7 @@ const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
 
 const OrderListLoad = async () => {
+  // Skip if already loading or no more data available
   if (disabled.value) return
 
   try {
@@ -31,11 +33,16 @@ const OrderListLoad = async () => {
         }
     )
 
+    // Handle business status codes
     if (response.data.code === 200) {
-      // 获取新一页的订单列表
-      const newOrders = response.data.data.list
+      // Handle empty data response
+      if (!response.data.data || !response.data.data.list) {
+        hasMore.value = false
+        return
+      }
 
-      // 为每个新订单并行预加载用户信息
+      // Process new orders and fetch buyer info for each
+      const newOrders = response.data.data.list
       const ordersWithBuyerInfo = await Promise.all(
           newOrders.map(async (order) => {
             try {
@@ -47,21 +54,26 @@ const OrderListLoad = async () => {
           })
       )
 
-      // 合并到现有订单列表
+      // Merge new orders with existing list
       OrderList.value = [...OrderList.value, ...ordersWithBuyerInfo]
 
-      // 更新分页状态
+      // Update pagination state
       hasMore.value = response.data.data.hasNextPage
-      currentPage.value++
+      currentPage.value++ // Only increment page on successful data fetch
+    } else {
+      // Handle business logic errors (e.g., 404 no more data)
+      hasMore.value = false
     }
   } catch (err) {
-    error.value = '数据加载失败，请稍后再试'
+    error.value = 'Failed to load data, please try again later'
+    // Preserve hasMore state for retry on network errors
   } finally {
     loading.value = false
   }
 }
 const getUserInfo = async (userId) => {
   try {
+    // Make a request to get the user info
     const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_IP}/api/user/get-info`,
         {
@@ -73,6 +85,79 @@ const getUserInfo = async (userId) => {
     return response.data.data
   } catch (error) {
     return "ERROR"
+  }
+}
+//Expert grab order
+const grabOrderPanel = async (Order) => {
+  ElMessageBox({
+    title: `客户 ${Order.buyerInfo.name} 的订单`,
+    message: h('p', null, [
+      h('span', null, 'Message can be '),
+      h('i', { style: 'color: teal' }, `${Order.orderNo}`),
+    ]),
+    showCancelButton: true,
+    confirmButtonText: '立即抢单',
+    cancelButtonText: '取消',
+    closeOnClickModal: false,
+    beforeClose: async (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true
+        instance.confirmButtonText = '抢单中...'
+        if(await grabOrder(Order) === 0){
+          done()
+        }
+        else{
+          instance.confirmButtonLoading = false
+          instance.confirmButtonText = '立即抢单'
+        }
+      } else {
+        done()
+      }
+    },
+  }).then((action) => {
+    // ElMessage({
+    //   type: 'info',
+    //   message: `action: ${action}`,
+    // })
+  })
+}
+const grabOrder = async (Order) => {
+  try {
+    const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_IP}/api/expert/preemptOrder`,
+        {},
+        {
+          params: {
+            orderNo: Order.orderNo,
+            buyerId: Order.buyerId
+          },
+          headers: {
+            token: store.state.token
+          }
+        }
+    )
+    console.log(response)
+    if (response.data.code === 200) {
+      ElMessage({
+        type: 'success',
+        message: '抢单成功',
+      })
+      return 0;
+    }
+    else {
+      ElMessage({
+        type: 'error',
+        message:  response.data.data,
+      })
+      return -1;
+    }
+  }
+  catch (err) {
+    ElMessage({
+      type: 'error',
+      message: '抢单失败，请稍后再试',
+    })
+    return -1;
   }
 }
 </script>
@@ -89,7 +174,7 @@ const getUserInfo = async (userId) => {
         class="list"
         :infinite-scroll-disabled="disabled"
     >
-      <li v-for="Order in OrderList" :key="Order.id" class="list-item" @click="">
+      <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item" @click="grabOrderPanel(Order)">
         <div>客户{{ Order.buyerInfo.name }}的订单</div>&nbsp<div>{{ Order.createAt }}</div>
       </li>
       <li v-if="loading" v-loading="loading" class="list-item"></li>

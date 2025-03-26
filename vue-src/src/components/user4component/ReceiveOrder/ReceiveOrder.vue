@@ -15,9 +15,8 @@ const OrderListLoad = async () => {
   try {
     loading.value = true
     error.value = ''
-    const response = await axios.post(
+    const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_IP}/api/expert/orderList`,
-        {},
         {
           params: {
             pageNum: currentPage.value,
@@ -28,7 +27,6 @@ const OrderListLoad = async () => {
           }
         }
     )
-    console.log(response.data)
     if (response.data.code === 200) {
       OrderList.value = [...OrderList.value, ...response.data.data.list]
       hasMore.value = response.data.data.hasNextPage

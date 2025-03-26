@@ -10,11 +10,14 @@ const error = ref('')
 const hasMore = ref(true)
 const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
+
 const OrderListLoad = async () => {
   if (disabled.value) return
+
   try {
     loading.value = true
     error.value = ''
+
     const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_IP}/api/expert/orderList`,
         {
@@ -27,8 +30,27 @@ const OrderListLoad = async () => {
           }
         }
     )
+
     if (response.data.code === 200) {
-      OrderList.value = [...OrderList.value, ...response.data.data.list]
+      // 获取新一页的订单列表
+      const newOrders = response.data.data.list
+
+      // 为每个新订单并行预加载用户信息
+      const ordersWithBuyerInfo = await Promise.all(
+          newOrders.map(async (order) => {
+            try {
+              const buyerInfo = await getUserInfo(order.buyerId)
+              return { ...order, buyerInfo }
+            } catch {
+              return { ...order, buyerInfo: "ERROR" }
+            }
+          })
+      )
+
+      // 合并到现有订单列表
+      OrderList.value = [...OrderList.value, ...ordersWithBuyerInfo]
+
+      // 更新分页状态
       hasMore.value = response.data.data.hasNextPage
       currentPage.value++
     }
@@ -38,6 +60,21 @@ const OrderListLoad = async () => {
     loading.value = false
   }
 }
+const getUserInfo = async (userId) => {
+  try {
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/user/get-info`,
+        {
+          params: {
+            userId: userId
+          }
+        }
+    )
+    return response.data.data
+  } catch (error) {
+    return "ERROR"
+  }
+}
 </script>
 
 <template>
@@ -45,7 +82,6 @@ const OrderListLoad = async () => {
     <el-breadcrumb-item><strong>接单广场</strong></el-breadcrumb-item>
   </el-breadcrumb>
   <h1>定制服务</h1>
-  <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
   <!-- 我的订单无限滚动列表 -->
   <div class="infinite-list-wrapper" style="overflow: auto">
     <ul
@@ -54,7 +90,7 @@ const OrderListLoad = async () => {
         :infinite-scroll-disabled="disabled"
     >
       <li v-for="Order in OrderList" :key="Order.id" class="list-item" @click="">
-        <div>{{ Order.createAt }}</div>
+        <div>客户{{ Order.buyerInfo.name }}的订单</div>&nbsp<div>{{ Order.createAt }}</div>
       </li>
       <li v-if="loading" v-loading="loading" class="list-item"></li>
     </ul>

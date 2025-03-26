@@ -39,7 +39,7 @@ public class PaymentService {
                         .getJSONObject("alipay_trade_precreate_response")
                         .getString("qr_code");
 
-//                QrCodeUtil.generate(qrUrl, 300, 300, new File("E://pay.jpg"));
+                QrCodeUtil.generate(qrUrl, 300, 300, new File("E://pay.jpg"));
 
                 return response.getHttpBody();
             } else {

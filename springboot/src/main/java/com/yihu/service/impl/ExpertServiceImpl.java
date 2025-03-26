@@ -122,12 +122,16 @@ public class ExpertServiceImpl implements ExpertService {
                 expertId,
                 order.getStatus() + 1,//新状态＝旧状态+1
                 order.getStatus());//旧状态
-        Business business = new Business(orderNo, buyerId, expertId, 1, currentTimestamp);
-        int isBusiness = businessMapper.insertBusiness(business);
-        if (isSuccess > 0 && isBusiness > 0) {
-            return 0;//成功
+        if (isSuccess > 0) {
+            Business business = new Business(orderNo, buyerId, expertId, 1, currentTimestamp);
+            int isBusiness = businessMapper.insertBusiness(business);
+            if (isBusiness > 0) {
+                return 0;//成功
+            } else {
+                return -1;//失败
+            }
         } else {
-            return -1;//失败
+            return -2;//失败
         }
     }
 }

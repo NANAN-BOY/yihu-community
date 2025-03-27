@@ -213,6 +213,7 @@ import user3ProjectManagement from '../components/user3component/ProjectManageme
 import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
 //User4Component
 import ReceiveOrder from '../components/user4component/ReceiveOrder/ReceiveOrder.vue';
+import MyReceiveOrder from "../components/user4component/MyReceiveOrder/MyReceiveOrder.vue";
 //AllUserComponent
 import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
 
@@ -301,7 +302,7 @@ const handleSelect = (index) => {
       currentComponent.value = ReceiveOrder;
       break;
     case '4-2':
-      currentComponent.value = WaitingOptimizationProject;
+      currentComponent.value = MyReceiveOrder;
       break;
     case '4-3':
       currentComponent.value = aboutMyInfo;

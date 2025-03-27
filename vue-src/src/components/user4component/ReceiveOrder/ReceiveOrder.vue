@@ -147,7 +147,7 @@ const grabOrder = async (Order) => {
     else {
       ElMessage({
         type: 'error',
-        message:  response.data.data,
+        message:  response.data.msg,
       })
       return -1;
     }

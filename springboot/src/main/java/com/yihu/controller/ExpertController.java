@@ -27,7 +27,7 @@ public class ExpertController {
         this.expertService = expertService;
     }
 
-    @PostMapping("/expert/create-record")
+    @PostMapping("/expert/create-record")//管理员创建邀请记录
     public Result createExpert(@RequestParam int inviteUserId,
                                @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date createAt,
                                @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date deadLine){
@@ -46,12 +46,12 @@ public class ExpertController {
         return Result.success(expertService.createInviteRecord(inviteUserId,createAt,deadLine));
     }
     @AuthAccess
-    @GetMapping("/expert/get-record")
+    @GetMapping("/expert/get-record")//查看邀请记录
     public Result getRecord(@RequestParam int id){
         return Result.success(expertService.getRecord(id));
     }
 
-    @GetMapping("/expert/get-historyRecord")
+    @GetMapping("/expert/get-historyRecord")//查看历史邀请记录
     public Result getHistoryRecord(@RequestParam(defaultValue = "1") int pageNum,
                                    @RequestParam(defaultValue = "10") int pageSize){
         User currentUser = TokenUtils.getCurrentUser();
@@ -69,7 +69,7 @@ public class ExpertController {
         return Result.success(inviteExpertRecords);
     }
 
-    @PostMapping("/expert/delete-record")
+    @PostMapping("/expert/delete-record")//取消邀请
     public Result deleteRecord(@RequestParam int id){
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
@@ -89,7 +89,7 @@ public class ExpertController {
     }
 
     @AuthAccess
-    @PostMapping("/expert/refuse")
+    @PostMapping("/expert/refuse")//拒绝邀请
     public Result refuse(@RequestParam int id, @RequestParam int isAgree,@RequestParam String reason){
         int isSuccess = expertService.refuse(id,isAgree,reason);
         if (isSuccess == 0){
@@ -99,7 +99,7 @@ public class ExpertController {
         }
     }
 
-    @PostMapping("/expert/accept")
+    @PostMapping("/expert/accept")//接受邀请
     public Result accept(@RequestParam int id, @RequestParam int isAgree, @RequestParam int expertId){
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
@@ -116,7 +116,7 @@ public class ExpertController {
         }
     }
 
-    @GetMapping("/expert/get-createRecord")
+    @GetMapping("/expert/get-createRecord")//获取创建的记录
     public Result getCreateRecord( @RequestParam(defaultValue = "1") Integer pageNum,
                                    @RequestParam(defaultValue = "10") Integer pageSize){
         User currentUser = TokenUtils.getCurrentUser();
@@ -134,7 +134,7 @@ public class ExpertController {
         return Result.success(pageInfo);
     }
 
-    @GetMapping("/expert/get-byTime")
+    @GetMapping("/expert/get-byTime")//通过时间筛选
     public Result getByTime(@RequestParam(defaultValue = "1") Integer pageNum,
                            @RequestParam(defaultValue = "10") Integer pageSize,
                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
@@ -154,7 +154,7 @@ public class ExpertController {
         return Result.success(pageInfo);
     }
 
-    @GetMapping("/expert/orderList")
+    @GetMapping("/expert/orderList")//专家接单列表
     public Result orderList(@RequestParam(defaultValue = "1") Integer pageNum,
                             @RequestParam(defaultValue = "10") Integer pageSize) {
         User currentUser = TokenUtils.getCurrentUser();
@@ -172,7 +172,7 @@ public class ExpertController {
         return Result.success(pageInfo);
     }
 
-    @PostMapping("/expert/preemptOrder")
+    @PostMapping("/expert/preemptOrder")//专家接单
     public Result preemptOrder(@RequestParam String orderNo, @RequestParam int buyerId) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {

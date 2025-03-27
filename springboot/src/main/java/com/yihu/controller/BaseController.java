@@ -44,7 +44,7 @@ public class BaseController {
     }
 
     @AuthAccess
-    @PostMapping("/user/register")
+    @PostMapping("/user/register")//注册
     public Result register(@RequestParam String userName, @RequestParam String password,
                            @RequestParam String phoneNumber, @RequestParam String captcha,
                            @RequestParam String location){
@@ -62,7 +62,7 @@ public class BaseController {
     }
 
     @AuthAccess
-    @PostMapping("/user/login")
+    @PostMapping("/user/login")//用户登录
     public Result login(@RequestParam String phone, @RequestParam String password){
         User user = userService.login(phone,password);
         if (user == null){
@@ -76,7 +76,7 @@ public class BaseController {
         return Result.success(user,token);
     }
 
-    @GetMapping("/user/reLogin")
+    @GetMapping("/user/reLogin")//用户重新登录
     public Result reLogin(){
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null){
@@ -86,7 +86,7 @@ public class BaseController {
     }
 
     @AuthAccess
-    @PostMapping("/user/reset-password")
+    @PostMapping("/user/reset-password")//用户重置密码
     public Result resetPassword(@RequestParam String phone, @RequestParam String captcha, @RequestParam String newPassword){
         int isSuccess = userService.resetPassword(phone,captcha,newPassword);
         if (isSuccess == 0){
@@ -101,7 +101,7 @@ public class BaseController {
     }
 
     @AuthAccess
-    @GetMapping("/user/get-info")
+    @GetMapping("/user/get-info")//获取用户信息
     public Result getUserInfo(@RequestParam int userId){
         User user = userService.getUserInfo(userId);
         if (user.getName() == null || user.getLocation() == null){
@@ -110,7 +110,7 @@ public class BaseController {
         return Result.success(user);
     }
 
-    @PostMapping("/user/update-info")
+    @PostMapping("/user/update-info")//用户更新信息
     public Result updateUserInfo(@RequestBody UserUpdateDTO updateDTO) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
@@ -125,7 +125,7 @@ public class BaseController {
         }
     }
 
-    @PostMapping("/user/query")
+    @PostMapping("/user/query")//管理员查询用户列表
     public Result query(@RequestBody UserQueryDTO userQueryDTO,
                               @RequestParam(defaultValue = "1") int pageNum,
                               @RequestParam(defaultValue = "10") int pageSize) {
@@ -179,7 +179,7 @@ public class BaseController {
         }
     }
 
-    @GetMapping("/user/vip")
+    @GetMapping("/user/vip")//判断是否为会员
     public Result isVip(@RequestParam int userId) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
@@ -188,7 +188,7 @@ public class BaseController {
         return Result.success(memberShipService.isMemberValid(userId));
     }
 
-    @PostMapping("/user/update-phone")
+    @PostMapping("/user/update-phone")//修改手机号
     public Result updatePhone(@RequestParam String oldPhone, @RequestParam String newPhone,
                               @RequestParam String captcha) {
         User currentUser = TokenUtils.getCurrentUser();

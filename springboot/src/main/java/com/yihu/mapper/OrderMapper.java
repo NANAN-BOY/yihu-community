@@ -45,4 +45,7 @@ public interface OrderMapper {
 
     List<Order> queryOrder(OrderQueryDTO orderQueryDTO,
                            @Param("userId") Integer userId);
+
+    List<Order> queryPreemptOrder(@Param("userId") Integer userId,
+                                  @Param("status") int status);
 }

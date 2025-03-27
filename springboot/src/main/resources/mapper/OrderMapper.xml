@@ -74,4 +74,11 @@
         </if>
     </select>
 
+    <select id="queryPreemptOrder" resultType="com.yihu.entity.Order">
+        SELECT *
+        FROM `order`
+        WHERE payee_id = #{userId}
+          AND status = #{status}
+    </select>
+
 </mapper>

@@ -139,4 +139,10 @@ public class OrderServiceImpl implements OrderService {
         return new PageInfo<>(orderMapper.queryOrder(orderQueryDTO, id));
     }
 
+    @Override
+    public PageInfo<Order> queryPreemptOrder(Integer id, int status, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(orderMapper.queryPreemptOrder(id, status));
+    }
+
 }

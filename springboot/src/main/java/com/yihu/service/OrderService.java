@@ -15,4 +15,6 @@ public interface OrderService {
     Boolean updateOrder(String orderNo, String tradeNo);
 
     PageInfo<Order> queryOrder(OrderQueryDTO orderQueryDTO, Integer id, int pageNum, int pageSize);
+
+    PageInfo<Order> queryPreemptOrder(Integer id, int status, int pageNum, int pageSize);
 }

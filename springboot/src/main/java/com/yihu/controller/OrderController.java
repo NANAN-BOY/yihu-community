@@ -69,7 +69,7 @@ public class OrderController {
     }
 
     @AuthAccess
-    @GetMapping("/query")
+    @GetMapping("/query")//“查询订单状态”
     public Result query(@RequestParam String orderNo,
                         @RequestParam(required = false) Boolean forceAlipay) throws Exception {
         // 默认优先查本地数据库
@@ -86,7 +86,7 @@ public class OrderController {
         return Result.success(response);
     }
 
-    @GetMapping("/queryOrder")
+    @GetMapping("/queryOrder")//“查询订单详情”
     public Result queryOrder(@RequestParam String orderNo) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
@@ -104,7 +104,7 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/get-myOrderList")
+    @PostMapping("/get-myOrderList")//查看“我”生成的订单
     public Result getMyOrderList(@RequestBody OrderQueryDTO orderQueryDTO,
                                  @RequestParam(defaultValue = "1") int pageNum,
                                  @RequestParam(defaultValue = "10") int pageSize) {
@@ -118,6 +118,22 @@ public class OrderController {
         }
         return Result.success(pageInfo);
     }
+
+    @GetMapping("/get-preemptOrderList")//查看”我“接受的订单
+    public Result getPreemptOrderList(@RequestParam(defaultValue = "2") int status,
+                                      @RequestParam(defaultValue = "1") int pageNum,
+                                      @RequestParam(defaultValue = "10") int pageSize) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        PageInfo<Order> pageInfo = orderService.queryPreemptOrder(currentUser.getId(), status, pageNum, pageSize);
+        if (pageInfo.getList().isEmpty()) {
+            return Result.error(404, "未找到相关订单");
+        }
+        return Result.success(pageInfo);
+    }
+
 
 
 }

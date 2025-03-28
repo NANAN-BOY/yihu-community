@@ -71,6 +71,20 @@ const OrderListLoad = async () => {
     loading.value = false
   }
 }
+const refreshOrderList = async () => {
+  // Reset states
+  currentPage.value = 1       // Page reset
+  OrderList.value = []        // List reset
+  hasMore.value = true        // Loading state reset
+  error.value = ''            // clear error messages
+  loading.value = false       // Loading state reset
+
+  try {
+    await OrderListLoad()
+  } catch (err) {
+
+  }
+}
 const getUserInfo = async (userId) => {
   try {
     // Make a request to get the user info
@@ -104,6 +118,7 @@ const grabOrderPanel = async (Order) => {
         instance.confirmButtonLoading = true
         instance.confirmButtonText = '抢单中...'
         if(await grabOrder(Order) === 0){
+          await refreshOrderList();
           done()
         }
         else{
@@ -167,6 +182,7 @@ const grabOrder = async (Order) => {
     <el-breadcrumb-item><strong>接单广场</strong></el-breadcrumb-item>
   </el-breadcrumb>
   <h1>定制服务</h1>
+  <el-button type="primary" @click="refreshOrderList">刷新</el-button>
   <!-- 我的订单无限滚动列表 -->
   <div class="infinite-list-wrapper" style="overflow: auto">
     <ul

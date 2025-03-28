@@ -160,6 +160,10 @@ const CheckPayStatus = () => {
         :infinite-scroll-disabled="disabled"
     >
       <li v-for="Order in OrderList" :key="Order.id" class="list-item" @click="">
+        <el-tag type="warning" v-if="Order.status === 0">未支付</el-tag>
+        <el-tag type="success" v-if="Order.status  === 1">待接单</el-tag>
+        <el-tag type="danger" v-if="Order.status  === 2">进行中</el-tag>
+        <el-tag type="danger" v-if="Order.status  === 3">已完结</el-tag>
         <div>{{ Order.createAt }}</div>
       </li>
       <li v-if="loading" v-loading="loading" class="list-item"></li>

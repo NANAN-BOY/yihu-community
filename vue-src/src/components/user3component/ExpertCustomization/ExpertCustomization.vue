@@ -23,7 +23,7 @@ const OrderListLoad = async () => {
 
     const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_IP}/api/order/get-myOrderList`,
-        {type: null, status: null},
+        {type: 0, status: null},
         {
           params: {pageNum: currentPage.value, pageSize: 10},
           headers: {token: store.state.token}

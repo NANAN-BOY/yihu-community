@@ -13,40 +13,55 @@ const error = ref('')
 const hasMore = ref(true)
 const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
+
 const OrderListLoad = async () => {
   if (disabled.value) return
+
   try {
     loading.value = true
     error.value = ''
-    console.log(store.state.token)
+
     const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_IP}/api/order/get-myOrderList`,
+        {type: null, status: null},
         {
-          type: null,
-          status: null,
-        },
-        {
-          params: {
-            pageNum: currentPage.value,
-            pageSize: 10
-          },
-          headers: {
-            token: store.state.token
-          }
+          params: {pageNum: currentPage.value, pageSize: 10},
+          headers: {token: store.state.token}
         }
     )
-    console.log(response.data)
     if (response.data.code === 200) {
+      // success
       OrderList.value = [...OrderList.value, ...response.data.data.list]
       hasMore.value = response.data.data.hasNextPage
       currentPage.value++
+    } else if (response.data.code === 404) {
+      // Order not found , list is empty
+      hasMore.value = false
+
+      if (currentPage.value === 1) OrderList.value = []
+    } else {
+      // Other error
+      error.value = response.data.msg || '请求出现异常'
     }
+
   } catch (err) {
+    // Network error
     error.value = '数据加载失败，请稍后再试'
   } finally {
     loading.value = false
   }
 }
+
+const refreshOrderList = () => {
+  currentPage.value = 1
+  OrderList.value = []
+  hasMore.value = true
+  error.value = ''
+  loading.value = false
+  OrderListLoad()
+}
+
+
 //BuyBusinessArea
 const BuyBusinessAreaDialogVisible = ref(false);
 const openBuyBusinessPAreaDialogVisible = () => {
@@ -116,6 +131,7 @@ const CheckPayStatus = () => {
             ElMessage.success('支付成功，您已经成功购买。');
             closePayInfoDialogVisible();
             closeBuyBusinessAreaDialogVisible();
+            refreshOrderList();
             return;
           } else {
             ElMessage.error('没有查询到您的支付信息！');

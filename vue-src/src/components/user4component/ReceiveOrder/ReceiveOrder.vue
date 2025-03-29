@@ -106,8 +106,8 @@ const grabOrderPanel = async (Order) => {
   ElMessageBox({
     title: `客户 ${Order.buyerInfo.name} 的订单`,
     message: h('p', null, [
-      h('span', null, 'Message can be '),
-      h('i', { style: 'color: teal' }, `${Order.orderNo}`),
+      h('span', null, '订单时间：'),
+      h('span', {style: 'color: teal'}, `${Order.createAt}`),
     ]),
     showCancelButton: true,
     confirmButtonText: '立即抢单',

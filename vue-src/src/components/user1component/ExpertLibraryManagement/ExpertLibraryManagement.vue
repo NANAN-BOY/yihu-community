@@ -24,7 +24,7 @@
     <div>
       <p>邀请链接已成功生成：</p>
       <el-input v-model="inviteUrl" type="text" readonly style="width: 100%;"/>
-      <el-button @click="copyInviteUrl" size="mini" style="margin-top: 10px;">复制链接</el-button>
+      <el-button @click="copyInviteUrl(inviteUrl)" size="mini" style="margin-top: 10px;">复制链接</el-button>
       <div style="text-align: center; margin-top: 20px;">
         <QRCode :value="inviteUrl" size="200"/>
       </div>
@@ -53,9 +53,16 @@
           >
             <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-item"
                 @click="viewInviteHistoryRecordDetails(InviteHistoryRecord)">
-              <el-tag type="warning" v-if="InviteHistoryRecord.isAgree === null">未处理</el-tag>
+              <el-tag type="warning"
+                      v-if="InviteHistoryRecord.isAgree === null && !(InviteHistoryRecord.deadline && new Date() > new Date(InviteHistoryRecord.deadline))">
+                未处理
+              </el-tag>
               <el-tag type="success" v-if="InviteHistoryRecord.isAgree === 1">已接受</el-tag>
               <el-tag type="danger" v-if="InviteHistoryRecord.isAgree === 0">已拒绝</el-tag>
+              <el-tag type="danger"
+                      v-if="InviteHistoryRecord.isAgree === null && InviteHistoryRecord.deadline && new Date() > new Date(InviteHistoryRecord.deadline)">
+                已过期
+              </el-tag>
               <div>{{ InviteHistoryRecord.createAt }}发起的邀请</div>
               <!--              <div>{{ InviteHistoryRecord.inviteUserId }}邀请了{{ InviteHistoryRecord.expertId }}加入项目</div>-->
             </li>
@@ -213,16 +220,14 @@ const CloseCreateInviteLinkComponent = () => {
 const CloseInviteUrlDialog = () => {
   inviteUrlDialogVisible.value = false;
 };
-const copyInviteUrl = () => {
-  const input = document.createElement('input');
-  input.value = inviteUrl.value;
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  document.body.removeChild(input);
-
-  // 显示提示信息
-  ElMessage.success('邀请链接已复制成功！');
+const copyInviteUrl = async (textToCopy) => {
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    ElMessage.success('邀请链接已复制成功！');
+  } catch (err) {
+    ElMessage.error('复制失败，请手动选择文本复制');
+    console.error('复制失败:', err);
+  }
 };
 const value = ref('3');
 const options = [
@@ -257,13 +262,17 @@ const CreateInviteURL = async () => {
       throw new Error(`业务错误: ${response.data?.message || '未知错误'}`);
     }
     const inviteId = response.data.data;
-    inviteUrl.value = `${window.location.origin}/expertInvitedRegister/${inviteId}`;
+    inviteUrl.value = getURL(inviteId);
     CloseCreateInviteLinkComponent();
     inviteUrlDialogVisible.value = true;
   } catch (error) {
     console.error('邀请失败:', error);
     ElMessage.error('邀请失败，请稍后重试');
   }
+};
+//生成url
+const getURL = (inviteId) => {
+  return `${window.location.origin}/expertInvitedRegister/${inviteId}`;
 };
 
 const expertDialogVisible = ref(false);
@@ -325,41 +334,101 @@ const InviteHistoryRecordHasMore = ref(true)
 const InviteHistoryRecordNoMore = computed(() => !InviteHistoryRecordHasMore.value)
 const InviteHistoryRecordDisabled = computed(() => InviteHistoryRecordLoading.value || InviteHistoryRecordNoMore.value)
 const InviteHistoryRecordListload = async () => {
-  if (InviteHistoryRecordDisabled.value) return
-  try {
-    InviteHistoryRecordLoading.value = true
-    InviteHistoryRecordError.value = ''
+  if (InviteHistoryRecordDisabled.value) return;
 
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-historyRecord`, {
-      params: {
-        pageNum: InviteHistoryRecordCurrentPage.value,
-        pageSize: 10
-      },
-      headers: {
-        token: store.state.token
-      }
-    })
+  try {
+    InviteHistoryRecordLoading.value = true;
+    InviteHistoryRecordError.value = '';
+
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/expert/get-historyRecord`,
+        {
+          params: {
+            pageNum: InviteHistoryRecordCurrentPage.value,
+            pageSize: 10,
+          },
+          headers: {
+            token: store.state.token,
+          },
+        }
+    );
 
     if (response.data.code === 200) {
-      InviteHistoryRecordList.value = [...InviteHistoryRecordList.value, ...response.data.data.list]
-      InviteHistoryRecordHasMore.value = response.data.data.hasNextPage
-      InviteHistoryRecordCurrentPage.value++
+      // 如果没有数据或数据无效，直接返回
+      if (!response.data.data?.list?.length) {
+        InviteHistoryRecordHasMore.value = false;
+        return;
+      }
+
+      // 并行获取邀请人信息
+      const recordsWithInviterInfo = await Promise.all(
+          response.data.data.list.map(async (record) => {
+            try {
+              const inviterInfo = await getUserInfo(record.inviteUserId); // 假设 getUserInfo 是查询用户信息的方法
+              return {...record, inviterInfo}; // 合并用户信息到记录中
+            } catch (err) {
+              console.error(`获取用户 ${record.inviteUserId} 信息失败:`, err);
+              return {...record, inviterInfo: null}; // 错误时仍保留记录，但标记 inviterInfo 为 null
+            }
+          })
+      );
+
+      // 合并到现有列表
+      InviteHistoryRecordList.value = [
+        ...InviteHistoryRecordList.value,
+        ...recordsWithInviterInfo,
+      ];
+
+      // 更新分页状态
+      InviteHistoryRecordHasMore.value = response.data.data.hasNextPage;
+      InviteHistoryRecordCurrentPage.value++; // 仅在成功时递增页码
     }
   } catch (err) {
-    InviteHistoryRecordError.value = '数据加载失败，请稍后再试'
+    InviteHistoryRecordError.value = '数据加载失败，请稍后再试';
+    console.error('加载邀请记录失败:', err);
   } finally {
-    InviteHistoryRecordLoading.value = false
+    InviteHistoryRecordLoading.value = false;
+  }
+};
+const getUserInfo = async (userId) => {
+  try {
+    // Make a request to get the user info
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/user/get-info`,
+        {
+          params: {
+            userId: userId
+          }
+        }
+    )
+    return response.data.data
+  } catch (error) {
+    return "ERROR"
   }
 }
 
 const viewInviteHistoryRecordDetails = async (record) => {
-  console.log(record);
   await ElMessageBox({
     title: record.createAt + '创建的记录',
     message: h('div', {style: 'line-height: 1.8;'}, [
       // 标题
-      h('h3', {style: 'color: #409EFF; margin: 0 0 12px 0;'}, '详细信息'),
-
+      record.isAgree === null && !(record.deadline && new Date() > new Date(record.deadline)) && h('el-input', {}, ''),
+      record.isAgree === null && !(record.deadline && new Date() > new Date(record.deadline)) && [
+        h('strong', getURL(record.id)),
+        // 复制按钮
+        h('button', {
+          style: {marginTop: '10px'},
+          onClick: () => copyInviteUrl(getURL(record.id)) // ✅ 点击时才执行
+        }, '复制链接'),
+        // 二维码容器
+        h('div', {style: {textAlign: 'center', marginTop: '20px'}}, [
+          h(QRCode, {
+            value: getURL(record.id),
+            size: 200,
+            middle: true,
+          })
+        ])
+      ],
       h('p', {style: 'margin: 6px 0;'}, [
         h('strong', '创建时间: '),
         record.createAt?.substring(0, 16) || '-'
@@ -373,17 +442,16 @@ const viewInviteHistoryRecordDetails = async (record) => {
         record.expertId || '无'
       ]),
       h('p', {style: 'margin: 6px 0;'}, [
-        h('strong', '邀请人ID: '),
-        record.inviteUserId
+        h('strong', '邀请人: '),
+        record.inviterInfo.name
       ]),
       h('p', {style: 'margin: 6px 0;'}, [
         h('strong', '处理状态: '),
-        record.isAgree === 0 ? '未处理' :
-            record.isAgree === 1 ? '已同意' : '已拒绝'
+        record.isAgree === null ? '未处理' :
+            record.isAgree === 1 ? '已接受' : '已拒绝'
       ]),
-
       // 仅当拒绝时显示原因
-      record.isAgree === 2 && h('p', {style: 'margin: 6px 0; color: #F56C6C;'}, [
+      record.isAgree === 0 && h('p', {style: 'margin: 6px 0; color: #F56C6C;'}, [
         h('strong', '拒绝原因: '),
         record.refuseReason || '无说明'
       ])

@@ -99,6 +99,8 @@ const getUserInfo = async (userId) => {
         :infinite-scroll-disabled="disabled"
     >
       <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item" @click="">
+        <el-tag type="danger" v-if="Order.status  === 2">进行中</el-tag>
+        <el-tag type="danger" v-if="Order.status  === 3">已完结</el-tag>
         <div>客户{{ Order.buyerInfo.name }}的订单</div>
         &nbsp
         <div>{{ Order.createAt }}</div>

@@ -12,7 +12,7 @@
     </select>
 
     <insert id="insertCommunication" parameterType="com.yihu.entity.Communication">
-        insert into communication(send_user_id, receive_user_id, content, time)
-        values (#{sendUserId}, #{receiveUserId}, #{content}, #{time})
+        insert into communication(business_id, send_user_id, receive_user_id, content, time)
+        values (#{businessId}, #{sendUserId}, #{receiveUserId}, #{content}, #{time})
     </insert>
 </mapper>

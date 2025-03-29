@@ -49,11 +49,13 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         // 分割合并的字符串
         String[] parts = mergedAudience.split("\\|"); // 转义竖线
-        if (parts.length != 2) {
+        if (parts.length != 3) {
             throw new ServiceException("401", "Token格式错误");
         }
-        String phone = parts[0];
-        Integer role = Integer.parseInt(parts[1]); // 提取 role（根据需求决定是否使用）
+
+        Integer id = Integer.parseInt(parts[0]);    // 用户ID
+        String phone = parts[1];                   // 手机号
+        Integer role = Integer.parseInt(parts[2]); // 角色
 
         // 查询用户
         User user = userMapper.login(phone);

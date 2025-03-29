@@ -334,35 +334,80 @@ const InviteHistoryRecordHasMore = ref(true)
 const InviteHistoryRecordNoMore = computed(() => !InviteHistoryRecordHasMore.value)
 const InviteHistoryRecordDisabled = computed(() => InviteHistoryRecordLoading.value || InviteHistoryRecordNoMore.value)
 const InviteHistoryRecordListload = async () => {
-  if (InviteHistoryRecordDisabled.value) return
-  try {
-    InviteHistoryRecordLoading.value = true
-    InviteHistoryRecordError.value = ''
+  if (InviteHistoryRecordDisabled.value) return;
 
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/expert/get-historyRecord`, {
-      params: {
-        pageNum: InviteHistoryRecordCurrentPage.value,
-        pageSize: 10
-      },
-      headers: {
-        token: store.state.token
-      }
-    })
+  try {
+    InviteHistoryRecordLoading.value = true;
+    InviteHistoryRecordError.value = '';
+
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/expert/get-historyRecord`,
+        {
+          params: {
+            pageNum: InviteHistoryRecordCurrentPage.value,
+            pageSize: 10,
+          },
+          headers: {
+            token: store.state.token,
+          },
+        }
+    );
 
     if (response.data.code === 200) {
-      InviteHistoryRecordList.value = [...InviteHistoryRecordList.value, ...response.data.data.list]
-      InviteHistoryRecordHasMore.value = response.data.data.hasNextPage
-      InviteHistoryRecordCurrentPage.value++
+      // 如果没有数据或数据无效，直接返回
+      if (!response.data.data?.list?.length) {
+        InviteHistoryRecordHasMore.value = false;
+        return;
+      }
+
+      // 并行获取邀请人信息
+      const recordsWithInviterInfo = await Promise.all(
+          response.data.data.list.map(async (record) => {
+            try {
+              const inviterInfo = await getUserInfo(record.inviteUserId); // 假设 getUserInfo 是查询用户信息的方法
+              return {...record, inviterInfo}; // 合并用户信息到记录中
+            } catch (err) {
+              console.error(`获取用户 ${record.inviteUserId} 信息失败:`, err);
+              return {...record, inviterInfo: null}; // 错误时仍保留记录，但标记 inviterInfo 为 null
+            }
+          })
+      );
+
+      // 合并到现有列表
+      InviteHistoryRecordList.value = [
+        ...InviteHistoryRecordList.value,
+        ...recordsWithInviterInfo,
+      ];
+
+      // 更新分页状态
+      InviteHistoryRecordHasMore.value = response.data.data.hasNextPage;
+      InviteHistoryRecordCurrentPage.value++; // 仅在成功时递增页码
     }
   } catch (err) {
-    InviteHistoryRecordError.value = '数据加载失败，请稍后再试'
+    InviteHistoryRecordError.value = '数据加载失败，请稍后再试';
+    console.error('加载邀请记录失败:', err);
   } finally {
-    InviteHistoryRecordLoading.value = false
+    InviteHistoryRecordLoading.value = false;
+  }
+};
+const getUserInfo = async (userId) => {
+  try {
+    // Make a request to get the user info
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/user/get-info`,
+        {
+          params: {
+            userId: userId
+          }
+        }
+    )
+    return response.data.data
+  } catch (error) {
+    return "ERROR"
   }
 }
 
 const viewInviteHistoryRecordDetails = async (record) => {
-  console.log(record);
   await ElMessageBox({
     title: record.createAt + '创建的记录',
     message: h('div', {style: 'line-height: 1.8;'}, [
@@ -397,8 +442,8 @@ const viewInviteHistoryRecordDetails = async (record) => {
         record.expertId || '无'
       ]),
       h('p', {style: 'margin: 6px 0;'}, [
-        h('strong', '邀请人ID: '),
-        record.inviteUserId
+        h('strong', '邀请人: '),
+        record.inviterInfo.name
       ]),
       h('p', {style: 'margin: 6px 0;'}, [
         h('strong', '处理状态: '),

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.CommunicationMapper">
+    <select id="findByUserId" resultType="com.yihu.entity.Communication">
+        select *
+        from communication
+        where send_user_id = #{sendUserId} AND receive_user_id = #{receiveUserId}
+           or send_user_id = #{receiveUserId} AND receive_user_id = #{sendUserId}
+    </select>
+
+    <insert id="insertCommunication" parameterType="com.yihu.entity.Communication">
+        insert into communication(send_user_id, receive_user_id, content, time)
+        values (#{sendUserId}, #{receiveUserId}, #{content}, #{time})
+    </insert>
+</mapper>

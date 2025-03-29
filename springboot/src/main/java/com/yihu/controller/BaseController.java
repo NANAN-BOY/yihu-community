@@ -72,7 +72,7 @@ public class BaseController {
             return Result.error(404,"用户已被封禁，请联系管理员");
         }
         //生成token
-        String token = TokenUtils.getToken(user.getPhone(), user.getPassword(), user.getRole());
+        String token = TokenUtils.getToken(user.getId(), user.getPhone(), user.getPassword(), user.getRole());
         return Result.success(user,token);
     }
 

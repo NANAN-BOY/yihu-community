@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class Message {
+public class Communication {
     private Integer id;
     private Integer businessId;
     private Integer sendUserId;

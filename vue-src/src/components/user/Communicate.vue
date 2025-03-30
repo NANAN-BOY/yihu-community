@@ -52,7 +52,7 @@ const initWebSocket = () => {
   const token = store.state.token
 
   try {
-    socket.value = new WebSocket(`ws://localhost:8080/imserverSingle?token=${token}`)
+    socket.value = new WebSocket(`${import.meta.env.VITE_BACKEND_WebSocket}/imserverSingle?token=${token}`)
 
     socket.value.onopen = () => {
       connectionStatus.value = 'connected'
@@ -61,7 +61,7 @@ const initWebSocket = () => {
 
     socket.value.onmessage = (event) => {
       const serverMsg = JSON.parse(event.data)
-
+      console.log(serverMsg)
       // 处理消息
       const index = messages.value.findIndex(msg => msg.tempId === serverMsg.tempId)
       if (index > -1) {
@@ -70,7 +70,6 @@ const initWebSocket = () => {
       } else {
         // 新消息处理
         messages.value.push(serverMsg)
-
         // 如果窗口未打开则显示通知
         if (!isVisible.value && serverMsg.sendUserId !== sendUserId.value) {
           showNewMessageNotification(serverMsg)
@@ -100,10 +99,6 @@ const showNewMessageNotification = (message) => {
   ElNotification({
     title: '新消息',
     message: `${message.sendUserId}: ${message.content}`,
-    position: 'bottom-right',
-    onClick: () => {
-      store.commit('SET_BUSINESS', true)
-    }
   })
 }
 
@@ -141,7 +136,6 @@ const sendMessage = () => {
     receiveUserId: receiveUserId.value,
     businessId: businessId.value,
     content: inputMessage.value,
-    status: 'sending',
     time: Date.now()
   }
 

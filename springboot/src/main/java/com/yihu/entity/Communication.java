@@ -9,6 +9,7 @@ import java.util.Date;
 @Setter
 public class Communication {
     private Integer id;
+    private Integer tempId;
     private Integer businessId;
     private Integer sendUserId;
     private Integer receiveUserId;

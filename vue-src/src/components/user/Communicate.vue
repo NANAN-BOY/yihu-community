@@ -4,6 +4,7 @@ import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon} from 'element
 import {Connection, Loading, RefreshRight} from '@element-plus/icons-vue'
 import store from "../../store";
 import {ElNotification} from 'element-plus'
+import axios from "axios";
 
 // 状态管理
 const isVisible = computed(() => store.getters.business.acceptExpertId)
@@ -18,22 +19,65 @@ let retryCount = 0
 // 从store获取用户信息
 const sendUserId = computed(() => store.state.user.id)
 const receiveUserId = computed(() => {
-      if (store.state.user.role === 3) {
-        return store.state.expert.business.acceptExpertId;
-      } else if (store.state.user.role === 4) {
-        return store.state.expert.business.applyUserId;
-      } else {
-        return store.state.expert.business.acceptExpertId;
-      }
-    }
-)
+  if (store.state.user.role === 3) {
+    return store.state.expert.business.acceptExpertId;
+  } else if (store.state.user.role === 4) {
+    return store.state.expert.business.applyUserId;
+  } else {
+    return store.state.expert.business.acceptExpertId;
+  }
+})
 const businessId = computed(() => store.state.expert.business.id)
 
 // 初始化WebSocket连接（无论弹窗是否打开）
 onMounted(() => {
   initWebSocket()
 })
+const loadHistory = async () => {
+  try {
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/communication`,
+        {
+          params: {
+            businessId: businessId.value,
+            sendUserId: sendUserId.value,
+            receiveUserId: receiveUserId.value
+          }
+          ,
+          headers: {
+            token: store.state.token
+          }
+        }
+    )
+    // 转换消息格式（根据后端返回数据结构调整）
+    const historyMessages = response.data.data.map(msg => ({
+      ...msg,
+      // 如果后端返回的是字符串时间，转换为时间戳
+      time: new Date(msg.time).getTime() || Date.now(),
+      // 标记为已成功发送
+      status: 'success'
+    }))
 
+    // 合并历史消息（按时间升序排列）
+    messages.value = [
+      ...historyMessages,
+      ...messages.value
+    ].sort((a, b) => a.time - b.time)
+
+    // 滚动到底部
+    setTimeout(() => {
+      const container = document.querySelector('.main-area')
+      if (container) container.scrollTop = container.scrollHeight
+    }, 100)
+
+  } catch (error) {
+    ElNotification({
+      title: '加载失败',
+      message: '历史记录加载失败，请稍后重试',
+      type: 'error'
+    })
+  }
+}
 // 监听store状态变化
 watch(isVisible, (newVal) => {
   if (newVal) {
@@ -42,6 +86,10 @@ watch(isVisible, (newVal) => {
       const container = document.querySelector('.main-area')
       if (container) container.scrollTop = container.scrollHeight
     }, 100)
+    loadHistory()
+  } else {
+    // 关闭弹窗时清空聊天记录
+    messages.value = []
   }
 })
 
@@ -68,9 +116,11 @@ const initWebSocket = () => {
         messages.value[index].status = 'success'
         messages.value[index].serverTime = serverMsg.time
       } else {
-        // 新消息处理
-        messages.value.push(serverMsg)
-        // 如果窗口未打开则显示通知
+        // 新消息处理：仅当弹窗打开时存储消息
+        if (isVisible.value) {
+          messages.value.push(serverMsg)
+        }
+        // 如果窗口未打开并且消息来自对方，显示通知
         if (!isVisible.value && serverMsg.sendUserId !== sendUserId.value) {
           showNewMessageNotification(serverMsg)
         }
@@ -95,10 +145,11 @@ const initWebSocket = () => {
 }
 
 // 显示新消息通知
-const showNewMessageNotification = (message) => {
+const showNewMessageNotification = async (message) => {
+  const userInfo = await getUserInfo(message.sendUserId)
   ElNotification({
-    title: '新消息',
-    message: `${message.sendUserId}: ${message.content}`,
+    title: '服务信息',
+    message: `${userInfo.name}: ${message.content}`,
   })
 }
 
@@ -169,14 +220,27 @@ const closeDialog = () => {
   store.commit('SET_BUSINESS', false)
 }
 
+const getUserInfo = async (userId) => {
+  try {
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/user/get-info`,
+        {params: {userId}}
+    )
+    return response.data.data
+  } catch (error) {
+    return "ERROR"
+  }
+}
+
 onUnmounted(closeConnection)
 </script>
+
 
 <template>
   <el-dialog
       :model-value="isVisible"
       @update:model-value="closeDialog"
-      :title="`与 ${receiveUserId} 的聊天`"
+      :title=receiveUserId
       width="80%"
       top="5vh"
       class="chat-dialog"

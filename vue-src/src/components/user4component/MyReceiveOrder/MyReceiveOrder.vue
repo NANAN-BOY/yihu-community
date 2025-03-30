@@ -113,8 +113,6 @@ const checkBusinessCommunicate = (orderNo) => {
         businessLoading.value = false;
         ElMessage.error(`${error.message}`)
       })
-
-  console.log('打开聊天')
 }
 </script>
 

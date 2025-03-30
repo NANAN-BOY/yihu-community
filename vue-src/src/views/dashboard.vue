@@ -217,6 +217,9 @@ import MyReceiveOrder from "../components/user4component/MyReceiveOrder/MyReceiv
 //AllUserComponent
 import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
 
+import ExpertCommunicate
+  from "../components/user3component/ExpertCustomization/ExpertCommunicate/ExpertCommunicate.vue";
+
 import {Avatar, Document, Expand, Star, StarFilled, Tickets, UserFilled} from "@element-plus/icons-vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import axios from "axios";
@@ -293,7 +296,7 @@ const handleSelect = (index) => {
       currentComponent.value = user3ProjectManagement;
       break;
     case '3-2':
-      currentComponent.value = ExpertCustomization;
+      currentComponent.value = ExpertCommunicate;
       break;
     case '3-3':
       currentComponent.value = aboutMyInfo;

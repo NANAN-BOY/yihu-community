@@ -22,8 +22,10 @@ public class CommunicationController {
      * 查询所有消息
      */
     @GetMapping
-    public Result findByFromUsername(@RequestParam String fromUser, @RequestParam String toUser) {
-        List<Communication> all = communicationService.findByUsername(fromUser, toUser);
+    public Result findByFromUsername(@RequestParam Integer businessId,
+                                     @RequestParam Integer sendUserId,
+                                     @RequestParam Integer receiveUserId) {
+        List<Communication> all = communicationService.findByUsername(businessId, sendUserId, receiveUserId);
         return Result.success(all);
     }
 }

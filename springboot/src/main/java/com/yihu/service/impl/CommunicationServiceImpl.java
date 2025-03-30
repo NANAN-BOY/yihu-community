@@ -21,7 +21,9 @@ public class CommunicationServiceImpl implements CommunicationService {
     }
 
     @Override
-    public List<Communication> findByUsername(String fromUser, String toUser) {
-        return communicationMapper.findByUserId(fromUser, toUser);
+    public List<Communication> findByUsername(Integer businessId,
+                                              Integer sendUserId,
+                                              Integer receiveUserId) {
+        return communicationMapper.findByUserId(businessId, sendUserId, receiveUserId);
     }
 }

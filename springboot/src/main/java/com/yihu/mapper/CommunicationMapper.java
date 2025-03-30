@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface CommunicationMapper {
 
-    List<Communication> findByUserId(@Param("sendUserId") String sendUserId,
-                                     @Param("receiveUserId") String receiveUserId);
+    List<Communication> findByUserId(@Param("businessId") Integer businessId,
+                                     @Param("sendUserId") Integer sendUserId,
+                                     @Param("receiveUserId") Integer receiveUserId);
 
     void insertCommunication(Communication communication);
 }

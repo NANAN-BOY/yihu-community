@@ -7,8 +7,8 @@
     <select id="findByUserId" resultType="com.yihu.entity.Communication">
         select *
         from communication
-        where send_user_id = #{sendUserId} AND receive_user_id = #{receiveUserId}
-           or send_user_id = #{receiveUserId} AND receive_user_id = #{sendUserId}
+        where business_id = #{businessId} AND send_user_id = #{sendUserId} AND receive_user_id = #{receiveUserId}
+           or business_id = #{businessId} AND send_user_id = #{receiveUserId} AND receive_user_id = #{sendUserId}
     </select>
 
     <insert id="insertCommunication" parameterType="com.yihu.entity.Communication">

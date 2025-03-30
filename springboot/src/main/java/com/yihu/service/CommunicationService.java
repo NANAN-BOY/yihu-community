@@ -7,5 +7,7 @@ import java.util.List;
 public interface CommunicationService {
     Communication add(Communication communication);
 
-    List<Communication> findByUsername(String fromUser, String toUser);
+    List<Communication> findByUsername(Integer businessId,
+                                       Integer sendUserId,
+                                       Integer receiveUserId);
 }

@@ -16,6 +16,9 @@ public class Business {
     private Date createAt;//创建时间
     private Date endAt;//结束时间
 
+    public Business() {
+    }
+
     public Business(String orderNo, Integer applyUserId, Integer acceptExpertId, Integer frequency, Date createAt) {
         this.orderNo = orderNo;
         this.applyUserId = applyUserId;

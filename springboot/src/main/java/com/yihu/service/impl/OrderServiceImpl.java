@@ -4,8 +4,10 @@ import cn.hutool.core.util.IdUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yihu.dto.OrderQueryDTO;
+import com.yihu.entity.Business;
 import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
+import com.yihu.mapper.BusinessMapper;
 import com.yihu.mapper.MemberShipMapper;
 import com.yihu.mapper.OrderMapper;
 import com.yihu.service.OrderService;
@@ -25,11 +27,13 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
     private final MemberShipMapper memberShipMapper;
+    private final BusinessMapper businessMapper;
 
     @Autowired
-    public OrderServiceImpl(OrderMapper orderMapper, MemberShipMapper memberShipMapper) {
+    public OrderServiceImpl(OrderMapper orderMapper, MemberShipMapper memberShipMapper, BusinessMapper businessMapper) {
         this.orderMapper = orderMapper;
         this.memberShipMapper = memberShipMapper;
+        this.businessMapper = businessMapper;
     }
 
 
@@ -143,6 +147,16 @@ public class OrderServiceImpl implements OrderService {
     public PageInfo<Order> queryPreemptOrder(Integer id, int status, int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         return new PageInfo<>(orderMapper.queryPreemptOrder(id, status));
+    }
+
+    @Override
+    public Business getBusiness(String orderNo, Integer userId) {
+        return businessMapper.getBusiness(orderNo, userId);
+    }
+
+    @Override
+    public Business getMyBusiness(String orderNo, Integer userId) {
+        return businessMapper.getMyBusiness(orderNo, userId);
     }
 
 }

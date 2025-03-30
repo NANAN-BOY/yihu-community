@@ -2,6 +2,7 @@ package com.yihu.service;
 
 import com.github.pagehelper.PageInfo;
 import com.yihu.dto.OrderQueryDTO;
+import com.yihu.entity.Business;
 import com.yihu.entity.Order;
 
 public interface OrderService {
@@ -17,4 +18,8 @@ public interface OrderService {
     PageInfo<Order> queryOrder(OrderQueryDTO orderQueryDTO, Integer id, int pageNum, int pageSize);
 
     PageInfo<Order> queryPreemptOrder(Integer id, int status, int pageNum, int pageSize);
+
+    Business getBusiness(String orderNo, Integer userId);
+
+    Business getMyBusiness(String orderNo, Integer userId);
 }

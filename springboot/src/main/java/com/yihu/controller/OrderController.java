@@ -6,6 +6,7 @@ import com.yihu.common.PaymentService;
 import com.yihu.common.ProductType;
 import com.yihu.common.Result;
 import com.yihu.dto.OrderQueryDTO;
+import com.yihu.entity.Business;
 import com.yihu.entity.Order;
 import com.yihu.entity.User;
 import com.yihu.service.OrderService;
@@ -134,6 +135,30 @@ public class OrderController {
         return Result.success(pageInfo);
     }
 
+    @GetMapping("/get-business")//查询我购买的服务
+    public Result getBusiness(@RequestParam String orderNo) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        Business business = orderService.getBusiness(orderNo, currentUser.getId());
+        if (business == null) {
+            return Result.error(404, "未找到相关服务");
+        }
+        return Result.success(business);
+    }
 
+    @GetMapping("/get-myBusiness")//查看“我”接受的服务
+    public Result getBusinessList(@RequestParam String orderNo) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        Business business = orderService.getMyBusiness(orderNo, currentUser.getId());
+        if (business == null) {
+            return Result.error(404, "未找到相关服务");
+        }
+        return Result.success(business);
+    }
 
 }

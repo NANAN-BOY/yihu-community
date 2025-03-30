@@ -1,6 +1,7 @@
 package com.yihu.mapper;
 
 import com.yihu.dto.OrderQueryDTO;
+import com.yihu.entity.Business;
 import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import io.lettuce.core.dynamic.annotation.Param;

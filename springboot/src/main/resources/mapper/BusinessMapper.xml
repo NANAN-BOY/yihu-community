@@ -10,4 +10,18 @@
         values (#{orderNo}, #{applyUserId}, #{acceptExpertId}, #{frequency}, #{createAt})
     </insert>
 
+    <select id="getBusiness" resultType="com.yihu.entity.Business">
+        select *
+        from business
+        where order_no = #{orderNo}
+          and apply_user_id = #{applyUserId}
+    </select>
+
+    <select id="getMyBusiness" resultType="com.yihu.entity.Business">
+        select *
+        from business
+        where order_no = #{orderNo}
+          and accept_expert_id = #{acceptExpertId}
+    </select>
+
 </mapper>

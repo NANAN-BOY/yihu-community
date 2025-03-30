@@ -27,6 +27,7 @@ const store = createStore({
       inviteId: null,
       business: {
         acceptExpertId: null,
+          applyUserId: null,
       },
     }
   },

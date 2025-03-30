@@ -84,6 +84,38 @@ const getUserInfo = async (userId) => {
     return "ERROR"
   }
 }
+const businessInfo = ref(null)
+const businessLoading = ref(false)
+
+const openExpertCommunicate = (business) => {
+  businessInfo.value = business
+}
+const checkBusinessCommunicate = (orderNo) => {
+  businessLoading.value = true;
+  axios.get(
+      `${import.meta.env.VITE_BACKEND_IP}/api/order/get-myBusiness`,
+      {
+        params: {orderNo: orderNo},
+        headers: {'token': store.state.token}
+      }
+  )
+      .then(response => {
+        businessLoading.value = false;
+        if (response.data.code === 200) {
+          const business = response.data.data
+          store.state.expert.business = business;
+          openExpertCommunicate(business)
+        } else if (response.data.code === 404) {
+          ElMessage.error('订单不存在！')
+        }
+      })
+      .catch(error => {
+        businessLoading.value = false;
+        ElMessage.error(`${error.message}`)
+      })
+
+  console.log('打开聊天')
+}
 </script>
 
 <template>
@@ -98,7 +130,8 @@ const getUserInfo = async (userId) => {
         class="list"
         :infinite-scroll-disabled="disabled"
     >
-      <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item" @click="">
+      <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
+          @click="checkBusinessCommunicate(Order.orderNo)" v-loading="businessLoading">
         <el-tag type="danger" v-if="Order.status  === 2">进行中</el-tag>
         <el-tag type="danger" v-if="Order.status  === 3">已完结</el-tag>
         <div>客户{{ Order.buyerInfo.name }}的订单</div>

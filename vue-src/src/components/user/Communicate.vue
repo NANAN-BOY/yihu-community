@@ -17,7 +17,16 @@ let retryCount = 0
 
 // 从store获取用户信息
 const sendUserId = computed(() => store.state.user.id)
-const receiveUserId = computed(() => store.state.expert.business.acceptExpertId)
+const receiveUserId = computed(() => {
+      if (store.state.user.role === 3) {
+        return store.state.expert.business.acceptExpertId;
+      } else if (store.state.user.role === 4) {
+        return store.state.expert.business.applyUserId;
+      } else {
+        return store.state.expert.business.acceptExpertId;
+      }
+    }
+)
 const businessId = computed(() => store.state.expert.business.id)
 
 // 初始化WebSocket连接（无论弹窗是否打开）

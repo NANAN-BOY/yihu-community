@@ -146,13 +146,10 @@ const CheckPayStatus = () => {
 };
 // BusinessCommunicate
 
-
-const showChat = ref(false)
 const businessInfo = ref(null)
 const businessLoading = ref(false)
 const openExpertCommunicate = (business) => {
   businessInfo.value = business
-  showChat.value = true
 }
 const checkBusinessCommunicate = (orderNo) => {
   businessLoading.value = true;
@@ -168,7 +165,6 @@ const checkBusinessCommunicate = (orderNo) => {
         if (response.data.code === 200) {
           const business = response.data.data
           store.state.expert.business = business;
-          console.log(business)
           openExpertCommunicate(business)
         } else if (response.data.code === 404) {
           ElMessage.error('订单不存在！')

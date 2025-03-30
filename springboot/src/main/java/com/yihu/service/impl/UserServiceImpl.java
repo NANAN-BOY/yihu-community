@@ -76,6 +76,7 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             String hashedPassword = user.getPassword();
             if (BCrypt.checkpw(password, hashedPassword)) {
+                userMapper.updateLastLogin(user.getId(), new Date());
                 return user;
             } else {
                 return null;

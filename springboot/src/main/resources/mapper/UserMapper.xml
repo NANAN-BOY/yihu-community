@@ -23,6 +23,12 @@
         SELECT * FROM user WHERE phone = #{phone}
     </select>
 
+    <update id="updateLastLogin">
+        UPDATE user
+        SET last_login_time = #{lastLoginTime}
+        WHERE id = #{userId}
+    </update>
+
     <select id="selectByPhone" resultType="java.lang.Boolean">
         SELECT COUNT(*) > 0 FROM user WHERE phone = #{phone}
     </select>

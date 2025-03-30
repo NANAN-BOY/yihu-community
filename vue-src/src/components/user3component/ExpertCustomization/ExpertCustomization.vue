@@ -144,6 +144,43 @@ const CheckPayStatus = () => {
         ElMessage.error(`${error.message}`);
       });
 };
+// BusinessCommunicate
+
+
+const showChat = ref(false)
+const businessInfo = ref(null)
+const businessLoading = ref(false)
+const openExpertCommunicate = (business) => {
+  businessInfo.value = business
+  showChat.value = true
+}
+const checkBusinessCommunicate = (orderNo) => {
+  businessLoading.value = true;
+  axios.get(
+      `${import.meta.env.VITE_BACKEND_IP}/api/order/get-business`,
+      {
+        params: {orderNo: orderNo},
+        headers: {'token': store.state.token}
+      }
+  )
+      .then(response => {
+        businessLoading.value = false;
+        if (response.data.code === 200) {
+          const business = response.data.data
+          store.state.expert.business = business;
+          console.log(business)
+          openExpertCommunicate(business)
+        } else if (response.data.code === 404) {
+          ElMessage.error('订单不存在！')
+        }
+      })
+      .catch(error => {
+        businessLoading.value = false;
+        ElMessage.error(`${error.message}`)
+      })
+
+  console.log('打开聊天')
+}
 </script>
 
 <template>
@@ -151,6 +188,7 @@ const CheckPayStatus = () => {
     <el-breadcrumb-item><strong>专家定制</strong></el-breadcrumb-item>
   </el-breadcrumb>
   <h1>定制服务</h1>
+  <button @click="openExpertCommunicate">打开聊天</button>
   <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
   <!-- 我的订单无限滚动列表 -->
   <div class="infinite-list-wrapper" style="overflow: auto">
@@ -159,7 +197,8 @@ const CheckPayStatus = () => {
         class="list"
         :infinite-scroll-disabled="disabled"
     >
-      <li v-for="Order in OrderList" :key="Order.id" class="list-item" @click="">
+      <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
+          @click="checkBusinessCommunicate(Order.orderNo)" v-loading="businessLoading">
         <el-tag type="warning" v-if="Order.status === 0">未支付</el-tag>
         <el-tag type="success" v-if="Order.status  === 1">待接单</el-tag>
         <el-tag type="danger" v-if="Order.status  === 2">进行中</el-tag>

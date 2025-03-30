@@ -25,6 +25,9 @@ const store = createStore({
     },
     expert: {
       inviteId: null,
+      business: {
+        acceptExpertId: null,
+      },
     }
   },
   getters: {
@@ -34,6 +37,7 @@ const store = createStore({
     isNavbarLocked: state => state.navbar.isLocked, // 导航栏是否锁定
     navbarLockReason: state => state.navbar.lockReason, // 获取锁定原因
     expertInviteId: state => state.expert.inviteId, // 获取专家邀请码
+    business: state => state.expert.business, // 获取专家邀请码
   },
   mutations: {
     SET_TOKEN(state, token) {
@@ -66,6 +70,9 @@ const store = createStore({
     },
     SET_EXPERT_INVITE_ID(state, inviteId) {
       state.expert.inviteId = inviteId; // 设置专家邀请码
+    },
+    SET_BUSINESS(state, business) {
+      state.expert.business = business;
     }
   },
   actions: {

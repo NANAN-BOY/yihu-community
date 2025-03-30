@@ -193,6 +193,7 @@
         <el-button type="primary" @click="closePayInfoDialogVisible">关闭</el-button>
       </span>
   </el-dialog>
+  <Communicate v-if="store.state.user.id!==null"/>
 </template>
 
 <script setup>
@@ -211,14 +212,15 @@ import user2SocialOrganizationManagement
 //User3Component
 import user3ProjectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue';
 import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
+
 //User4Component
 import ReceiveOrder from '../components/user4component/ReceiveOrder/ReceiveOrder.vue';
 import MyReceiveOrder from "../components/user4component/MyReceiveOrder/MyReceiveOrder.vue";
+
 //AllUserComponent
 import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
+import Communicate from '../components/user/Communicate.vue'
 
-import ExpertCommunicate
-  from "../components/user3component/ExpertCustomization/ExpertCommunicate/ExpertCommunicate.vue";
 
 import {Avatar, Document, Expand, Star, StarFilled, Tickets, UserFilled} from "@element-plus/icons-vue";
 import {ElMessage, ElMessageBox} from "element-plus";
@@ -296,7 +298,7 @@ const handleSelect = (index) => {
       currentComponent.value = user3ProjectManagement;
       break;
     case '3-2':
-      currentComponent.value = ExpertCommunicate;
+      currentComponent.value = ExpertCustomization;
       break;
     case '3-3':
       currentComponent.value = aboutMyInfo;

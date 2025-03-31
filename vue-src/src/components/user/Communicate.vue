@@ -117,11 +117,15 @@ const initWebSocket = () => {
         messages.value[index].serverTime = serverMsg.time
       } else {
         if (isVisible.value) {
+          if (serverMsg.businessId === businessId.value) {
           messages.value.push(serverMsg)
           await nextTick()
           const wrap = scrollbarRef.value?.$el.querySelector('.el-scrollbar__wrap')
           if (wrap) {
             wrap.scrollTop = wrap.scrollHeight
+          }
+          } else {
+            await showNewMessageNotification(serverMsg)
           }
         }
         if (!isVisible.value && serverMsg.sendUserId !== sendUserId.value) {

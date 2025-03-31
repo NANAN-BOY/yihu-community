@@ -1,6 +1,6 @@
 <script setup>
 import {ref, watch, onUnmounted, computed, onMounted, nextTick} from 'vue'
-import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon, ElNotification} from 'element-plus'
+import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon, ElNotification, ElMessage} from 'element-plus'
 import {Connection, Loading, RefreshRight} from '@element-plus/icons-vue'
 import store from "../../store";
 import axios from "axios";
@@ -156,8 +156,38 @@ const showNewMessageNotification = async (message) => {
   const userInfo = await getUserInfo(message.sendUserId)
   ElNotification({
     title: '服务信息',
-    message: `${userInfo.name}: ${message.content}`,
+    message: `${userInfo.name}: ${message.content.slice(0, 20)}...`,
+    onClick: async () => {
+      store.commit('SET_BUSINESS', {
+        acceptExpertId: null,
+        applyUserId: null,
+      })
+      const businessInfo = await checkBusinessCommunicate(message.businessId);
+      store.commit('SET_BUSINESS', businessInfo)
+    }
   })
+}
+const checkBusinessCommunicate = (businessId) => {
+  // 返回整个 Promise 链
+  return axios.get(
+      `${import.meta.env.VITE_BACKEND_IP}/api/order/get-businessById`,
+      {
+        params: {id: businessId},
+        headers: {'token': store.state.token}
+      }
+  )
+      .then(response => {
+        if (response.data.code === 200) {
+          return response.data.data
+        } else if (response.data.code === 404) {
+          ElMessage.error('Error！')
+          return null
+        }
+      })
+      .catch(error => {
+        ElMessage.error(`${error.message}`)
+        return null
+      })
 }
 
 // 关闭连接（仅在组件卸载时）
@@ -255,6 +285,8 @@ onUnmounted(closeConnection)
       :close-on-click-modal="false"
       class="chat-dialog"
       :fullscreen="isMobile"
+      draggable
+      width="700px"
   >
     <div class="chat-container">
       <el-alert
@@ -436,8 +468,6 @@ onUnmounted(closeConnection)
 /* 移动端样式 */
 @media (max-width: 768px) {
   .chat-dialog {
-    width: 100% !important;
-    height: 100vh;
     top: 0;
     margin: 0;
     padding: 0;

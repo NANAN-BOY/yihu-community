@@ -159,4 +159,14 @@ public class OrderServiceImpl implements OrderService {
         return businessMapper.getMyBusiness(orderNo, userId);
     }
 
+    @Override
+    public Business getBusinessById(Integer id, Integer userId) {
+        return businessMapper.getBusinessById(id, userId);
+    }
+
+//    @Override
+//    public int finishOrder(String orderNo, Integer id) {
+//        return 0;
+//    }
+
 }

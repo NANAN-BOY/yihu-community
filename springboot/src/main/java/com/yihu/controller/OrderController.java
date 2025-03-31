@@ -161,4 +161,33 @@ public class OrderController {
         return Result.success(business);
     }
 
+    @GetMapping("/get-businessById")//根据id查询服务
+    public Result getBusinessById(@RequestParam Integer id) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        Business business = orderService.getBusinessById(id, currentUser.getId());
+        if (business == null) {
+            return Result.error(404, "未找到相关服务");
+        }
+        return Result.success(business);
+    }
+
+//    @PostMapping("/finishOrder")//完成订单
+//    public Result finishOrder(@RequestParam String orderNo) {
+//        User currentUser = TokenUtils.getCurrentUser();
+//        if (currentUser == null) {
+//            return Result.error(401, "未授权，请登录");
+//        }
+//        if (currentUser.getRole() != 4) {
+//            return Result.error(403, "禁止访问：权限不足");
+//        }
+//        int isSuccess = orderService.finishOrder(orderNo, currentUser.getId());
+//        if (isSuccess == 0) {
+//            return Result.success("成功完成订单");
+//        }
+//        return Result.error(500, "完成订单失败");
+//    }
+
 }

@@ -11,4 +11,7 @@ public interface BusinessMapper {
 
     Business getMyBusiness(@Param("orderNo") String orderNo,
                            @Param("acceptExpertId") Integer acceptExpertId);
+
+    Business getBusinessById(@Param("id") Integer id,
+                             @Param("userId") Integer userId);
 }

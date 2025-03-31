@@ -31,4 +31,7 @@ public interface UserMapper {
 
     int updatePhone(@Param("userId") Integer userId, @Param("oldPhone") String oldPhone,
                     @Param("newPhone") String newPhone, @Param("updateTime") Timestamp currentTimestamp);
+
+    void updateLastLogin(@Param("userId") Integer userId,
+                         @Param("lastLoginTime") Date lastLoginTime);
 }

@@ -16,6 +16,7 @@ const MAX_RETRY = 5
 let retryCount = 0
 const scrollbarRef = ref(null)
 const isMobile = ref(window.innerWidth < 768)
+const receiveUserInfo = ref({name: '请等待',})
 
 // 从store获取用户信息
 const sendUserId = computed(() => store.state.user.id)
@@ -87,8 +88,10 @@ watch(isVisible, async (newVal) => {
         wrap.scrollTop = wrap.scrollHeight
       }
     })
+    receiveUserInfo.value = await getUserInfo(receiveUserId.value);
   } else {
     messages.value = []
+    receiveUserInfo.value = {name: '请等待',}
   }
 })
 
@@ -244,7 +247,7 @@ onUnmounted(closeConnection)
   <el-dialog
       :model-value="isVisible"
       @update:model-value="closeDialog"
-      :title="receiveUserId"
+      :title="receiveUserInfo.name"
       :close-on-click-modal="false"
       class="chat-dialog"
       :fullscreen="isMobile"

@@ -22,4 +22,8 @@ public interface OrderService {
     Business getBusiness(String orderNo, Integer userId);
 
     Business getMyBusiness(String orderNo, Integer userId);
+
+    Business getBusinessById(Integer id, Integer userId);
+
+//    int finishOrder(String orderNo, Integer id);
 }

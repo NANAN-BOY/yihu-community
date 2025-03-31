@@ -24,4 +24,11 @@
           and accept_expert_id = #{acceptExpertId}
     </select>
 
+    <select id="getBusinessById" resultType="com.yihu.entity.Business">
+        select *
+        from business
+        where id = #{id} and accept_expert_id = #{userId}
+           OR id = #{id} and apply_user_id = #{userId}
+    </select>
+
 </mapper>

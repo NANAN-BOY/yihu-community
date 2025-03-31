@@ -1,9 +1,8 @@
 <script setup>
-import {ref, watch, onUnmounted, computed, onMounted} from 'vue'
-import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon} from 'element-plus'
+import {ref, watch, onUnmounted, computed, onMounted, nextTick} from 'vue'
+import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon, ElNotification} from 'element-plus'
 import {Connection, Loading, RefreshRight} from '@element-plus/icons-vue'
 import store from "../../store";
-import {ElNotification} from 'element-plus'
 import axios from "axios";
 
 // 状态管理
@@ -15,6 +14,9 @@ const connectionStatus = ref('disconnected')
 let reconnectTimer = null
 const MAX_RETRY = 5
 let retryCount = 0
+const scrollbarRef = ref(null)
+const isMobile = ref(window.innerWidth < 768)
+const receiveUserInfo = ref({name: '请等待',})
 
 // 从store获取用户信息
 const sendUserId = computed(() => store.state.user.id)
@@ -42,19 +44,16 @@ const loadHistory = async () => {
             businessId: businessId.value,
             sendUserId: sendUserId.value,
             receiveUserId: receiveUserId.value
-          }
-          ,
+          },
           headers: {
             token: store.state.token
           }
         }
     )
-    // 转换消息格式（根据后端返回数据结构调整）
+    // 转换消息格式
     const historyMessages = response.data.data.map(msg => ({
       ...msg,
-      // 如果后端返回的是字符串时间，转换为时间戳
       time: new Date(msg.time).getTime() || Date.now(),
-      // 标记为已成功发送
       status: 'success'
     }))
 
@@ -64,12 +63,12 @@ const loadHistory = async () => {
       ...messages.value
     ].sort((a, b) => a.time - b.time)
 
-    // 滚动到底部
-    setTimeout(() => {
-      const container = document.querySelector('.main-area')
-      if (container) container.scrollTop = container.scrollHeight
-    }, 100)
-
+    // Scroll to bottom
+    await nextTick()
+    const wrap = scrollbarRef.value?.$el.querySelector('.el-scrollbar__wrap')
+    if (wrap) {
+      wrap.scrollTop = wrap.scrollHeight
+    }
   } catch (error) {
     ElNotification({
       title: '加载失败',
@@ -78,18 +77,21 @@ const loadHistory = async () => {
     })
   }
 }
+
 // 监听store状态变化
-watch(isVisible, (newVal) => {
+watch(isVisible, async (newVal) => {
   if (newVal) {
-    // 当打开弹窗时滚动到底部
-    setTimeout(() => {
-      const container = document.querySelector('.main-area')
-      if (container) container.scrollTop = container.scrollHeight
-    }, 100)
-    loadHistory()
+    await loadHistory()
+    await nextTick(() => {
+      const wrap = scrollbarRef.value?.$el.querySelector('.el-scrollbar__wrap')
+      if (wrap) {
+        wrap.scrollTop = wrap.scrollHeight
+      }
+    })
+    receiveUserInfo.value = await getUserInfo(receiveUserId.value);
   } else {
-    // 关闭弹窗时清空聊天记录
     messages.value = []
+    receiveUserInfo.value = {name: '请等待',}
   }
 })
 
@@ -107,22 +109,27 @@ const initWebSocket = () => {
       retryCount = 0
     }
 
-    socket.value.onmessage = (event) => {
+    socket.value.onmessage = async (event) => {
       const serverMsg = JSON.parse(event.data)
-      console.log(serverMsg)
-      // 处理消息
       const index = messages.value.findIndex(msg => msg.tempId === serverMsg.tempId)
       if (index > -1) {
         messages.value[index].status = 'success'
         messages.value[index].serverTime = serverMsg.time
       } else {
-        // 新消息处理：仅当弹窗打开时存储消息
         if (isVisible.value) {
+          if (serverMsg.businessId === businessId.value) {
           messages.value.push(serverMsg)
+          await nextTick()
+          const wrap = scrollbarRef.value?.$el.querySelector('.el-scrollbar__wrap')
+          if (wrap) {
+            wrap.scrollTop = wrap.scrollHeight
+          }
+          } else {
+            await showNewMessageNotification(serverMsg)
+          }
         }
-        // 如果窗口未打开并且消息来自对方，显示通知
         if (!isVisible.value && serverMsg.sendUserId !== sendUserId.value) {
-          showNewMessageNotification(serverMsg)
+          await showNewMessageNotification(serverMsg)
         }
       }
     }
@@ -177,7 +184,7 @@ const manualReconnect = () => {
 }
 
 // 发送消息
-const sendMessage = () => {
+const sendMessage = async () => {
   if (!inputMessage.value.trim()) return
 
   const tempId = Date.now()
@@ -197,6 +204,11 @@ const sendMessage = () => {
       ...newMsg,
       status: undefined
     }))
+    await nextTick()
+    const wrap = scrollbarRef.value?.$el.querySelector('.el-scrollbar__wrap')
+    if (wrap) {
+      wrap.scrollTop = wrap.scrollHeight
+    }
   } catch (error) {
     newMsg.status = 'failed'
     messages.value = [...messages.value]
@@ -235,16 +247,14 @@ const getUserInfo = async (userId) => {
 onUnmounted(closeConnection)
 </script>
 
-
 <template>
   <el-dialog
       :model-value="isVisible"
       @update:model-value="closeDialog"
-      :title=receiveUserId
-      width="80%"
-      top="5vh"
-      class="chat-dialog"
+      :title="receiveUserInfo.name"
       :close-on-click-modal="false"
+      class="chat-dialog"
+      :fullscreen="isMobile"
   >
     <div class="chat-container">
       <el-alert
@@ -283,7 +293,7 @@ onUnmounted(closeConnection)
         </el-button>
       </el-alert>
 
-      <el-scrollbar height="60vh" class="main-area">
+      <el-scrollbar ref="scrollbarRef" class="main-area">
         <div
             v-for="(msg, index) in messages"
             :key="index"
@@ -336,6 +346,7 @@ onUnmounted(closeConnection)
   --el-dialog-padding-primary: 0;
 }
 
+/* PC 及大屏设备 */
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -395,6 +406,7 @@ onUnmounted(closeConnection)
   gap: 12px;
 }
 
+/* 按钮高度与 PC 保持一致 */
 .send-btn {
   margin-left: 10px;
   height: 60px;
@@ -419,5 +431,41 @@ onUnmounted(closeConnection)
   align-items: center;
   gap: 8px;
   color: var(--el-color-danger);
+}
+
+/* 移动端样式 */
+@media (max-width: 768px) {
+  .chat-dialog {
+    width: 100% !important;
+    height: 100vh;
+    top: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .chat-container {
+    height: calc(100vh - 60px);
+  }
+
+  .main-area {
+    padding: 0 10px;
+    margin-bottom: 70px; /* 避免被固定的输入区遮挡 */
+  }
+
+  .input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 20px;
+    background-color: #fff;
+    z-index: 10;
+    border-top: 1px solid var(--el-border-color);
+  }
+
+  .send-btn {
+    height: 50px;
+    font-size: 14px;
+  }
 }
 </style>

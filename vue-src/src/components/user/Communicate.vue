@@ -316,7 +316,7 @@ async function uploadFile() {
     console.log('[3/4] 开始上传文件', file.name);
 
     // 使用axios发送请求
-    const response = await axios.post('http://localhost:8080/api/files/upload', formData, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/files/upload`, formData, {
       headers: {'Content-Type': 'multipart/form-data'},
       timeout: 10000
     });
@@ -456,6 +456,62 @@ const compositionEnd = () => {
 const focusInput = () => {
   inputRef.value.focus()
 }
+
+//处理聊天框的显示
+const parseMessageContent = (content) => {
+  const regex = /\${fileid=(\d+)}%/g
+  const segments = []
+  let lastIndex = 0
+  let match
+
+  while ((match = regex.exec(content)) !== null) {
+    // 添加前面的普通文本
+    if (match.index > lastIndex) {
+      segments.push({
+        type: 'text',
+        content: content.slice(lastIndex, match.index)
+      })
+    }
+
+    // 添加文件标签
+    segments.push({
+      type: 'file',
+      id: parseInt(match[1]),
+      raw: match[0]
+    })
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // 添加剩余文本
+  if (lastIndex < content.length) {
+    segments.push({
+      type: 'text',
+      content: content.slice(lastIndex)
+    })
+  }
+
+  return segments
+}
+
+// 文件标签点击处理
+const handleFileTagClick = (fileId) => {
+  // 1. 创建隐藏的iframe（兼容所有浏览器）
+  const iframe = document.createElement('iframe')
+  iframe.style.display = 'none'
+
+
+  iframe.src = `${import.meta.env.VITE_BACKEND_IP}/api/files/download/${fileId}`
+  document.body.appendChild(iframe)
+
+  setTimeout(() => {
+    document.body.removeChild(iframe)
+  }, 5000)
+
+  // 6. 显示下载提示（可选）
+  console.log(`开始下载文件 ${fileId}`)
+  ElMessage.info('下载已开始，请查看浏览器下载列表')
+}
 onUnmounted(closeConnection)
 </script>
 
@@ -514,7 +570,28 @@ onUnmounted(closeConnection)
             :class="['message', msg.sendUserId === sendUserId ? 'sent' : 'received']"
         >
           <div class="message-content">
-            <div class="message-text">{{ msg.content }}</div>
+            <!-- 修改后的消息内容显示 -->
+            <div class="message-text">
+              <template v-for="(segment, segIndex) in parseMessageContent(msg.content)" :key="segIndex">
+                <!-- 普通文本 -->
+                <span v-if="segment.type === 'text'">{{ segment.content }}</span>
+
+                <!-- 文件标签 -->
+                <el-tag
+                    v-else
+                    class="file-tag"
+                    :type="msg.sendUserId === sendUserId ? 'primary' : 'info'"
+                    @click="handleFileTagClick(segment.id)"
+                >
+                  <el-icon>
+                    <Document/>
+                  </el-icon>
+                  <span class="file-name">文件#{{ segment.id }}</span>
+                </el-tag>
+              </template>
+            </div>
+
+            <!-- 原有状态显示 -->
             <div class="message-status">
               <span class="time">{{ new Date(msg.time).toLocaleTimeString() }}</span>
               <template v-if="msg.sendUserId === sendUserId">
@@ -522,11 +599,11 @@ onUnmounted(closeConnection)
                   <Loading/>
                 </el-icon>
                 <span v-else-if="msg.status === 'failed'" class="failed-tip">
-                  发送失败
-                  <el-button type="danger" size="small" @click="resendMessage(msg)">
-                    重试
-                  </el-button>
-                </span>
+            发送失败
+            <el-button type="danger" size="small" @click="resendMessage(msg)">
+              重试
+            </el-button>
+          </span>
               </template>
             </div>
           </div>
@@ -758,5 +835,33 @@ onUnmounted(closeConnection)
 
 .text-segment {
   white-space: pre-wrap;
+}
+
+/* 文件标签样式 */
+.message-text .file-tag {
+  cursor: pointer;
+  margin: 2px;
+  vertical-align: baseline;
+  transition: all 0.2s;
+}
+
+.message-text .file-tag:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.file-name {
+  margin-left: 6px;
+}
+
+/* 适配消息背景色 */
+.sent .file-tag {
+  background-color: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary-light-7);
+}
+
+.received .file-tag {
+  background-color: var(--el-color-info-light-9);
+  border-color: var(--el-color-info-light-7);
 }
 </style>

@@ -49,4 +49,9 @@ public interface OrderMapper {
 
     List<Order> queryPreemptOrder(@Param("userId") Integer userId,
                                   @Param("status") int status);
+
+    int finishOrder(@Param("orderNo") String orderNo,
+                    @Param("oldStatus") Integer oldStatus,
+                    @Param("newStatus") Integer newStatus,
+                    @Param("finishAt") Date finishAt);
 }

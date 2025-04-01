@@ -81,4 +81,12 @@
           AND status = #{status}
     </select>
 
+    <update id="finishOrder">
+        UPDATE `order`
+        SET status = #{newStatus},
+            end_at = #{finishAt}
+        WHERE order_no = #{orderNo}
+          AND status = #{oldStatus}
+    </update>
+
 </mapper>

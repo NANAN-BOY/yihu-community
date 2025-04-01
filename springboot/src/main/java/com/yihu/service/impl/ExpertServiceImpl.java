@@ -126,7 +126,7 @@ public class ExpertServiceImpl implements ExpertService {
                 order.getStatus() + 1,//新状态＝旧状态+1
                 order.getStatus());//旧状态
         if (isSuccess > 0) {
-            Business business = new Business(orderNo, buyerId, expertId, 1, currentTimestamp);
+            Business business = new Business(orderNo, buyerId, expertId, 0, currentTimestamp);
             int isBusiness = businessMapper.insertBusiness(business);
             if (isBusiness > 0) {
                 return 0;//成功

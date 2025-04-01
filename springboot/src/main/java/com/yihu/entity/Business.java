@@ -12,18 +12,18 @@ public class Business {
     private String orderNo;
     private Integer applyUserId;//订单发布者
     private Integer acceptExpertId;//接单专家
-    private Integer frequency;//服务次数
+    private Integer status;//服务状态
     private Date createAt;//创建时间
     private Date endAt;//结束时间
 
     public Business() {
     }
 
-    public Business(String orderNo, Integer applyUserId, Integer acceptExpertId, Integer frequency, Date createAt) {
+    public Business(String orderNo, Integer applyUserId, Integer acceptExpertId, Integer status, Date createAt) {
         this.orderNo = orderNo;
         this.applyUserId = applyUserId;
         this.acceptExpertId = acceptExpertId;
-        this.frequency = frequency;
+        this.status = status;
         this.createAt = createAt;
     }
 }

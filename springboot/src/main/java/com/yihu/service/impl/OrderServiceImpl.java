@@ -164,9 +164,41 @@ public class OrderServiceImpl implements OrderService {
         return businessMapper.getBusinessById(id, userId);
     }
 
-//    @Override
-//    public int finishOrder(String orderNo, Integer id) {
-//        return 0;
-//    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int finishOrder(String orderNo, Integer id) {
+        Order order = this.findByOrderNo(orderNo);
+        if (order == null) {
+            return -1;//订单不存在
+        }
+        if (!order.getBuyerId().equals(id)) {
+            return -2;//不是该用户的订单
+        }
+        if (order.getStatus() == 3) {
+            return 2;//订单已完成
+        }
+        if (order.getStatus() == 2) {
+            int isSuccess = orderMapper.finishOrder(orderNo,
+                    order.getStatus(), //旧状态=已支付状态
+                    order.getStatus() + 1,//新状态=已支付状态+1
+                    new Date());
+            if (isSuccess > 0) {
+                Business business = businessMapper.getBusinessByOrderNo(orderNo);
+                if (business != null) {
+                    if (business.getStatus() == 1) {
+                        return 1;//服务已被完成
+                    }
+                    int affectedRows = businessMapper.finishBusiness(business.getId(),
+                            business.getStatus(),
+                            business.getStatus() + 1,
+                            new Date());
+                    if (affectedRows > 0) {
+                        return 0;//成功
+                    }
+                }
+            }
+        }
+        return -3;//失败
+    }
 
 }

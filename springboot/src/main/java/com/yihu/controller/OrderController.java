@@ -174,20 +174,25 @@ public class OrderController {
         return Result.success(business);
     }
 
-//    @PostMapping("/finishOrder")//完成订单
-//    public Result finishOrder(@RequestParam String orderNo) {
-//        User currentUser = TokenUtils.getCurrentUser();
-//        if (currentUser == null) {
-//            return Result.error(401, "未授权，请登录");
-//        }
-//        if (currentUser.getRole() != 4) {
-//            return Result.error(403, "禁止访问：权限不足");
-//        }
-//        int isSuccess = orderService.finishOrder(orderNo, currentUser.getId());
-//        if (isSuccess == 0) {
-//            return Result.success("成功完成订单");
-//        }
-//        return Result.error(500, "完成订单失败");
-//    }
+    @PostMapping("/finishOrder")//完成订单
+    public Result finishOrder(@RequestParam String orderNo) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        int isSuccess = orderService.finishOrder(orderNo, currentUser.getId());
+        if (isSuccess == 0) {
+            return Result.success("成功完成订单");
+        } else if (isSuccess == -1) {
+            return Result.error(404, "订单不存在");
+        } else if (isSuccess == -2) {
+            return Result.error(401, "不是该用户的订单");
+        } else if (isSuccess == 1) {
+            return Result.error(403, "服务已被完成");
+        } else if (isSuccess == 2) {
+            return Result.error(403, "订单已完成");
+        }
+        return Result.error(500, "完成订单失败");
+    }
 
 }

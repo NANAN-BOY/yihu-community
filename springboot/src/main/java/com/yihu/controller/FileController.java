@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/files")
+@RequestMapping("/api/files")
 public class FileController {
 
     private final FileService fileService;

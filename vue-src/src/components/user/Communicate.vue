@@ -1,14 +1,13 @@
 <script setup>
 import {ref, watch, onUnmounted, computed, onMounted, nextTick} from 'vue'
 import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon, ElNotification, ElMessage} from 'element-plus'
-import {Connection, Loading, RefreshRight} from '@element-plus/icons-vue'
+import {Connection, DocumentAdd, Loading, RefreshRight, UploadFilled} from '@element-plus/icons-vue'
 import store from "../../store";
 import axios from "axios";
 
 // 状态管理
 const isVisible = computed(() => store.getters.business.acceptExpertId)
 const messages = ref([])
-const inputMessage = ref('')
 const socket = ref(null)
 const connectionStatus = ref('disconnected')
 let reconnectTimer = null
@@ -215,7 +214,8 @@ const manualReconnect = () => {
 
 // 发送消息
 const sendMessage = async () => {
-  if (!inputMessage.value.trim()) return
+  const inputMessage = rawValue.value
+  if (!inputMessage.trim()) return
 
   const tempId = Date.now()
   const newMsg = {
@@ -223,7 +223,7 @@ const sendMessage = async () => {
     sendUserId: sendUserId.value,
     receiveUserId: receiveUserId.value,
     businessId: businessId.value,
-    content: inputMessage.value,
+    content: inputMessage,
     time: Date.now()
   }
 
@@ -244,7 +244,7 @@ const sendMessage = async () => {
     messages.value = [...messages.value]
   }
 
-  inputMessage.value = ''
+  rawValue.value = ''
 }
 
 // 重新发送消息
@@ -274,6 +274,188 @@ const getUserInfo = async (userId) => {
   }
 }
 
+
+// 文件上传
+const addFileDialogVisible = ref(false)
+const openaddFileDialog = () => {
+  addFileDialogVisible.value = true
+}
+const uploadFileLoading = ref(false)
+
+async function uploadFile() {
+  console.log('[1/4] 启动文件上传流程');
+  // 创建文件输入元素
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  try {
+    // 触发文件选择
+    console.log('[2/4] 打开文件选择器');
+    fileInput.click();
+
+    // 等待文件选择
+    const file = await new Promise((resolve, reject) => {
+      fileInput.onchange = () => resolve(fileInput.files[0]);
+      fileInput.oncancel = () => reject('用户取消选择');
+    });
+
+    console.log('[选择文件]', file ? file.name : '无文件');
+
+    // 基础验证
+    if (!file) throw new Error('未选择文件');
+    const maxSize = 50 * 1024 * 1024 // 50MB
+    if (file.size > maxSize) {
+      throw new Error('件大小不能超过50MB!');
+    }
+
+    // 准备上传数据
+    const formData = new FormData();
+    formData.append('file', file);
+    console.log('[3/4] 开始上传文件', file.name);
+
+    // 使用axios发送请求
+    const response = await axios.post('http://localhost:8080/api/files/upload', formData, {
+      headers: {'Content-Type': 'multipart/form-data'},
+      timeout: 10000
+    });
+
+    console.log('[4/4] 上传完成', response.data);
+    return response.data;
+
+  } catch (error) {
+    console.error('[上传中断]', error.message);
+    throw error; // 抛出错误供外部处理
+  } finally {
+    // 清理资源
+    document.body.removeChild(fileInput);
+    console.log('[清理] 移除临时元素');
+  }
+}
+
+async function handleUpload() {
+  try {
+    uploadFileLoading.value = true
+    const result = await uploadFile();
+    console.log('上传成功结果:', result);
+    const fileId = result.data
+
+    if (fileId) {
+      rawValue.value += `\${fileid=${fileId}}%`
+      ElMessage.success('文件上传成功')
+      uploadFileLoading.value = false
+      addFileDialogVisible.value = false
+    } else {
+      ElMessage.error('上传失败')
+    }
+  } catch (error) {
+    uploadFileLoading.value = false
+    ElMessage.error(error)
+  }
+}
+
+
+// 自动输入框
+const rawValue = ref('')
+const inputRef = ref(null)
+const isComposing = ref(false)
+// 解析内容片段
+const parsedSegments = computed(() => {
+  const segments = []
+  let remaining = rawValue.value
+  let lastIndex = 0
+
+  while (true) {
+    const match = remaining.match(/\${fileid=(\d+)}%/)
+    if (!match) break
+
+    // 添加前面的普通文本
+    if (match.index > 0) {
+      segments.push({
+        type: 'text',
+        content: remaining.slice(0, match.index)
+      })
+    }
+
+    // 添加标签
+    segments.push({
+      type: 'file',
+      id: parseInt(match[1]),
+      raw: match[0]
+    })
+
+    remaining = remaining.slice(match.index + match[0].length)
+    lastIndex += match.index + match[0].length
+  }
+
+  // 添加剩余文本
+  if (remaining) {
+    segments.push({
+      type: 'text',
+      content: remaining
+    })
+  }
+
+  return segments
+})
+
+// 删除标签
+const removeTag = (index) => {
+  const newSegments = parsedSegments.value.filter((_, i) => i !== index)
+  rawValue.value = newSegments.map(s => s.raw || s.content).join('')
+}
+
+// 处理输入
+const handleInput = () => {
+  if (isComposing.value) return
+  autoCompleteTags()
+}
+
+// 自动补全标签
+const autoCompleteTags = () => {
+  const lastChar = rawValue.value.slice(-1)
+  if (lastChar === '%') {
+    const match = rawValue.value.match(/\${fileid=(\d+)}$/)
+    if (match) {
+      rawValue.value = `${match[0]}%`
+    }
+  }
+}
+
+// 处理删除键
+const handleDelete = async (e) => {
+  if (isComposing.value) return
+
+  const pos = inputRef.value.textarea.selectionStart
+  const before = rawValue.value.slice(0, pos)
+  const after = rawValue.value.slice(pos)
+
+  // 检测是否在标签范围内
+  const tagMatch = before.match(/(\${fileid=\d+}%?)$/)
+  if (tagMatch) {
+    e.preventDefault()
+    rawValue.value = before.slice(0, -tagMatch[0].length) + after
+    await nextTick()
+    inputRef.value.textarea.selectionStart =
+        inputRef.value.textarea.selectionEnd = pos - tagMatch[0].length
+  }
+}
+
+// 处理中文输入法
+const compositionStart = () => {
+  isComposing.value = true
+}
+
+const compositionEnd = () => {
+  isComposing.value = false
+  autoCompleteTags()
+}
+
+// 聚焦输入框
+const focusInput = () => {
+  inputRef.value.focus()
+}
 onUnmounted(closeConnection)
 </script>
 
@@ -352,24 +534,68 @@ onUnmounted(closeConnection)
       </el-scrollbar>
 
       <div class="input-area">
-        <el-input
-            v-model="inputMessage"
-            placeholder="输入消息..."
-            @keyup.enter="sendMessage"
-            resize="none"
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-        />
+        <div class="hybrid-input" @click="focusInput">
+          <!-- 可视化渲染区域 -->
+          <div class="render-area" ref="renderArea">
+            <template v-for="(segment, index) in parsedSegments" :key="index">
+              <!-- 普通文本 -->
+              <span v-if="segment.type === 'text'" class="text-segment">
+          {{ segment.content }}
+        </span>
+
+              <!-- 文件标签 -->
+              <el-tag
+                  v-else
+                  class="file-tag"
+                  closable
+                  @close="removeTag(index)"
+              >
+                <el-icon>
+                  <Document/>
+                </el-icon>
+                <span class="file-id">文件#{{ segment.id }}</span>
+              </el-tag>
+            </template>
+          </div>
+
+          <!-- 隐藏的真实输入框 -->
+          <el-input
+              ref="inputRef"
+              v-model="rawValue"
+              class="real-input"
+              @input="handleInput"
+              @keydown.delete="handleDelete"
+              @compositionstart="compositionStart"
+              @compositionend="compositionEnd"
+          />
+        </div>
+        <el-button @click="openaddFileDialog">
+          <el-icon>
+            <DocumentAdd/>
+          </el-icon>
+        </el-button>
         <el-button
             type="primary"
             @click="sendMessage"
             :disabled="connectionStatus !== 'connected'"
-            class="send-btn"
         >
           发送
         </el-button>
       </div>
     </div>
+    <!--     Upload file inner dialog-->
+    <el-dialog
+        v-model="addFileDialogVisible"
+        title="添加文件"
+        append-to-body
+    >
+      <el-button @click="handleUpload()" v-loading="uploadFileLoading">
+        <el-icon>
+          <DocumentAdd/>
+        </el-icon>
+        点击上传
+      </el-button>
+    </el-dialog>
   </el-dialog>
 </template>
 
@@ -438,12 +664,6 @@ onUnmounted(closeConnection)
   gap: 12px;
 }
 
-/* 按钮高度与 PC 保持一致 */
-.send-btn {
-  margin-left: 10px;
-  height: 60px;
-}
-
 .spin-icon,
 .loading-icon {
   animation: icon-spin 1.5s linear infinite;
@@ -492,10 +712,51 @@ onUnmounted(closeConnection)
     z-index: 10;
     border-top: 1px solid var(--el-border-color);
   }
+}
 
-  .send-btn {
-    height: 50px;
-    font-size: 14px;
-  }
+/* 自动输入框 */
+.hybrid-input {
+  position: relative;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  min-height: 10px;
+  padding: 5px 15px;
+  line-height: 1.5;
+  cursor: text;
+  width: 100%;
+}
+
+.render-area {
+  min-height: 10px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.real-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: -1;
+}
+
+.file-tag {
+  margin: 2px;
+  vertical-align: middle;
+}
+
+.file-tag :deep(.el-tag__content) {
+  display: flex;
+  align-items: center;
+}
+
+.file-id {
+  margin: 0 6px;
+}
+
+.text-segment {
+  white-space: pre-wrap;
 }
 </style>

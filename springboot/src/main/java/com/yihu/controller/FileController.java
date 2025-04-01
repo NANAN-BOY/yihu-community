@@ -47,9 +47,9 @@ public class FileController {
     @PostMapping("/upload")
     public Result uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            int id = fileService.uploadFile(file);
-            if (id == 1){
-                return Result.success();
+            int newId = fileService.uploadFile(file);
+            if (newId != 0){
+                return Result.success(newId);
             }else {
                 return Result.error("文件上传失败");
             }

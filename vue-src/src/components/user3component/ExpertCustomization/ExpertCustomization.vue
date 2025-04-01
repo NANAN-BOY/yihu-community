@@ -167,7 +167,7 @@ const checkBusinessCommunicate = (orderNo) => {
           store.state.expert.business = business;
           openExpertCommunicate(business)
         } else if (response.data.code === 404) {
-          ElMessage.error('订单不存在！')
+          ElMessage.error('订单等待中！')
         }
       })
       .catch(error => {
@@ -184,7 +184,6 @@ const checkBusinessCommunicate = (orderNo) => {
     <el-breadcrumb-item><strong>专家定制</strong></el-breadcrumb-item>
   </el-breadcrumb>
   <h1>定制服务</h1>
-  <button @click="openExpertCommunicate">打开聊天</button>
   <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
   <!-- 我的订单无限滚动列表 -->
   <div class="infinite-list-wrapper" style="overflow: auto">

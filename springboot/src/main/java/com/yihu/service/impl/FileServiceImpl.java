@@ -52,7 +52,10 @@ public class FileServiceImpl implements FileService {
             existingFile.setQuoteCount(0);
             existingFile.setName(file.getOriginalFilename());
 
-            return fileMapper.insert(existingFile);
+            fileMapper.insert(existingFile);
+            //返回新增数据的id
+            return existingFile.getId();
+
         } else {
             // 文件不存在，保存到存储目录
             String storagePath = saveFileToStorage(file, md5);
@@ -72,7 +75,9 @@ public class FileServiceImpl implements FileService {
             newFile.setQuoteCount(0);
 
 
-            return fileMapper.insert(newFile);
+            fileMapper.insert(newFile);
+            //返回新增数据的id
+            return newFile.getId();
         }
     }
 

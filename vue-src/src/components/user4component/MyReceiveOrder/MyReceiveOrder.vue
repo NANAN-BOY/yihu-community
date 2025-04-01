@@ -146,7 +146,7 @@ const checkBusinessCommunicate = (orderNo) => {
 
 <style scoped>
 .infinite-list-wrapper {
-  height: 80vh;
+  height: 750px;
   text-align: center;
 }
 
@@ -167,8 +167,38 @@ const checkBusinessCommunicate = (orderNo) => {
   padding: 10px;
   display: flex;
   align-items: center;
-  //justify-content: center; height: 50px;
   background: #f5f5f5;
   color: #000000;
+}
+@media (max-width: 768px) {
+  .infinite-list-wrapper {
+    height: 730px;
+    text-align: center;
+  }
+
+  .infinite-list-wrapper .list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .infinite-list-wrapper .list-item:hover {
+    background: #b6b6b6;
+    transition: background 0.3s ease;
+    cursor: pointer;
+  }
+
+  .infinite-list-wrapper .list-item {
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    color: #000000;
+  }
+
+  .infinite-list-wrapper .list-item + .list-item {
+    margin-top: 10px;
+  }
 }
 </style>

@@ -45,13 +45,13 @@
     <span>This is a message</span>
     <template #footer>
       <div class="dialog-footer">
-        <div class="infinite-list-wrapper" style="overflow: auto">
+        <div class="infinite-list-wrapperdialog" style="overflow: auto">
           <ul
               v-infinite-scroll="InviteHistoryRecordListload"
-              class="list"
+              class="listdialog"
               :infinite-scroll-disabled="InviteHistoryRecordDisabled"
           >
-            <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-item"
+            <li v-for="InviteHistoryRecord in InviteHistoryRecordList" :key="InviteHistoryRecord.id" class="list-itemdialog"
                 @click="viewInviteHistoryRecordDetails(InviteHistoryRecord)">
               <el-tag type="warning"
                       v-if="InviteHistoryRecord.isAgree === null && !(InviteHistoryRecord.deadline && new Date() > new Date(InviteHistoryRecord.deadline))">
@@ -66,7 +66,7 @@
               <div>{{ InviteHistoryRecord.createAt }}发起的邀请</div>
               <!--              <div>{{ InviteHistoryRecord.inviteUserId }}邀请了{{ InviteHistoryRecord.expertId }}加入项目</div>-->
             </li>
-            <li v-if="InviteHistoryRecordLoading" v-loading="InviteHistoryRecordLoading" class="list-item"></li>
+            <li v-if="InviteHistoryRecordLoading" v-loading="InviteHistoryRecordLoading" class="list-itemdialog"></li>
           </ul>
           <p v-if="InviteHistoryRecordLoading">加载中...</p>
           <p v-if="InviteHistoryRecordNoMore">没有更多数据了</p>
@@ -154,7 +154,6 @@ const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
 const userListLoad = async () => {
   if (disabled.value) return
-
   try {
     loading.value = true
     error.value = ''
@@ -177,7 +176,6 @@ const userListLoad = async () => {
           }
         }
     )
-
 
     if (response.data.code === 200) {
       userList.value = [...userList.value, ...response.data.data.list]
@@ -335,7 +333,7 @@ const InviteHistoryRecordNoMore = computed(() => !InviteHistoryRecordHasMore.val
 const InviteHistoryRecordDisabled = computed(() => InviteHistoryRecordLoading.value || InviteHistoryRecordNoMore.value)
 const InviteHistoryRecordListload = async () => {
   if (InviteHistoryRecordDisabled.value) return;
-
+  console.log(InviteHistoryRecordCurrentPage.value)
   try {
     InviteHistoryRecordLoading.value = true;
     InviteHistoryRecordError.value = '';
@@ -352,7 +350,7 @@ const InviteHistoryRecordListload = async () => {
           },
         }
     );
-
+    console.log(response.data.data)
     if (response.data.code === 200) {
       // 如果没有数据或数据无效，直接返回
       if (!response.data.data?.list?.length) {
@@ -467,7 +465,7 @@ const viewInviteHistoryRecordDetails = async (record) => {
 <style scoped>
 
 .infinite-list-wrapper {
-  height: 80vh;
+  height: 750px;
   text-align: center;
 }
 
@@ -488,7 +486,6 @@ const viewInviteHistoryRecordDetails = async (record) => {
   padding: 10px;
   display: flex;
   align-items: center;
-  //justify-content: center; height: 50px;
   background: #f5f5f5;
   color: #000000;
 }
@@ -496,14 +493,66 @@ const viewInviteHistoryRecordDetails = async (record) => {
 .infinite-list-wrapper .list-item + .list-item {
   margin-top: 10px;
 }
+/* 弹窗样式表 */
+.infinite-list-wrapperdialog {
+  height: 600px;
+  text-align: center;
+}
 
-.responsive-dialog {
-  width: 90%;
+.infinite-list-wrapperdialog .listdialog {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.infinite-list-wrapperdialog .list-itemdialog:hover {
+  background: #b6b6b6;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+.infinite-list-wrapperdialog .list-itemdialog {
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  color: #000000;
+}
+
+.infinite-list-wrapperdialog .list-itemdialog + .list-itemdialog {
+  margin-top: 10px;
 }
 
 @media (max-width: 768px) {
-  .responsive-dialog {
-    width: 100%;
+  .infinite-list-wrapper {
+    height: 730px;
+    text-align: center;
+  }
+
+  .infinite-list-wrapper .list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .infinite-list-wrapper .list-item:hover {
+    background: #b6b6b6;
+    transition: background 0.3s ease;
+    cursor: pointer;
+  }
+
+  .infinite-list-wrapper .list-item {
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    color: #000000;
+  }
+
+  .infinite-list-wrapper .list-item + .list-item {
+    margin-top: 10px;
   }
 }
 </style>

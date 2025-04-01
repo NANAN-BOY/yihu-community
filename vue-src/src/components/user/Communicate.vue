@@ -665,6 +665,8 @@ onUnmounted(closeConnection)
         v-model="addFileDialogVisible"
         title="添加文件"
         append-to-body
+        width="200"
+        align-center
     >
       <el-button @click="handleUpload()" v-loading="uploadFileLoading">
         <el-icon>
@@ -771,12 +773,12 @@ onUnmounted(closeConnection)
   }
 
   .chat-container {
-    height: calc(100vh - 60px);
+    height: calc(100vh - 72px);
   }
 
   .main-area {
     padding: 0 10px;
-    margin-bottom: 70px; /* 避免被固定的输入区遮挡 */
+    margin-bottom: 30px; /* 避免被固定的输入区遮挡 */
   }
 
   .input-area {

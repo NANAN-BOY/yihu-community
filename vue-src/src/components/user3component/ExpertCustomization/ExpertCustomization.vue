@@ -145,11 +145,9 @@ const CheckPayStatus = () => {
       });
 };
 // BusinessCommunicate
-
-const businessInfo = ref(null)
 const businessLoading = ref(false)
 const openExpertCommunicate = (business) => {
-  businessInfo.value = business
+  store.state.expert.business = business;
 }
 const checkBusinessCommunicate = (orderNo) => {
   businessLoading.value = true;
@@ -164,7 +162,7 @@ const checkBusinessCommunicate = (orderNo) => {
         businessLoading.value = false;
         if (response.data.code === 200) {
           const business = response.data.data
-          store.state.expert.business = business;
+
           openExpertCommunicate(business)
         } else if (response.data.code === 404) {
           ElMessage.error('订单等待中！')
@@ -175,7 +173,6 @@ const checkBusinessCommunicate = (orderNo) => {
         ElMessage.error(`${error.message}`)
       })
 
-  console.log('打开聊天')
 }
 </script>
 
@@ -191,9 +188,10 @@ const checkBusinessCommunicate = (orderNo) => {
         v-infinite-scroll="OrderListLoad"
         class="list"
         :infinite-scroll-disabled="disabled"
+        v-loading="businessLoading"
     >
       <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
-          @click="checkBusinessCommunicate(Order.orderNo)" v-loading="businessLoading">
+          @click="checkBusinessCommunicate(Order.orderNo)">
         <el-tag type="warning" v-if="Order.status === 0">未支付</el-tag>
         <el-tag type="success" v-if="Order.status  === 1">待接单</el-tag>
         <el-tag type="danger" v-if="Order.status  === 2">进行中</el-tag>

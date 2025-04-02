@@ -26,4 +26,6 @@ public interface OrderService {
     Business getBusinessById(Integer id, Integer userId);
 
     int finishOrder(String orderNo, Integer id);
+
+    void sendMessage(String orderNo);
 }

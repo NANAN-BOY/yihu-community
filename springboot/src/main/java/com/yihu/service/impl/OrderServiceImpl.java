@@ -1,10 +1,13 @@
 package com.yihu.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yihu.common.WebSocketSingleServer;
 import com.yihu.dto.OrderQueryDTO;
 import com.yihu.entity.Business;
+import com.yihu.entity.Communication;
 import com.yihu.entity.MemberShip;
 import com.yihu.entity.Order;
 import com.yihu.mapper.BusinessMapper;
@@ -71,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateOrder(String orderNo, String tradeNo) {
 
-        Order order = this.findByOrderNo(orderNo);
+        Order order = orderMapper.findByOrderNo(orderNo);
         MemberShip ms = memberShipMapper.selectByUserID(order.getBuyerId());
         // 参数校验
         if (order.getOrderNo() == null || order.getStatus() == null) {
@@ -199,6 +202,25 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return -3;//失败
+    }
+
+    @Override
+    public void sendMessage(String orderNo) {
+        Order order = this.findByOrderNo(orderNo);
+        if (order == null) {
+            throw new RuntimeException("订单不存在");
+        }
+        Business business = businessMapper.getBusinessByOrderNo(orderNo);
+        if (order.getStatus() == 3) {
+            Communication communication = new Communication();
+            communication.setSendUserId(0);
+            communication.setBusinessId(business.getId());
+            communication.setReceiveUserId(order.getBuyerId());//发送给用户
+            communication.setContent("您的订单" + orderNo + "已完成");
+
+            String message = JSON.toJSONString(communication);
+            WebSocketSingleServer.sendMessageToUser(order.getBuyerId(), message);
+        }
     }
 
 }

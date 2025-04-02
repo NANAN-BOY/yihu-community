@@ -182,6 +182,7 @@ public class OrderController {
         }
         int isSuccess = orderService.finishOrder(orderNo, currentUser.getId());
         if (isSuccess == 0) {
+            orderService.sendMessage(orderNo);
             return Result.success("成功完成订单");
         } else if (isSuccess == -1) {
             return Result.error(404, "订单不存在");

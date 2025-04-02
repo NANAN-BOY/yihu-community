@@ -162,4 +162,22 @@ public class WebSocketSingleServer implements InitializingBean {
     public void onError(Session session, Throwable error) {
         log.error("WebSocket 异常", error);
     }
+
+    public static void sendMessageToUser(Integer receiveUserId, String message) {
+        if (receiveUserId == null) {
+            log.error("发送失败：接收方用户ID不能为空");
+            return;
+        }
+        Session session = userSessionMap.get(receiveUserId);
+        if (session != null && session.isOpen()) {
+            try {
+                session.getBasicRemote().sendText(message);
+                log.info("系统消息已发送至用户[{}]: {}", receiveUserId, message);
+            } catch (IOException e) {
+                log.error("发送系统消息失败", e);
+            }
+        } else {
+            log.warn("用户[{}] 当前不在线，系统消息已存储", receiveUserId);
+        }
+    }
 }

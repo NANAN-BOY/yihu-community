@@ -174,7 +174,7 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             return -1;//订单不存在
         }
-        if (!order.getBuyerId().equals(id)) {
+        if (!order.getPayeeId().equals(id)) {
             return -2;//不是该用户的订单
         }
         if (order.getStatus() == 3) {
@@ -217,6 +217,7 @@ public class OrderServiceImpl implements OrderService {
             communication.setBusinessId(business.getId());
             communication.setReceiveUserId(order.getBuyerId());//发送给用户
             communication.setContent("您的订单" + orderNo + "已完成");
+            communication.setStatus(1);
 
             String message = JSON.toJSONString(communication);
             WebSocketSingleServer.sendMessageToUser(order.getBuyerId(), message);

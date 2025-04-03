@@ -15,4 +15,5 @@ public class Communication {
     private Integer receiveUserId;
     private String content;
     private Date time;
+    private Integer status;
 }

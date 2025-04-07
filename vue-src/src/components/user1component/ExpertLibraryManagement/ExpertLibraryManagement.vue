@@ -526,7 +526,7 @@ const viewInviteHistoryRecordDetails = async (record) => {
 
 @media (max-width: 768px) {
   .infinite-list-wrapper {
-    height: 730px;
+    height: calc(100vh - 200px);;
     text-align: center;
   }
 

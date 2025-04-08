@@ -84,11 +84,10 @@ const getUserInfo = async (userId) => {
     return "ERROR"
   }
 }
-const businessInfo = ref(null)
+//打开订单沟通页面
 const businessLoading = ref(false)
-
 const openExpertCommunicate = (business) => {
-  businessInfo.value = business
+  store.state.expert.business = business;
 }
 const checkBusinessCommunicate = (orderNo) => {
   businessLoading.value = true;
@@ -103,7 +102,6 @@ const checkBusinessCommunicate = (orderNo) => {
         businessLoading.value = false;
         if (response.data.code === 200) {
           const business = response.data.data
-          store.state.expert.business = business;
           openExpertCommunicate(business)
         } else if (response.data.code === 404) {
           ElMessage.error('订单不存在！')
@@ -114,9 +112,25 @@ const checkBusinessCommunicate = (orderNo) => {
         ElMessage.error(`${error.message}`)
       })
 }
+
+//查看订单详细信息
+const checkOrderDetailisVisible = ref(false)
+const nowOrder = ref(null);
+const openCheckOrderDetail = (order) => {
+  console.log(order)
+  nowOrder.value = order;
+  checkOrderDetailisVisible.value = true;
+}
+const closeCheckOrderDetail = () => {
+  checkOrderDetailisVisible.value = false;
+  nowOrder.value = null;
+}
+
+
 </script>
 
 <template>
+  <div v-if="!checkOrderDetailisVisible">
   <el-breadcrumb separator="/">
     <el-breadcrumb-item><strong>我的订单</strong></el-breadcrumb-item>
   </el-breadcrumb>
@@ -129,7 +143,7 @@ const checkBusinessCommunicate = (orderNo) => {
         :infinite-scroll-disabled="disabled"
     >
       <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
-          @click="checkBusinessCommunicate(Order.orderNo)" v-loading="businessLoading">
+          @click="openCheckOrderDetail(Order)" v-loading="businessLoading">
         <el-tag type="danger" v-if="Order.status  === 2">进行中</el-tag>
         <el-tag type="danger" v-if="Order.status  === 3">已完结</el-tag>
         <div>客户{{ Order.buyerInfo.name }}的订单</div>
@@ -141,6 +155,38 @@ const checkBusinessCommunicate = (orderNo) => {
     <p v-if="loading">加载中...</p>
     <p v-if="noMore">没有更多数据了</p>
     <p v-if="error" style="color: red">{{ error }}</p>
+  </div>
+  </div>
+  <div v-if="checkOrderDetailisVisible">
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item><strong @click="checkOrderDetailisVisible = false">我的订单</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong>订单详情</strong></el-breadcrumb-item>
+    </el-breadcrumb>
+    <br>
+    <el-page-header @back="closeCheckOrderDetail" title="返回">
+      <template #content>
+        <span class="text-large font-600 mr-3"> 订单详情 </span>
+      </template>
+    </el-page-header>
+    <br>
+    <el-button type="primary" @click="checkBusinessCommunicate(nowOrder.orderNo)">进入订单</el-button>
+    <el-button type="warning" @click="">结束订单</el-button>
+    <el-form>
+      <el-form-item label="订单号:">{{ nowOrder.orderNo }}
+      </el-form-item>
+      <el-form-item label="订单状态">
+        <el-tag type="danger" v-if="nowOrder.status  === 2">进行中</el-tag>
+        <el-tag type="danger" v-if="nowOrder.status  === 3">已完结</el-tag>
+      </el-form-item>
+      <el-form-item label="订单金额">
+        <el-input v-model="nowOrder" disabled></el-input>
+        <el-tag type="danger" v-if="nowOrder.status  === 2">元</el-tag>
+        <el-tag type="danger" v-if="nowOrder.status  === 3">元</el-tag>
+      </el-form-item>
+      <el-form-item label="下单时间">
+        <el-input v-model="nowOrder.createAt" disabled></el-input>
+      </el-form-item>
+    </el-form>
   </div>
 </template>
 

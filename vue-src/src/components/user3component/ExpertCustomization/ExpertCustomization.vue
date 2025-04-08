@@ -1,10 +1,11 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref} from "vue";
 import axios from "axios";
 import store from "../../../store";
 import {Star} from "@element-plus/icons-vue";
 import QRCode from "qrcode.vue";
 import {ElMessage} from "element-plus";
+import {EventBus} from "../../../utils/event-bus";
 
 const OrderList = ref([])
 const currentPage = ref(1)
@@ -174,6 +175,12 @@ const checkBusinessCommunicate = (orderNo) => {
       })
 
 }
+onMounted(() => {
+  EventBus.on('endOrder1',refreshOrderList);
+});
+onBeforeUnmount(() => {
+  EventBus.off('endOrder1',refreshOrderList);
+});
 </script>
 
 <template>

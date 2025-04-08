@@ -4,7 +4,7 @@ import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon, ElNotificatio
 import {Connection, DocumentAdd, Loading, RefreshRight, UploadFilled} from '@element-plus/icons-vue'
 import store from "../../store";
 import axios from "axios";
-
+import { EventBus } from '../../utils/event-bus';
 // 状态管理
 const isVisible = computed(() => store.getters.business.acceptExpertId)
 const messages = ref([])
@@ -115,6 +115,10 @@ const initWebSocket = () => {
         messages.value[index].status = 'success'
         messages.value[index].serverTime = serverMsg.time
       } else {
+        console.log(serverMsg)
+        if((serverMsg.sendUserId === 0 )&& (serverMsg.status === 1) ){
+          endOrder();
+        }
         if (isVisible.value) {
           if (serverMsg.businessId === businessId.value) {
           messages.value.push(serverMsg)
@@ -261,7 +265,10 @@ const resendMessage = (msg) => {
 const closeDialog = () => {
   store.commit('SET_BUSINESS', false)
 }
-
+//订单结束动作
+const endOrder = () =>{
+  EventBus.emit('endOrder1');
+}
 const getUserInfo = async (userId) => {
   try {
     const response = await axios.get(

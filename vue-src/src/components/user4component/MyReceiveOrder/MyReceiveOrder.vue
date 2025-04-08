@@ -68,6 +68,15 @@ const OrderListLoad = async () => {
     loading.value = false
   }
 }
+const reloadOrderList = async () => {
+  // 重置所有状态到初始值
+  currentPage.value = 1
+  OrderList.value = []
+  hasMore.value = true
+  error.value = ''
+  loading.value = false
+  await OrderListLoad()
+}
 const getUserInfo = async (userId) => {
   try {
     // Make a request to get the user info
@@ -125,7 +134,59 @@ const closeCheckOrderDetail = () => {
   checkOrderDetailisVisible.value = false;
   nowOrder.value = null;
 }
+//专家订单结束逻辑
+const endOrder = (orderNo) => {
+  ElMessageBox.confirm(
+      '请确认您已经完成了用户诉求',
+      '确定要结束该订单吗？',
+      {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning',
+        // 新增按钮加载状态控制
+        confirmButtonLoading: false,
+        cancelButtonDisabled: false,
+        // 添加对话框关闭前钩子
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            instance.confirmButtonLoading = true
+            instance.cancelButtonDisabled = true
 
+            axios.post(
+                `${import.meta.env.VITE_BACKEND_IP}/api/order/finishOrder`,
+                {},
+                {
+                  params: {orderNo: orderNo},
+                  headers: {'token': store.state.token}
+                }
+            )
+                .then(response => {
+                  if (response.data.code === 200) {
+                    ElMessage({
+                      message: "订单结束成功！",
+                      type: "success",
+                    });
+                    done();
+                    closeCheckOrderDetail();
+                    reloadOrderList();
+                  } else {
+                    ElMessage.error(response.data.msg || '订单结束失败');
+                  }
+                })
+                .catch(error => {
+                  ElMessage.error(error.message || '请求失败')
+                })
+                .finally(() => {
+                  instance.confirmButtonLoading = false
+                  instance.cancelButtonDisabled = false
+                })
+          } else {
+            done() // 取消操作直接关闭
+          }
+        }
+      }
+  )
+}
 
 </script>
 
@@ -170,7 +231,7 @@ const closeCheckOrderDetail = () => {
     </el-page-header>
     <br>
     <el-button type="primary" @click="checkBusinessCommunicate(nowOrder.orderNo)">进入订单</el-button>
-    <el-button type="warning" @click="">结束订单</el-button>
+    <el-button type="warning" @click="endOrder(nowOrder.orderNo)">结束订单</el-button>
     <el-form>
       <el-form-item label="订单号:">{{ nowOrder.orderNo }}
       </el-form-item>

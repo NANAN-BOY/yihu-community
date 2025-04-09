@@ -1,13 +1,14 @@
 <script setup>
 import {ref, watch, onUnmounted, computed, onMounted, nextTick} from 'vue'
 import {ElDialog, ElScrollbar, ElInput, ElButton, ElAlert, ElIcon, ElNotification, ElMessage} from 'element-plus'
-import {Connection, DocumentAdd, Loading, RefreshRight, UploadFilled} from '@element-plus/icons-vue'
+import {Connection, Document, DocumentAdd, Loading, RefreshRight} from '@element-plus/icons-vue'
 import store from "../../store";
 import axios from "axios";
 import { EventBus } from '../../utils/event-bus';
 // 状态管理
 const isVisible = computed(() => store.getters.business.acceptExpertId)
 const messages = ref([])
+const inputMessage = ref('')
 const socket = ref(null)
 const connectionStatus = ref('disconnected')
 let reconnectTimer = null
@@ -218,8 +219,7 @@ const manualReconnect = () => {
 
 // 发送消息
 const sendMessage = async () => {
-  const inputMessage = rawValue.value
-  if (!inputMessage.trim()) return
+  if (!inputMessage.value.trim()) return
 
   const tempId = Date.now()
   const newMsg = {
@@ -227,7 +227,7 @@ const sendMessage = async () => {
     sendUserId: sendUserId.value,
     receiveUserId: receiveUserId.value,
     businessId: businessId.value,
-    content: inputMessage,
+    content: inputMessage.value,
     time: Date.now()
   }
 
@@ -248,7 +248,7 @@ const sendMessage = async () => {
     messages.value = [...messages.value]
   }
 
-  rawValue.value = ''
+  inputMessage.value = ''
 }
 
 // 重新发送消息
@@ -311,11 +311,10 @@ async function uploadFile() {
     console.log('[选择文件]', file ? file.name : '无文件');
 
     // 基础验证
-    if (!file) throw new Error('未选择文件');
+    if (!file)
+      throw new Error('未选择文件');
     const maxSize = 50 * 1024 * 1024 // 50MB
-    if (file.size > maxSize) {
-      throw new Error('件大小不能超过50MB!');
-    }
+    if (file.size > maxSize) throw new Error('件大小不能超过50MB!');
 
     // 准备上传数据
     const formData = new FormData();
@@ -340,7 +339,6 @@ async function uploadFile() {
     console.log('[清理] 移除临时元素');
   }
 }
-
 async function handleUpload() {
   try {
     uploadFileLoading.value = true
@@ -349,8 +347,9 @@ async function handleUpload() {
     const fileId = result.data
 
     if (fileId) {
-      rawValue.value += `\${fileid=${fileId}}%`
+      inputMessage.value += `\${fileid=${fileId}}%`
       ElMessage.success('文件上传成功')
+      await sendMessage();
       uploadFileLoading.value = false
       addFileDialogVisible.value = false
     } else {
@@ -362,107 +361,25 @@ async function handleUpload() {
   }
 }
 
+// 文件标签点击处理
+const handleFileTagClick = (fileId) => {
+  // 1. 创建隐藏的iframe（兼容所有浏览器）
+  const iframe = document.createElement('iframe')
+  iframe.style.display = 'none'
 
-// 自动输入框
-const rawValue = ref('')
-const inputRef = ref(null)
-const isComposing = ref(false)
-// 解析内容片段
-const parsedSegments = computed(() => {
-  const segments = []
-  let remaining = rawValue.value
-  let lastIndex = 0
 
-  while (true) {
-    const match = remaining.match(/\${fileid=(\d+)}%/)
-    if (!match) break
+  iframe.src = `${import.meta.env.VITE_BACKEND_IP}/api/files/download/${fileId}`
+  document.body.appendChild(iframe)
 
-    // 添加前面的普通文本
-    if (match.index > 0) {
-      segments.push({
-        type: 'text',
-        content: remaining.slice(0, match.index)
-      })
-    }
+  setTimeout(() => {
+    document.body.removeChild(iframe)
+  }, 5000)
 
-    // 添加标签
-    segments.push({
-      type: 'file',
-      id: parseInt(match[1]),
-      raw: match[0]
-    })
-
-    remaining = remaining.slice(match.index + match[0].length)
-    lastIndex += match.index + match[0].length
-  }
-
-  // 添加剩余文本
-  if (remaining) {
-    segments.push({
-      type: 'text',
-      content: remaining
-    })
-  }
-
-  return segments
-})
-
-// 删除标签
-const removeTag = (index) => {
-  const newSegments = parsedSegments.value.filter((_, i) => i !== index)
-  rawValue.value = newSegments.map(s => s.raw || s.content).join('')
+  // 6. 显示下载提示（可选）
+  console.log(`开始下载文件 ${fileId}`)
+  ElMessage.info('下载已开始，请查看浏览器下载列表')
 }
 
-// 处理输入
-const handleInput = () => {
-  if (isComposing.value) return
-  autoCompleteTags()
-}
-
-// 自动补全标签
-const autoCompleteTags = () => {
-  const lastChar = rawValue.value.slice(-1)
-  if (lastChar === '%') {
-    const match = rawValue.value.match(/\${fileid=(\d+)}$/)
-    if (match) {
-      rawValue.value = `${match[0]}%`
-    }
-  }
-}
-
-// 处理删除键
-const handleDelete = async (e) => {
-  if (isComposing.value) return
-
-  const pos = inputRef.value.textarea.selectionStart
-  const before = rawValue.value.slice(0, pos)
-  const after = rawValue.value.slice(pos)
-
-  // 检测是否在标签范围内
-  const tagMatch = before.match(/(\${fileid=\d+}%?)$/)
-  if (tagMatch) {
-    e.preventDefault()
-    rawValue.value = before.slice(0, -tagMatch[0].length) + after
-    await nextTick()
-    inputRef.value.textarea.selectionStart =
-        inputRef.value.textarea.selectionEnd = pos - tagMatch[0].length
-  }
-}
-
-// 处理中文输入法
-const compositionStart = () => {
-  isComposing.value = true
-}
-
-const compositionEnd = () => {
-  isComposing.value = false
-  autoCompleteTags()
-}
-
-// 聚焦输入框
-const focusInput = () => {
-  inputRef.value.focus()
-}
 
 //处理聊天框的显示
 const parseMessageContent = (content) => {
@@ -501,24 +418,7 @@ const parseMessageContent = (content) => {
   return segments
 }
 
-// 文件标签点击处理
-const handleFileTagClick = (fileId) => {
-  // 1. 创建隐藏的iframe（兼容所有浏览器）
-  const iframe = document.createElement('iframe')
-  iframe.style.display = 'none'
 
-
-  iframe.src = `${import.meta.env.VITE_BACKEND_IP}/api/files/download/${fileId}`
-  document.body.appendChild(iframe)
-
-  setTimeout(() => {
-    document.body.removeChild(iframe)
-  }, 5000)
-
-  // 6. 显示下载提示（可选）
-  console.log(`开始下载文件 ${fileId}`)
-  ElMessage.info('下载已开始，请查看浏览器下载列表')
-}
 onUnmounted(closeConnection)
 </script>
 
@@ -618,41 +518,14 @@ onUnmounted(closeConnection)
       </el-scrollbar>
 
       <div class="input-area">
-        <div class="hybrid-input" @click="focusInput">
-          <!-- 可视化渲染区域 -->
-          <div class="render-area" ref="renderArea">
-            <template v-for="(segment, index) in parsedSegments" :key="index">
-              <!-- 普通文本 -->
-              <span v-if="segment.type === 'text'" class="text-segment">
-          {{ segment.content }}
-        </span>
-
-              <!-- 文件标签 -->
-              <el-tag
-                  v-else
-                  class="file-tag"
-                  closable
-                  @close="removeTag(index)"
-              >
-                <el-icon>
-                  <Document/>
-                </el-icon>
-                <span class="file-id">文件#{{ segment.id }}</span>
-              </el-tag>
-            </template>
-          </div>
-
-          <!-- 隐藏的真实输入框 -->
-          <el-input
-              ref="inputRef"
-              v-model="rawValue"
-              class="real-input"
-              @input="handleInput"
-              @keydown.delete="handleDelete"
-              @compositionstart="compositionStart"
-              @compositionend="compositionEnd"
-          />
-        </div>
+        <el-input
+            v-model="inputMessage"
+            :autosize="{ minRows: 1, maxRows: 4 }"
+            placeholder="输入消息..."
+            resize="none"
+            type="textarea"
+            @keyup.enter="sendMessage"
+        />
         <el-button @click="openaddFileDialog">
           <el-icon>
             <DocumentAdd/>
@@ -709,14 +582,6 @@ onUnmounted(closeConnection)
 .message {
   margin-bottom: 15px;
   max-width: 75%;
-}
-
-.message.sent {
-  margin-left: auto;
-}
-
-.message.received {
-  margin-right: auto;
 }
 
 .message-content {
@@ -800,33 +665,7 @@ onUnmounted(closeConnection)
   }
 }
 
-/* 自动输入框 */
-.hybrid-input {
-  position: relative;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  min-height: 10px;
-  padding: 5px 15px;
-  line-height: 1.5;
-  cursor: text;
-  width: 100%;
-}
 
-.render-area {
-  min-height: 10px;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.real-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  z-index: -1;
-}
 
 .file-tag {
   margin: 2px;
@@ -838,13 +677,7 @@ onUnmounted(closeConnection)
   align-items: center;
 }
 
-.file-id {
-  margin: 0 6px;
-}
 
-.text-segment {
-  white-space: pre-wrap;
-}
 
 /* 文件标签样式 */
 .message-text .file-tag {

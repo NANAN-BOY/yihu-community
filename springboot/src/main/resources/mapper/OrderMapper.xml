@@ -53,6 +53,7 @@
         WHERE type = 0
           AND payee_id IS NULL
           AND status = 1
+        ORDER BY create_at DESC
     </select>
 
     <update id="updateExpertOrder">
@@ -72,6 +73,7 @@
         <if test="orderQueryDTO.status != null">
             AND status = #{orderQueryDTO.status}
         </if>
+        ORDER BY create_at DESC
     </select>
 
     <select id="queryPreemptOrder" resultType="com.yihu.entity.Order">
@@ -79,6 +81,7 @@
         FROM `order`
         WHERE payee_id = #{userId}
           AND status = #{status}
+        ORDER BY create_at DESC
     </select>
 
     <update id="finishOrder">

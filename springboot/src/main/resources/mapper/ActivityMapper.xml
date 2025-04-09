@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.ActivityMapper">
+    <insert id="insert" parameterType="com.yihu.entity.Activity">
+        insert into file(title,notice_content,staff_count,volunteer_count,service_object_count,status,del_flag,last_update_time,last_update_by_id)
+        values(#{title},#{noticeContent},#{staffCount},#{volunteerCount},#{serviceObjectCount},#{status},#{delFlag},#{lastUpdateTime},#{lastUpdateById}})
+    </insert>
+
+    <!-- 根据活ID删除记录 -->
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM activity
+        WHERE id = #{id}
+    </delete>
+
+
+</mapper>

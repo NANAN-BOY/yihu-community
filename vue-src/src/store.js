@@ -28,6 +28,7 @@ const store = createStore({
       business: {
         acceptExpertId: null,
           applyUserId: null,
+        status: 0,
       },
       input: {
         inputIsVisible: true,

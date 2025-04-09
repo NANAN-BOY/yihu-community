@@ -15,7 +15,7 @@ const disabled = computed(() => loading.value || noMore.value)
 const OrderListLoad = async () => {
   // Skip if already loading or no more data available
   if (disabled.value) return
-
+  if (loading.value) return
   try {
     loading.value = true
     error.value = ''

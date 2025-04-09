@@ -17,7 +17,7 @@ const disabled = computed(() => loading.value || noMore.value)
 
 const OrderListLoad = async () => {
   if (disabled.value) return
-
+  if (loading.value) return
   try {
     loading.value = true
     error.value = ''
@@ -53,13 +53,14 @@ const OrderListLoad = async () => {
   }
 }
 
-const refreshOrderList = () => {
+const refreshOrderList = async () => {
   currentPage.value = 1
   OrderList.value = []
   hasMore.value = true
   error.value = ''
   loading.value = false
-  OrderListLoad()
+  await OrderListLoad()
+  await OrderListLoad()
 }
 
 
@@ -190,6 +191,7 @@ onBeforeUnmount(() => {
   <h1>定制服务</h1>
   <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
   <!-- 我的订单无限滚动列表 -->
+  <el-button type="primary" @click="refreshOrderList" v-loading="loading">刷新</el-button>
   <div class="infinite-list-wrapper" style="overflow: auto">
     <ul
         v-infinite-scroll="OrderListLoad"

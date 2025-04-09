@@ -584,11 +584,21 @@ onUnmounted(closeConnection)
   max-width: 75%;
 }
 
+.message.sent {
+  margin-left: auto;
+}
+
+.message.received {
+  margin-right: auto;
+}
+
+
 .message-content {
   padding: 12px 16px;
   border-radius: 4px;
   background: var(--el-color-primary-light-9);
 }
+
 
 .message.sent .message-content {
   background: var(--el-color-primary);

@@ -120,7 +120,7 @@ const initWebSocket = () => {
       } else {
         console.log(serverMsg)
         if((serverMsg.sendUserId === 0 )&& (serverMsg.status === 1) ){
-          endOrder();
+          endOrder(serverMsg.businessId);
         }
         if (isVisible.value) {
           if (serverMsg.businessId === businessId.value) {
@@ -268,8 +268,12 @@ const closeDialog = () => {
   store.commit('SET_BUSINESS', false)
 }
 //订单结束动作
-const endOrder = () =>{
+const endOrder = (businessId1) => {
   EventBus.emit('endOrder1');
+  if (businessId.value === businessId1) {
+    store.state.expert.input.inputIsVisible = false;
+    store.state.expert.input.hiddenReasons = "订单已经结束，有疑问请联系客服";
+  }
 }
 const getUserInfo = async (userId) => {
   try {

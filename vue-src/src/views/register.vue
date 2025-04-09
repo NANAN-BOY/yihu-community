@@ -13,8 +13,11 @@
                     v-model="user_name"
                     placeholder="请输入组织名称"
                     clearable
-                    prefix-icon="User"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <el-icon><User /></el-icon>
+                  </template>
+                </el-input>
               </el-form-item>
 
               <!-- 手机号 -->
@@ -25,12 +28,16 @@
                       type="tel"
                       placeholder="请输入管理者手机号"
                       clearable
-                      prefix-icon="PhoneFilled"
-                  ></el-input>
+                  >
+                    <template #prefix>
+                      <el-icon><PhoneFilled /></el-icon>
+                    </template>
+                  </el-input>
                   <el-button
                       class="send-code-btn"
                       :disabled="countdown > 0"
-                      @click="sendSMSCode">
+                      @click="sendSMSCode"
+                  >
                     {{ countdown > 0 ? `${countdown}秒后重发` : '获取验证码' }}
                   </el-button>
                 </div>
@@ -42,9 +49,13 @@
                     v-model="sms_code"
                     placeholder="请输入短信验证码"
                     clearable
-                    prefix-icon="Message"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <el-icon><Message /></el-icon>
+                  </template>
+                </el-input>
               </el-form-item>
+
               <el-form-item>
                 <el-cascader
                     v-model="selectedArea"
@@ -56,6 +67,7 @@
                     style="width: 100%"
                 />
               </el-form-item>
+
               <!-- 密码 -->
               <el-form-item>
                 <el-input
@@ -63,8 +75,11 @@
                     type="password"
                     placeholder="请输入密码"
                     show-password
-                    prefix-icon="Key"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <el-icon><Key /></el-icon>
+                  </template>
+                </el-input>
               </el-form-item>
 
               <!-- 确认密码 -->
@@ -74,8 +89,11 @@
                     type="password"
                     placeholder="请确认密码"
                     show-password
-                    prefix-icon="Key"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <el-icon><Key /></el-icon>
+                  </template>
+                </el-input>
               </el-form-item>
 
               <!-- 注册按钮 -->
@@ -104,11 +122,12 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { ElNotification, ElMessage } from 'element-plus';
+import { ref, computed } from 'vue';
+import { ElMessage } from 'element-plus';
+import { User, PhoneFilled, Message, Key } from '@element-plus/icons-vue'
 import axios from "axios";
-import store from "../store";
 import router from "../router";
 import { regionData } from 'element-china-area-data';
 const loading = ref(false);
@@ -279,13 +298,13 @@ h2 {
   width: 100%;
   height: 48px;
   font-size: 16px;
-  background-color: #3ec474;
+  background-color: #007BFF;
   border: none;
   transition: all 0.3s ease;
 }
 
 .btn_login:hover {
-  background-color: #34a862;
+  background-color: #0162c9;
   transform: translateY(-2px);
 }
 
@@ -304,7 +323,7 @@ h2 {
 }
 
 .account-oprate a:hover {
-  color: #3ec474;
+  color: #006bde;
 }
 
 /* 手机号输入容器 */
@@ -337,14 +356,15 @@ h2 {
   border-radius: 6px;
   transition: all 0.3s;
   white-space: nowrap;
-  background-color: #f5f7fa;
-  border-color: #dcdfe6;
+  background-color: #007BFF;
+  color: white;
+  border-color: #ffffff;
 }
 
 .send-code-btn:hover {
-  background-color: #3ec474;
+  background-color: #0060c9;
   color: white;
-  border-color: #3ec474;
+  border-color: #007bfd;
 }
 
 .send-code-btn:disabled {

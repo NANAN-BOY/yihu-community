@@ -4,7 +4,7 @@
       <div class="content_box">
         <div class="content_left"></div>
         <div class="content_right">
-          <h2>智能管理系统Beta</h2>
+          <h2>欢迎登录易互</h2>
           <div class="cr_top">
             <el-form @submit.prevent="handleSubmit" label-width="0px">
               <!-- 手机号输入框 -->
@@ -61,7 +61,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useStore } from 'vuex';  // 导入 Vuex store
-import {ElMessage, ElNotification} from 'element-plus';  // 导入 Element Plus 消息组件
+import {ElMessage} from 'element-plus';  // 导入 Element Plus 消息组件
 import { useRouter } from 'vue-router';
 import request from "../utils/request.js";
 // 定义响应式变量
@@ -183,7 +183,7 @@ h2 {
 }
 
 .el-input :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #3ec474 inset;
+  box-shadow: 0 0 0 1px #007BFF inset;
 }
 
 /* 登录按钮 */
@@ -191,13 +191,13 @@ h2 {
   width: 100%;
   height: 48px;
   font-size: 16px;
-  background-color: #3ec474;
+  background-color: #007BFF;
   border: none;
   transition: all 0.3s ease;
 }
 
 .btn_login:hover {
-  background-color: #34a862;
+  background-color: #0058b9;
   transform: translateY(-2px);
 }
 
@@ -216,7 +216,7 @@ h2 {
 }
 
 .account-oprate a:hover {
-  color: #3ec474;
+  color: #007BFF;
 }
 
 /* 移动端适配 */

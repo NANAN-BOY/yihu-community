@@ -1,6 +1,12 @@
 <template>
   <div>
-    <router-view :key="$route.fullPath"></router-view>
+    <div v-if="$store.state.isLoading" class="global-loading">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <h1 class="loading-text">请等待</h1>
+      </div>
+    </div>
+    <router-view :key="$route.fullPath" v-show="!$store.state.isLoading"></router-view>
   </div>
 </template>
 
@@ -54,7 +60,7 @@ onMounted(() => {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  background-color: #f4f4f4;
+  background-color: #ffffff;
 }
 
 html, body {
@@ -69,7 +75,7 @@ button {
     margin: 20px; /* 按钮与其他元素间的间距 */
     padding: 10px 20px; /* 按钮的内边距 */
     background-color: #007BFF; /* 按钮背景颜色 */
-    color: white; /* 按钮文本颜色 */
+    color: #ffffff; /* 按钮文本颜色 */
     border: none; /* 去掉按钮边框 */
     border-radius: 5px; /* 圆角 */
     cursor: pointer; /* 鼠标悬停时变成手指 */
@@ -77,5 +83,53 @@ button {
 
 button:hover {
     background-color: #0056b3; /* 鼠标悬停时改变背景颜色 */
+}
+.global-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #ffffff;
+  border-top: 4px solid #007BFF;
+  border-radius: 50%;
+  margin-bottom: 1rem; /* 增加与文字的间距 */
+  animation: spin 1s linear infinite;
+}
+
+
+.loading-text {
+  color: #666;
+  font-size: 1.2rem;
+  font-weight: normal;
+  text-align: center;
+  margin: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 </style>

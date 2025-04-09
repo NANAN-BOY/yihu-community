@@ -1,4 +1,4 @@
-import { createStore } from 'vuex';
+import {createStore} from 'vuex';
 import router from './router';
 import {ElMessage} from 'element-plus';
 
@@ -29,6 +29,10 @@ const store = createStore({
         acceptExpertId: null,
           applyUserId: null,
       },
+      input: {
+        inputIsVisible: true,
+        hiddenReasons: "",
+      }
     }
   },
   getters: {

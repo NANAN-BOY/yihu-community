@@ -7,6 +7,8 @@ import axios from "axios";
 import { EventBus } from '../../utils/event-bus';
 // 状态管理
 const isVisible = computed(() => store.getters.business.acceptExpertId)
+const inputIsVisible = computed(() => store.state.expert.input.inputIsVisible)
+const hiddenReasons = computed(() => store.state.expert.input.hiddenReasons)
 const messages = ref([])
 const inputMessage = ref('')
 const socket = ref(null)
@@ -517,7 +519,7 @@ onUnmounted(closeConnection)
         </div>
       </el-scrollbar>
 
-      <div class="input-area">
+      <div v-if="inputIsVisible" class="input-area">
         <el-input
             v-model="inputMessage"
             :autosize="{ minRows: 1, maxRows: 4 }"
@@ -538,6 +540,9 @@ onUnmounted(closeConnection)
         >
           发送
         </el-button>
+      </div>
+      <div v-else class="input-area">
+        <h2>{{ hiddenReasons }}</h2>
       </div>
     </div>
     <!--     Upload file inner dialog-->

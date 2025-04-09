@@ -149,6 +149,14 @@ const CheckPayStatus = () => {
 // BusinessCommunicate
 const businessLoading = ref(false)
 const openExpertCommunicate = (business) => {
+  if (business.status === 1) {
+    store.state.expert.input.inputIsVisible = false;
+    store.state.expert.input.hiddenReasons = "订单已经结束，有疑问请联系客服"
+  }
+  if (business.status === 0) {
+    store.state.expert.input.inputIsVisible = true;
+    store.state.expert.input.hiddenReasons = ""
+  }
   store.state.expert.business = business;
 }
 const checkBusinessCommunicate = (orderNo) => {
@@ -201,9 +209,9 @@ onBeforeUnmount(() => {
     >
       <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
           @click="checkBusinessCommunicate(Order.orderNo)">
-        <el-tag type="warning" v-if="Order.status === 0">未支付</el-tag>
-        <el-tag type="success" v-if="Order.status  === 1">待接单</el-tag>
-        <el-tag type="danger" v-if="Order.status  === 2">进行中</el-tag>
+        <el-tag v-if="Order.status === 0" type="info">未支付</el-tag>
+        <el-tag v-if="Order.status  === 1" type="primary">待接单</el-tag>
+        <el-tag v-if="Order.status  === 2" type="success">进行中</el-tag>
         <el-tag type="danger" v-if="Order.status  === 3">已完结</el-tag>
         <div>{{ Order.createAt }}</div>
       </li>

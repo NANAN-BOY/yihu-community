@@ -5,10 +5,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, getCurrentInstance } from 'vue';
+import {onMounted} from 'vue';
 import axios from 'axios';
 import store from './store';
-import {ElMessage, ElNotification} from "element-plus";
+import {ElMessage} from "element-plus";
 import router from "./router";
 const restoreLoginStatus = async () => {
   try {

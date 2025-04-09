@@ -170,6 +170,18 @@ const showNewMessageNotification = async (message) => {
       })
       const businessInfo = await checkBusinessCommunicate(message.businessId);
       store.commit('SET_BUSINESS', businessInfo)
+      if (businessInfo.status === 0) {
+        store.state.expert.input = {
+          inputIsVisible: true,
+          hiddenReasons: "",
+        }
+      }
+      if (businessInfo.status === 1) {
+        store.state.expert.input = {
+          inputIsVisible: false,
+          hiddenReasons: "订单已经结束，有疑问请联系客服",
+        }
+      }
     }
   })
 }

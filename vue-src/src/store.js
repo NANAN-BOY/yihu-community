@@ -99,6 +99,11 @@ const store = createStore({
       ElMessage.success('您已安全登出');
       router.push('/login'); // 跳转到登录页
     },
+    systemLogout({commit}) {
+      localStorage.removeItem('token');
+      commit('LOGOUT');
+      router.push('/login'); // 跳转到登录页
+    },
     lockNavbar({ commit }, reason) {
       commit('SET_NAVBAR_LOCK', { isLocked: true, lockReason: reason });
     },

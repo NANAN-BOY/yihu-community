@@ -262,6 +262,92 @@ const editMyLocation = () => {
     ElMessage.info('您已取消修改');
   });
 }
+
+// 对话框显示控制
+const modifyPhoneDialogVisible = ref(false)
+// 表单数据
+const user_NewPhoneNumber = ref('')
+const sms_code = ref('')
+// 验证码倒计时
+const countdown = ref(0)
+let timer = null
+
+// 发送验证码
+const sendSMSCode = async () => {
+  try {
+    // 格式校验
+    if (!/^1[3-9]\d{9}$/.test(user_NewPhoneNumber.value)) {
+      ElMessage.warning('请输入有效的手机号码')
+      return
+    }
+
+    // 新旧号码校验
+    if (user_NewPhoneNumber.value === store.state.user.phone) {
+      ElMessage.warning('新手机号不能与当前手机号相同')
+      return
+    }
+
+    // 倒计时逻辑
+    countdown.value = 60
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) clearInterval(timer)
+    }, 1000)
+
+    // 调用发送验证码接口
+    await axios.post(
+        `${import.meta.env.VITE_BACKEND_IP}/api/user/captcha/generate`,
+        null,
+        {params: {phone: user_NewPhoneNumber.value}}
+    )
+
+    ElMessage.success('验证码已发送')
+  } catch (error) {
+    ElMessage.error('验证码发送失败')
+    console.error('验证码发送错误:', error)
+    clearInterval(timer)
+    countdown.value = 0
+  }
+}
+
+// 提交修改
+const modifyMyPhone = async () => {
+  try {
+    // 表单校验
+    if (!user_NewPhoneNumber.value || !sms_code.value) {
+      ElMessage.warning('请填写完整信息')
+      return
+    }
+
+    // 调用后端接口
+    const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_IP}/api/user/update-phone`,
+        null,
+        {
+          params: {
+            oldPhone: store.state.user.phone,  // 从用户信息获取旧手机号
+            newPhone: user_NewPhoneNumber.value,
+            captcha: sms_code.value
+          }
+          ,
+          headers: {
+            'token': `${store.state.token}`,
+          },
+        }
+    )
+    // 处理响应
+    if (response.data.code === 200) {
+      ElMessage.success('手机号修改成功')
+      ElMessage.error('身份验证已过期，请重新登陆！')
+      await store.dispatch('systemLogout')
+    } else {
+      ElMessage.error(response.data.msg || '手机号修改失败')
+    }
+  } catch (error) {
+    ElMessage.error('请求失败，请检查网络')
+    console.error('手机号修改失败:', error)
+  }
+}
 </script>
 <template>
   <div v-loading="!user.id" class="user-info-container">
@@ -289,7 +375,7 @@ const editMyLocation = () => {
         <el-icon
             :size="21"
             color="blue"
-            @click="editMyInfo"
+            @click="modifyPhoneDialogVisible = true"
             class="interactive-icon">
           <Edit/>
         </el-icon>
@@ -338,6 +424,48 @@ const editMyLocation = () => {
       </el-form-item>
     </el-form>
   </div>
+  <!-- 修改手机号对话框 -->
+  <el-dialog
+      v-model="modifyPhoneDialogVisible"
+      align-center
+      title="修改手机号"
+      width="500"
+  >
+    <el-form label-width="100px">
+      <el-form-item label="新手机号" required>
+        <div style="display: flex; gap: 10px">
+          <el-input
+              v-model="user_NewPhoneNumber"
+              :maxlength="11"
+              placeholder="请输入新手机号"
+          />
+          <el-button
+              :disabled="countdown > 0"
+              plain
+              type="primary"
+              @click="sendSMSCode"
+          >
+            {{ countdown > 0 ? `${countdown}秒后重试` : '获取验证码' }}
+          </el-button>
+        </div>
+      </el-form-item>
+
+      <el-form-item label="验证码" required>
+        <el-input
+            v-model="sms_code"
+            :maxlength="6"
+            placeholder="请输入6位验证码"
+        />
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="modifyPhoneDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="modifyMyPhone">确认修改</el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>

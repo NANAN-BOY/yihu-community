@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import {createRouter, createWebHistory} from 'vue-router';
 import store from './store.js';
 
 // 使用动态导入实现路由级懒加载（Webpack自动代码分割）
@@ -50,10 +50,10 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
   try {
-    // 每次路由跳转前检查用户状态（可优化为应用启动时加载）
-    if (!store.getters.isAuthenticated) {
-      await store.dispatch('getUserInfo');
-    }
+    // // 每次路由跳转前检查用户状态（可优化为应用启动时加载）
+    // if (!store.getters.isAuthenticated) {
+    //   await store.dispatch('getUserInfo');
+    // }
 
     if (requiresAuth && !store.getters.isAuthenticated) {
       next({ name: 'login' });

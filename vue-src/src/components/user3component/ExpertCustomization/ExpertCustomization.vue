@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onBeforeUnmount, onMounted, ref} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import axios from "axios";
 import store from "../../../store";
 import {Star} from "@element-plus/icons-vue";
@@ -15,16 +15,40 @@ const hasMore = ref(true)
 const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
 
+//订单分类
+const orderStstusValue = ref('全部')
+const orderStstusOptions = ['全部', '未支付', '待接单', '进行中', '已完结']
+watch(orderStstusValue, () => {
+  refreshOrderList()
+})
+const orderStatusConvert = async (ststus) => {
+  switch (ststus) {
+    case '全部':
+      return null
+    case '未支付':
+      return 0
+    case '待接单':
+      return 1
+    case '进行中':
+      return 2
+    case '已完结':
+      return 3
+    default:
+      return null
+  }
+}
+
 const OrderListLoad = async () => {
   if (disabled.value) return
   if (loading.value) return
+  const status = await orderStatusConvert(orderStstusValue.value);
   try {
     loading.value = true
     error.value = ''
 
     const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_IP}/api/order/get-myOrderList`,
-        {type: 0, status: null},
+        {type: 0, status: status},
         {
           params: {pageNum: currentPage.value, pageSize: 10},
           headers: {token: store.state.token}
@@ -200,6 +224,10 @@ onBeforeUnmount(() => {
   <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
   <!-- 我的订单无限滚动列表 -->
   <el-button type="primary" @click="refreshOrderList" v-loading="loading">刷新</el-button>
+  <!--  订单状态分类-->
+  <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
+    <el-segmented v-model="orderStstusValue" :options="orderStstusOptions" size="large"/>
+  </div>
   <div class="infinite-list-wrapper" style="overflow: auto">
     <ul
         v-infinite-scroll="OrderListLoad"

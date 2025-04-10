@@ -1,8 +1,18 @@
 <script setup>
-import { ArrowDown, ArrowUp, Close, Document, DocumentAdd, FolderAdd } from '@element-plus/icons-vue';
+import {Document, DocumentAdd, FolderAdd} from '@element-plus/icons-vue';
 import { reactive, ref,computed } from 'vue';
 import store from '../../../../store';
-import { ElNotification,ElMessage, ElMessageBox, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElCheckbox, ElTag, ElButton } from 'element-plus';
+import {
+  ElNotification,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElCheckbox,
+  ElButton
+} from 'element-plus';
 
 let onSteps = ref(1);
 

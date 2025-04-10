@@ -55,10 +55,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, defineProps, defineEmits } from 'vue';
+import {defineEmits, onMounted, ref} from 'vue';
 import axios from 'axios';
-import { ElForm, ElInput, ElSelect, ElOption, ElButton, ElUpload, ElMessageBox, ElMessage } from 'element-plus';
-import store from '../../../store';
+import {ElButton, ElForm, ElInput, ElMessage, ElMessageBox, ElOption, ElSelect, ElUpload} from 'element-plus';
+import store from '../../../store.js';
 
 const templateData = ref<any>({});
 const formData = ref<any>({ project_name: '' });

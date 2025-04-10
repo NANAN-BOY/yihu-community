@@ -93,8 +93,6 @@ import { ref, onMounted } from 'vue';
 import {
   ElMessage,
   ElButton,
-  ElTable,
-  ElTableColumn,
   ElDropdown,
   ElDropdownMenu,
   ElDropdownItem,

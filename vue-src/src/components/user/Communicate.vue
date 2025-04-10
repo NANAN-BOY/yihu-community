@@ -19,6 +19,17 @@ let retryCount = 0
 const scrollbarRef = ref(null)
 const isMobile = ref(window.innerWidth < 768)
 const receiveUserInfo = ref({name: '请等待',})
+import { Howl } from 'howler';
+const onClose = new Howl({
+  src: ['TipSound/onClose.mp3'],
+  preload: true, // 预加载
+  volume: 0.7    // 音量
+});
+const onOpen = new Howl({
+  src: ['TipSound/onOpen.mp3'],
+  preload: true, // 预加载
+  volume: 0.7    // 音量
+});
 
 // 从store获取用户信息
 const sendUserId = computed(() => store.state.user.id)
@@ -133,9 +144,11 @@ const initWebSocket = () => {
           } else {
             await showNewMessageNotification(serverMsg)
           }
+          onOpen.play()
         }
         if (!isVisible.value && serverMsg.sendUserId !== sendUserId.value) {
           await showNewMessageNotification(serverMsg)
+          onClose.play()
         }
       }
     }

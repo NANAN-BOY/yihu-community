@@ -161,6 +161,9 @@ public class UserServiceImpl implements UserService {
     public int updatePhone(Integer userId, String oldPhone, String newPhone, String captcha) {
         Boolean isValid = captchaService.verifyCaptcha(newPhone, captcha);
         if (isValid) {
+            if (userMapper.selectByPhone(newPhone)) {
+                return -3;//手机号已注册
+            }
             Date currentDate = new Date();
             Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
             int isSuccess = userMapper.updatePhone(userId, oldPhone, newPhone, currentTimestamp);

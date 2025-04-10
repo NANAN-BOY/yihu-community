@@ -200,6 +200,8 @@ public class BaseController {
             return Result.success("修改成功");
         } else if (isSuccess == -2) {
             return Result.error(500, "验证码错误");
+        } else if (isSuccess == -3) {
+            return Result.error(500, "手机号已被其它账号绑定");
         } else {
             return Result.error(500, "修改失败");
         }

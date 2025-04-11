@@ -53,8 +53,8 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setServiceObjectCount(activityCreateDTO.getServiceObjectCount());
         activity.setStatus(activityCreateDTO.getStatus());
         activity.setDelFlag("N");
-        activity.setlastUpdateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setlastUpdateById(1);
+        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setUpdateById(1);
 
         activityMapper.create(activity);
 
@@ -128,8 +128,10 @@ public class ActivityServiceImpl implements ActivityService {
     public int addActivity() {
         Activity activity = new Activity();
         activity.setDelFlag("N");
-        activity.setlastUpdateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setlastUpdateById(1);
+        activity.setCreateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setCreateById(1);
+        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setUpdateById(1);
 
         activityMapper.create(activity);
 

@@ -1,6 +1,7 @@
 package com.yihu.service.impl;
 
 import cn.hutool.core.io.FileUtil;
+import com.github.pagehelper.PageInfo;
 import com.yihu.dto.ActivityCreateDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
@@ -169,13 +170,18 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setServiceObjectCount(activityDTO.getServiceObjectCount());
         activity.setStatus(activityDTO.getStatus());
         activity.setDelFlag("N");
-        activity.setlastUpdateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setlastUpdateById(1);
+
+        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setUpdateById(1);
 
         activityMapper.update(activity);
 
     }
 
+    @Override
+    public PageInfo<Activity> queryByCreateId(Integer createId) {
+        return activityMapper.queryByCreateId(createId);
+    }
 
 
     /**

@@ -2,6 +2,7 @@ package com.yihu.mapper;
 
 
 
+import com.github.pagehelper.PageInfo;
 import com.yihu.entity.Activity;
 import com.yihu.entity.File;
 
@@ -12,4 +13,6 @@ public interface ActivityMapper {
     void deleteById(Integer id);
 
     void update(Activity activity);
+
+    PageInfo<Activity> queryByCreateId(Integer createId);
 }

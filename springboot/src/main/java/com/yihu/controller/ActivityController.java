@@ -2,12 +2,17 @@ package com.yihu.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.dto.ActivityCreateDTO;
+import com.yihu.dto.UserQueryDTO;
+import com.yihu.entity.Activity;
 import com.yihu.entity.File;
+import com.yihu.entity.User;
 import com.yihu.service.ActivityService;
 import com.yihu.service.FileService;
+import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -254,6 +259,15 @@ public class ActivityController {
         return Result.success();
     }
 
+
+    @AuthAccess
+    @GetMapping("/queryByCreateId")//管理员查询用户列表
+    public Result query(@RequestParam Integer createId) {
+
+        PageInfo<Activity> ActivityList = activityService.queryByCreateId(createId);
+        return Result.success(ActivityList);
+
+    }
 
 
 

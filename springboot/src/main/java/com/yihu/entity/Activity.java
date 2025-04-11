@@ -11,8 +11,10 @@ public class Activity {
     private  Integer serviceObjectCount;
     private  Integer status;
     private  String delFlag;
-    private Date lastUpdateTime;
-    private  Integer lastUpdateById;
+    private Date createTime;
+    private Integer createById;
+    private Date updateTime;
+    private  Integer updateById;
 
     public Integer getId() {
         return id;
@@ -79,20 +81,36 @@ public class Activity {
         this.delFlag = delFlag;
     }
 
-    public Date getlastUpdateTime() {
-        return lastUpdateTime;
+    public Date getCreateTime() {
+        return createTime;
     }
 
-    public void setlastUpdateTime(Date lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
-    public Integer getlastUpdateById() {
-        return lastUpdateById;
+    public Integer getCreateById() {
+        return createById;
     }
 
-    public void setlastUpdateById(Integer lastUpdateById) {
-        this.lastUpdateById = lastUpdateById;
+    public void setCreateById(Integer createById) {
+        this.createById = createById;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public Integer getUpdateById() {
+        return updateById;
+    }
+
+    public void setUpdateById(Integer updateById) {
+        this.updateById = updateById;
     }
 
     @Override
@@ -106,8 +124,10 @@ public class Activity {
                 ", serviceObjectCount=" + serviceObjectCount +
                 ", status=" + status +
                 ", delFlg='" + delFlag + '\'' +
-                ", updateTime=" + lastUpdateTime +
-                ", updateById=" + lastUpdateById +
+                ", createTime=" + createTime +
+                ", createById=" + createById +
+                ", updateTime=" + updateTime +
+                ", updateById=" + updateById +
                 '}';
     }
 }

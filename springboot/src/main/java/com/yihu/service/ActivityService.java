@@ -1,6 +1,8 @@
 package com.yihu.service;
 
+import com.github.pagehelper.PageInfo;
 import com.yihu.dto.ActivityCreateDTO;
+import com.yihu.entity.Activity;
 import com.yihu.entity.File;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,4 +36,6 @@ public interface ActivityService {
     void deleteFile(Integer fileId);
 
     void update(ActivityCreateDTO activityDTO);
+
+    PageInfo<Activity> queryByCreateId(Integer createId);
 }

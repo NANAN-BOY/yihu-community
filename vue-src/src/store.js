@@ -19,6 +19,7 @@ const store = createStore({
       updaterId: '',
       updateAt: '',
     },
+    connectionStatus:'disconnected',
     navbar: {
       isLocked: false,               // 导航栏是否锁定
       lockReason: '',                // 锁定原因

@@ -12,7 +12,7 @@ const hiddenReasons = computed(() => store.state.expert.input.hiddenReasons)
 const messages = ref([])
 const inputMessage = ref('')
 const socket = ref(null)
-const connectionStatus = ref('disconnected')
+const connectionStatus = computed(() => store.state.connectionStatus)
 let reconnectTimer = null
 const MAX_RETRY = 5
 let retryCount = 0
@@ -111,14 +111,14 @@ watch(isVisible, async (newVal) => {
 // 初始化WebSocket连接
 const initWebSocket = () => {
   clearTimeout(reconnectTimer)
-  connectionStatus.value = 'connecting'
+  store.state.connectionStatus = 'connecting'
   const token = store.state.token
 
   try {
     socket.value = new WebSocket(`${import.meta.env.VITE_BACKEND_WebSocket}/imserverSingle?token=${token}`)
 
     socket.value.onopen = () => {
-      connectionStatus.value = 'connected'
+      store.state.connectionStatus = 'connected'
       retryCount = 0
     }
 
@@ -154,18 +154,18 @@ const initWebSocket = () => {
     }
 
     socket.value.onclose = (event) => {
-      connectionStatus.value = 'disconnected'
+      store.state.connectionStatus = 'disconnected'
       if (!event.wasClean && retryCount < MAX_RETRY) {
         scheduleReconnect()
       }
     }
 
     socket.value.onerror = () => {
-      connectionStatus.value = 'disconnected'
+      store.state.connectionStatus = 'disconnected'
       socket.value?.close()
     }
   } catch (error) {
-    connectionStatus.value = 'disconnected'
+    store.state.connectionStatus =  'disconnected'
     scheduleReconnect()
   }
 }

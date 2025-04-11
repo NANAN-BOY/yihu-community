@@ -13,6 +13,11 @@
         <!-- Logo -->
         <el-col :span="isMobile ? 19 : 20" class="left-menu">
           <span :class="isMobile ? 'menu-title-mobile' : 'menu-title'"><strong>易互</strong></span>
+          <div>
+            <el-tag size="small" type="warning" v-if="store.state.connectionStatus==='connecting'">连接中</el-tag>
+            <el-tag size="small" type="success" v-if="store.state.connectionStatus==='connected'">在线</el-tag>
+            <el-tag size="small" type="danger" v-if="store.state.connectionStatus==='disconnected'">离线</el-tag>
+          </div>
         </el-col>
         <el-col :span="1" class="right-menu">
           <el-button @click="openVIPAreaDialogVisible" type="warning" class="logout-button" color="warning">
@@ -581,6 +586,7 @@ onMounted(() => {
 }
 
 .left-menu {
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: flex-start;

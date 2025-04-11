@@ -9,4 +9,7 @@ public interface ActivityFilesMapper {
     // 根据活动ID删除文件记录
     void deleteByActivityId(Integer activityId);
 
+    ActivityFiles findById(Integer id);
+
+    void deleteById(Integer id);
 }

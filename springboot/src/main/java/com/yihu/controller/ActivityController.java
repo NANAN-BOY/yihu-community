@@ -21,8 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Slf4j
@@ -64,6 +66,9 @@ public class ActivityController {
      *     headers: { "Content-Type": "multipart/form-data" }
      * });
      */
+    /*
+    *
+
     @AuthAccess
     @PostMapping("/create")
     @Transactional(rollbackFor = Exception.class)
@@ -150,22 +155,110 @@ public class ActivityController {
         }
 
     }
+    *
+    * */
+
+
+
+
+    @PostMapping("/addActivity")
+    public Result addActivity(){
+        int activityId = activityService.addActivity();
+        if(activityId != 0){
+            return Result.success();
+        }
+        return Result.error(activityId);
+    }
+
+    @PostMapping("uploadFile")
+    public Result uploadFile(@RequestParam("file") MultipartFile file,
+                             @RequestPart("activityData") String activityDataJson) throws JsonProcessingException {
+
+        // 解析 JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
+
+        try{
+            int newId = activityService.uploadFile(file,activityDTO.getActivityId(),activityDTO.getFileSort());
+            if (newId != 0){
+                return Result.success(newId);
+            }else {
+                return Result.error("文件上传失败");
+            }
+        } catch (Exception e){
+            return Result.error("文件上传失败");
+        }
+
+    }
+
+    @DeleteMapping("deleteFileById/{id}")
+    @Transactional(rollbackFor = Exception.class)
+    public Result deleteFileById(@PathVariable("fileId") Integer fileId){
+        try {
+            activityService.deleteFile(fileId);
+            return Result.success();
+        }catch (Exception e){
+            return Result.error("文件删除失败");
+        }
+    }
+
+    @PostMapping("/update")
+    public Result update(@RequestPart("activityData") String activityDataJson) throws JsonProcessingException {
+        // 解析 JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
+        try {
+
+            // 更新activity表
+            activityService.update(activityDTO);;
+
+            // 获取 news 数据并更新
+            List<ActivityCreateDTO.NewsItem> newsList = activityDTO.getNews();
+            if (newsList != null) {
+                // 先删除旧数据
+                activityService.deleteNewsByActivityId(activityDTO.getActivityId());
+                // 遍历newsList 插入新数据
+                for (ActivityCreateDTO.NewsItem newsItem : newsList) {
+                    String platform = newsItem.getPlatform();
+                    String link = newsItem.getLink();
+                    System.out.println("平台: " + platform + ", URL: " + link);
+                    // 插入到数据库...
+                    activityService.insertnews(activityDTO.getActivityId(), platform,link);
+                }
+            }
+            return Result.success();
+        }catch (Exception e){
+            return Result.error("更新失败");
+        }
+    }
+
 
 
     @AuthAccess
     @DeleteMapping("/deleteById")
     public Result delete(@PathVariable ActivityCreateDTO activityCreateDTO) {
+
+        // 解析 JSON
+        //ObjectMapper objectMapper = new ObjectMapper();
+        //ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
+
         // 删除活动记录
-        activityService.deleteActivityById(activityCreateDTO.getId(),activityCreateDTO.getTitle());
+        activityService.deleteActivityById(activityCreateDTO.getActivityId(),activityCreateDTO.getTitle());
 
         // 删除与该活动相关的新闻记录
-        activityService.deleteNewsByActivityId(activityCreateDTO.getId());
+        activityService.deleteNewsByActivityId(activityCreateDTO.getActivityId());
 
         // 删除与该活动相关的文件记录
-        activityService.deleteFilesByActivityId(activityCreateDTO.getId());
+        activityService.deleteFilesByActivityId(activityCreateDTO.getActivityId());
 
         return Result.success();
     }
+
+
+
+
+
+
 }
 
 

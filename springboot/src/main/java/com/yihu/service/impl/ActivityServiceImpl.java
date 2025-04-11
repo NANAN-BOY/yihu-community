@@ -62,15 +62,17 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public int uploadFile(MultipartFile file, Integer activityId,Integer sort,String title) throws IOException, NoSuchAlgorithmException, IOException, NoSuchAlgorithmException {
+    public int uploadFile(MultipartFile file, Integer activityId,Integer sort) throws IOException, NoSuchAlgorithmException, IOException, NoSuchAlgorithmException {
 
-        // 文件不存在，保存到存储目录
-        String storagePath = saveFileToStorage(file,title,sort);
+        // 5. 生成唯一文件名（时间戳 + 原始文件名） 防止重名文件
+        String storageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String storagePath = saveFileToStorage(file,activityId,sort,storageName);
 
         // 创建新的文件实体
         ActivityFiles activityFiles = new ActivityFiles();
         activityFiles.setActivityId(activityId);
         activityFiles.setName(file.getOriginalFilename());
+        activityFiles.setStorageName(storageName);
         activityFiles.setFileSort(sort);
         activityFiles.setFileUrl(storagePath);
         activityFiles.setDelFlag("N");
@@ -121,16 +123,70 @@ public class ActivityServiceImpl implements ActivityService {
 
     }
 
+    @Override
+    public int addActivity() {
+        Activity activity = new Activity();
+        activity.setDelFlag("N");
+        activity.setlastUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setlastUpdateById(1);
+
+        activityMapper.create(activity);
+
+        return activity.getId();
+    }
+
+    @Override
+    public void deleteFile(Integer fileId) {
+        // 1. 根据文件ID查询文件记录
+        ActivityFiles file = activityFilesMapper.findById(fileId);
+        if (file == null) {
+            log.warn("文件不存在: {}", fileId);
+            return;
+        }
+
+        // 2. 删除数据库中的文件记录 出错可以回退
+        activityFilesMapper.deleteById(fileId);
+
+        // 3. 删除本地或云服务器上的文件
+        String filePath = file.getFileUrl();
+        try {
+            Files.deleteIfExists(Paths.get(filePath)); // 删除本地文件
+            log.info("成功删除文件: {}", filePath);
+        } catch (IOException e) {
+            log.error("删除文件失败: {}", filePath, e);
+        }
+
+    }
+
+    @Override
+    public void update(ActivityCreateDTO activityDTO) {
+        Activity activity = new Activity();
+        activity.setId(activityDTO.getActivityId());
+        activity.setTitle(activityDTO.getTitle());
+        activity.setNoticeContent(activityDTO.getNoticeContent());
+        activity.setStaffCount(activityDTO.getStaffCount());
+        activity.setVolunteerCount(activityDTO.getVolunteerCount());
+        activity.setServiceObjectCount(activityDTO.getServiceObjectCount());
+        activity.setStatus(activityDTO.getStatus());
+        activity.setDelFlag("N");
+        activity.setlastUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setlastUpdateById(1);
+
+        activityMapper.update(activity);
+
+    }
+
+
 
     /**
      * 保存文件到存储目录
      */
-    private String saveFileToStorage(MultipartFile file,String title,Integer sort) throws IOException {
-        // 2. 获取文件后缀（如 ".jpg"）
+    private String saveFileToStorage(MultipartFile file,Integer activityId,Integer sort,String storageName) throws IOException {
+        // 1. 获取文件后缀（如 ".jpg"）
         String fileExtension = file.getOriginalFilename()
                 .substring(file.getOriginalFilename().lastIndexOf("."));
 
-        // 3. 根据sort决定子目录名称
+        // 2. 根据sort决定子目录名称
         String subDir = switch(sort) {
             case 2 -> "签到";
             case 3 -> "活动过程";
@@ -139,14 +195,12 @@ public class ActivityServiceImpl implements ActivityService {
             default -> throw new IllegalArgumentException("非法的sort值: " + sort);
         };
 
-        // 4. 构建完整存储路径（格式：根目录/活动标题/子目录/）
-        // 例如：/storage/春季郊游/签到/
-        Path targetDir = Paths.get(storageDir, title, subDir);
+        // 3. 构建完整存储路径（格式：根目录/活动id/子目录/）
+        Path targetDir = Paths.get(storageDir, activityId.toString(), subDir);
         Files.createDirectories(targetDir); // 自动创建多级目录
 
-        // 5. 生成最终文件名（保留原始文件名）
-        String fileName = file.getOriginalFilename();
-        Path targetPath = targetDir.resolve(fileName);
+        // 4. 唯一文件名
+        Path targetPath = targetDir.resolve(storageName);
 
 
         // 保留文件，大文件切片传输
@@ -160,9 +214,12 @@ public class ActivityServiceImpl implements ActivityService {
 //                bos.write(buffer, 0, bytesRead);
 //            }
 //        }
-        // 保存文件
+        // 5. 保存文件
         try (InputStream is = file.getInputStream()) {
             Files.copy(is, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            log.error("文件保存失败: {}", targetPath, e);
+            throw new RuntimeException("文件保存失败", e);
         }
 
         return targetPath.toString();

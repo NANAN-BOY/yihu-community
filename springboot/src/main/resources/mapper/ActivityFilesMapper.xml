@@ -16,6 +16,16 @@
         WHERE activity_id = #{activityId}
     </delete>
 
+    <select id="findById" parameterType="java.lang.Integer">
+        SELECT * FROM activity_files
+        WHERE id = #{id}
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM activity_files
+        WHERE id = #{id}
+    </delete>
+
 
 
 </mapper>

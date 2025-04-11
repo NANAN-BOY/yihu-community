@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.yihu.mapper.ActivityMapper">
-    <insert id="insert" parameterType="com.yihu.entity.Activity">
+    <insert id="insert" parameterType="com.yihu.entity.Activity" useGeneratedKeys="true" keyProperty="id">
         insert into file(title,notice_content,staff_count,volunteer_count,service_object_count,status,del_flag,last_update_time,last_update_by_id)
         values(#{title},#{noticeContent},#{staffCount},#{volunteerCount},#{serviceObjectCount},#{status},#{delFlag},#{lastUpdateTime},#{lastUpdateById}})
     </insert>
@@ -14,6 +14,11 @@
         DELETE FROM activity
         WHERE id = #{id}
     </delete>
+
+    <update id="update" parameterType="com.yihu.entity.Activity">
+        update activity set title = #{title},notice_content = #{noticeContent},staff_count = #{staffCount},volunteer_count = #{volunteerCount},service_object_count = #{serviceObjectCount},status = #{status},del_flag = #{delFlag},last_update_time = #{lastUpdateTime},last_update_by_id = #{lastUpdateById}
+        where id = #{id}
+    </update>
 
 
 </mapper>

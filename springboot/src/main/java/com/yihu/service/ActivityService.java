@@ -18,7 +18,7 @@ public interface ActivityService {
      * @param file 上传的文件
      * @return 文件实体信息
      */
-    int uploadFile(MultipartFile file, Integer activityId,Integer sort,String title) throws IOException, NoSuchAlgorithmException, IOException, NoSuchAlgorithmException;
+    int uploadFile(MultipartFile file, Integer activityId,Integer sort) throws IOException, NoSuchAlgorithmException, IOException, NoSuchAlgorithmException;
 
     int insertnews(Integer activityId, String platform, String link);
 
@@ -28,4 +28,10 @@ public interface ActivityService {
     void deleteNewsByActivityId(Integer activityId);
 
     void deleteActivityById(Integer id,String title);
+
+    int addActivity();
+
+    void deleteFile(Integer fileId);
+
+    void update(ActivityCreateDTO activityDTO);
 }

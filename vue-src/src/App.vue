@@ -1,31 +1,34 @@
 <template>
   <div>
-    <div v-if="$store.state.isLoading" class="global-loading">
+    <div v-if="IsLoading" class="global-loading">
       <div class="spinner-container">
         <div class="spinner"></div>
-        <h1 class="loading-text">请等待</h1>
+        <h1 class="loading-text">登陆中</h1>
       </div>
     </div>
-    <router-view :key="$route.fullPath" v-show="!$store.state.isLoading"></router-view>
+    <router-view :key="$route.fullPath" v-show="!IsLoading"></router-view>
   </div>
 </template>
 
 <script setup>
-import {onMounted} from 'vue';
+import {onMounted, ref} from 'vue';
 import axios from 'axios';
 import store from './store';
 import {ElMessage} from "element-plus";
 import router from "./router";
+const IsLoading = ref(false);
 const restoreLoginStatus = async () => {
   try {
     if (!store.state.token) {
       return;
     }
+    IsLoading.value = true
     const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/reLogin`, {
       headers: {
         'token': `${store.state.token}`
       }
     });
+    IsLoading.value= false
     if (response.data.code != 200) {
       throw new Error('身份已过期，请重新登录。');
     }

@@ -35,7 +35,6 @@ const store = createStore({
         hiddenReasons: "",
       }
     },
-    isLoading: false,
   },
   getters: {
     token: state => state.token,      // 获取 token
@@ -52,9 +51,6 @@ const store = createStore({
     },
     SET_USER(state, userData) {
       state.user = { ...state.user, ...userData }; // 更新用户信息
-    },
-    SET_LOADING(state, status) {
-      state.isLoading = status;
     },
     LOGOUT(state) {
       state.user = {

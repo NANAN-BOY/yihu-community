@@ -4,9 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.yihu.mapper.ActivityFilesMapper">
-    <insert id="insert" parameterType="com.yihu.entity.ActivityFiles">
-        insert into file(activity_id,name,filr_sort,file_url,del_flg)
-        values(#{activityId},#{name},#{fileSort},#{fileUrl},#{delFlag})
+    <insert id="insert" parameterType="com.yihu.entity.ActivityFiles" useGeneratedKeys="true" keyProperty="id">
+        insert into activity_files(activity_id,name,storage_name,file_sort,file_url,del_flag)
+        values(#{activityId},#{name},#{storageName},#{fileSort},#{fileUrl},#{delFlag})
     </insert>
 
 

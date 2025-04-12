@@ -1,9 +1,9 @@
 package com.yihu.service;
 
 import com.github.pagehelper.PageInfo;
-import com.yihu.dto.ActivityCreateDTO;
+import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
-import com.yihu.entity.File;
+import com.yihu.entity.ActivityFiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
 
 public interface ActivityService {
 
-    int create(ActivityCreateDTO activityCreateDTO);
+    int create(ActivityDTO activityDTO);
 
     /**
      * 上传文件
@@ -31,11 +31,15 @@ public interface ActivityService {
 
     void deleteActivityById(Integer id,String title);
 
-    int addActivity();
+    int addActivity(Integer userId);
 
     void deleteFile(Integer fileId);
 
-    void update(ActivityCreateDTO activityDTO);
+    void update(ActivityDTO activityDTO, Integer userId);
 
-    PageInfo<Activity> queryByCreateId(Integer createId);
+    PageInfo<Activity> queryByCreateId(Integer createId, ActivityDTO activityDTO,int pageNum, int pageSize);
+
+    void submitActivity(ActivityDTO activityDTO, Integer id);
+
+    ActivityFiles getById(int newId);
 }

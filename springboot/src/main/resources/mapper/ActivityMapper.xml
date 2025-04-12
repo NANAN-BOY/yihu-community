@@ -4,10 +4,15 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.yihu.mapper.ActivityMapper">
-    <insert id="insert" parameterType="com.yihu.entity.Activity" useGeneratedKeys="true" keyProperty="id">
-        insert into file(title,notice_content,staff_count,volunteer_count,service_object_count,status,del_flag,create_time,create_by_id,update_time,update_by_id)
-        values(#{title},#{noticeContent},#{staffCount},#{volunteerCount},#{serviceObjectCount},#{status},#{delFlag},#{createTime},#{createById},#{updateTime},#{updateById}})
+    <insert id="create" parameterType="com.yihu.entity.Activity" useGeneratedKeys="true" keyProperty="id">
+        insert into activity(
+        status, del_flag, create_time, create_by_id, update_time, update_by_id
+        )
+        values(
+        #{status}, #{delFlag}, #{createTime}, #{createById}, #{updateTime}, #{updateById}
+        )
     </insert>
+
 
     <!-- 根据活ID删除记录 -->
     <delete id="deleteById" parameterType="java.lang.Integer">
@@ -16,12 +21,36 @@
     </delete>
 
     <update id="update" parameterType="com.yihu.entity.Activity">
-        update activity set title = #{title},notice_content = #{noticeContent},staff_count = #{staffCount},volunteer_count = #{volunteerCount},service_object_count = #{serviceObjectCount},status = #{status},del_flag = #{delFlag},last_update_time = #{lastUpdateTime},last_update_by_id = #{lastUpdateById}
+        update activity
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="noticeContent != null">notice_content = #{noticeContent},</if>
+            <if test="staffCount != null">staff_count = #{staffCount},</if>
+            <if test="volunteerCount != null">volunteer_count = #{volunteerCount},</if>
+            <if test="serviceObjectCount != null">service_object_count = #{serviceObjectCount},</if>
+            update_time = #{updateTime},
+            update_by_id = #{updateById},
+        </set>
         where id = #{id}
     </update>
 
-    <select id="" resultType="com.yihu.entity.Activity" parameterType="java.lang.Integer">
-        select * from activity where create_id = #{createId}
+
+    <select id="queryByCreateId" resultType="com.yihu.entity.Activity">
+        SELECT *
+        FROM activity
+        WHERE create_by_id = #{createId}
+        <if test="activityDTO.title != null and activityDTO.title != ''">
+            AND title LIKE CONCAT('%', #{activityDTO.title}, '%')
+        </if>
     </select>
+
+    <update id="submit" parameterType="com.yihu.entity.Activity">
+        update activity
+        set status = #{status},
+        update_time = #{updateTime},
+        update_by_id = #{updateById}
+        where id = #{id}
+    </update>
+
 
 </mapper>

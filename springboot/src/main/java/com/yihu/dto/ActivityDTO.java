@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ActivityCreateDTO {
+public class ActivityDTO {
     private Integer activityId;
     private Integer status;
     private String title;

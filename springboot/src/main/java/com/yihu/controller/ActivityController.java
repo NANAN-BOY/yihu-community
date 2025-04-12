@@ -1,40 +1,24 @@
 package com.yihu.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
-import com.yihu.dto.ActivityCreateDTO;
-import com.yihu.dto.UserQueryDTO;
+import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
-import com.yihu.entity.File;
+import com.yihu.entity.ActivityFiles;
 import com.yihu.entity.User;
 import com.yihu.service.ActivityService;
-import com.yihu.service.FileService;
 import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/activity")
+@RequestMapping("/api/activity")
 public class ActivityController {
 
     private final ActivityService activityService;
@@ -165,28 +149,27 @@ public class ActivityController {
 
 
 
-
     @PostMapping("/addActivity")
     public Result addActivity(){
-        int activityId = activityService.addActivity();
+        User currentUser = TokenUtils.getCurrentUser();
+        int activityId = activityService.addActivity(currentUser.getId());
         if(activityId != 0){
-            return Result.success();
+            return Result.success(activityId);
         }
-        return Result.error(activityId);
+        return Result.error();
     }
 
-    @PostMapping("uploadFile")
-    public Result uploadFile(@RequestParam("file") MultipartFile file,
-                             @RequestPart("activityData") String activityDataJson) throws JsonProcessingException {
 
-        // 解析 JSON
-        ObjectMapper objectMapper = new ObjectMapper();
-        ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
+    @PostMapping("/uploadFile")
+    public Result uploadFile(@RequestParam("file") MultipartFile file,
+                             @RequestParam Integer sort, @RequestParam Integer activityId){
 
         try{
-            int newId = activityService.uploadFile(file,activityDTO.getActivityId(),activityDTO.getFileSort());
+            int newId = activityService.uploadFile(file,activityId,sort);
             if (newId != 0){
-                return Result.success(newId);
+                // 返回文件的所有信息
+                ActivityFiles activityFiles = activityService.getById(newId);
+                return Result.success(activityFiles);
             }else {
                 return Result.error("文件上传失败");
             }
@@ -196,9 +179,8 @@ public class ActivityController {
 
     }
 
-    @DeleteMapping("deleteFileById/{id}")
-    @Transactional(rollbackFor = Exception.class)
-    public Result deleteFileById(@PathVariable("fileId") Integer fileId){
+    @DeleteMapping("deleteFileById")
+    public Result deleteFileById(@RequestParam Integer fileId){
         try {
             activityService.deleteFile(fileId);
             return Result.success();
@@ -208,30 +190,28 @@ public class ActivityController {
     }
 
     @PostMapping("/update")
-    public Result update(@RequestPart("activityData") String activityDataJson) throws JsonProcessingException {
-        // 解析 JSON
-        ObjectMapper objectMapper = new ObjectMapper();
-        ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
+    public Result update(@RequestBody ActivityDTO activityDTO) {
+        User currentUser = TokenUtils.getCurrentUser();
         try {
-
             // 更新activity表
-            activityService.update(activityDTO);;
-
+            activityService.update(activityDTO,currentUser.getId());;
             // 获取 news 数据并更新
-            List<ActivityCreateDTO.NewsItem> newsList = activityDTO.getNews();
+            List<ActivityDTO.NewsItem> newsList = activityDTO.getNews();
             if (newsList != null) {
                 // 先删除旧数据
                 activityService.deleteNewsByActivityId(activityDTO.getActivityId());
                 // 遍历newsList 插入新数据
-                for (ActivityCreateDTO.NewsItem newsItem : newsList) {
-                    String platform = newsItem.getPlatform();
-                    String link = newsItem.getLink();
-                    System.out.println("平台: " + platform + ", URL: " + link);
-                    // 插入到数据库...
-                    activityService.insertnews(activityDTO.getActivityId(), platform,link);
+                if (newsList != null) {
+                    // 遍历newsList 插入新数据
+                    for (ActivityDTO.NewsItem newsItem : newsList) {
+                        String platform = newsItem.getPlatform();
+                        String link = newsItem.getLink();
+                        // 插入到数据库...
+                        activityService.insertnews(activityDTO.getActivityId(), platform,link);
+                    }
                 }
             }
-            return Result.success();
+            return Result.success("更新成功");
         }catch (Exception e){
             return Result.error("更新失败");
         }
@@ -241,33 +221,56 @@ public class ActivityController {
 
     @AuthAccess
     @DeleteMapping("/deleteById")
-    public Result delete(@PathVariable ActivityCreateDTO activityCreateDTO) {
+    public Result delete(@PathVariable ActivityDTO activityDTO) {
 
         // 解析 JSON
         //ObjectMapper objectMapper = new ObjectMapper();
         //ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
 
         // 删除活动记录
-        activityService.deleteActivityById(activityCreateDTO.getActivityId(),activityCreateDTO.getTitle());
+        activityService.deleteActivityById(activityDTO.getActivityId(), activityDTO.getTitle());
 
         // 删除与该活动相关的新闻记录
-        activityService.deleteNewsByActivityId(activityCreateDTO.getActivityId());
+        activityService.deleteNewsByActivityId(activityDTO.getActivityId());
 
         // 删除与该活动相关的文件记录
-        activityService.deleteFilesByActivityId(activityCreateDTO.getActivityId());
+        activityService.deleteFilesByActivityId(activityDTO.getActivityId());
 
         return Result.success();
     }
 
 
-    @AuthAccess
-    @GetMapping("/queryByCreateId")//管理员查询用户列表
-    public Result query(@RequestParam Integer createId) {
+    @GetMapping("/queryByCreateId") // 查询用户活动列表
+    public Result query(@RequestBody ActivityDTO activityDTO,
+                        @RequestParam(defaultValue = "1") int pageNum,
+                        @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("用户未登录");
+            }
+            PageInfo<Activity> activityList = activityService.queryByCreateId(currentUser.getId(),activityDTO,pageNum,pageSize);
+            System.out.println(activityList);
+            return Result.success(activityList);
+        } catch (Exception e) {
+            log.error("查询用户活动列表失败", e);
+            return Result.error("查询失败");
+        }
+    }
 
-        PageInfo<Activity> ActivityList = activityService.queryByCreateId(createId);
-        return Result.success(ActivityList);
+    @PostMapping("/submitActivity")
+    public Result submitActivity(@RequestBody ActivityDTO activityDTO) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            activityService.submitActivity(activityDTO,currentUser.getId());
+            return Result.success("保存并提交成功");
+        } catch (Exception e){
+            return Result.error("保存并提交失败");
+        }
 
     }
+
+
 
 
 

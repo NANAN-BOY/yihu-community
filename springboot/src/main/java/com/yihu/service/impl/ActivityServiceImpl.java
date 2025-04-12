@@ -1,18 +1,16 @@
 package com.yihu.service.impl;
 
 import cn.hutool.core.io.FileUtil;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yihu.dto.ActivityCreateDTO;
+import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
 import com.yihu.entity.ActivityNews;
-import com.yihu.entity.File;
 import com.yihu.mapper.ActivityFilesMapper;
 import com.yihu.mapper.ActivityMapper;
 import com.yihu.mapper.ActivityNewsMapper;
-import com.yihu.mapper.FileMapper;
 import com.yihu.service.ActivityService;
-import com.yihu.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,10 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.HexFormat;
 
 @Slf4j
 @Service
@@ -44,14 +40,14 @@ public class ActivityServiceImpl implements ActivityService {
     private ActivityNewsMapper activityNewsMapper;
 
     @Override
-    public int create(ActivityCreateDTO activityCreateDTO) {
+    public int create(ActivityDTO activityDTO) {
         Activity activity = new Activity();
-        activity.setTitle(activityCreateDTO.getTitle());
-        activity.setNoticeContent(activityCreateDTO.getNoticeContent());
-        activity.setStaffCount(activityCreateDTO.getStaffCount());
-        activity.setVolunteerCount(activityCreateDTO.getVolunteerCount());
-        activity.setServiceObjectCount(activityCreateDTO.getServiceObjectCount());
-        activity.setStatus(activityCreateDTO.getStatus());
+        activity.setTitle(activityDTO.getTitle());
+        activity.setNoticeContent(activityDTO.getNoticeContent());
+        activity.setStaffCount(activityDTO.getStaffCount());
+        activity.setVolunteerCount(activityDTO.getVolunteerCount());
+        activity.setServiceObjectCount(activityDTO.getServiceObjectCount());
+        activity.setStatus(activityDTO.getStatus());
         activity.setDelFlag("N");
         activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         activity.setUpdateById(1);
@@ -78,8 +74,9 @@ public class ActivityServiceImpl implements ActivityService {
         activityFiles.setFileUrl(storagePath);
         activityFiles.setDelFlag("N");
 
+        activityFilesMapper.insert(activityFiles);
         //返回新增数据的id
-        return activityFilesMapper.insert(activityFiles);
+        return activityFiles.getId();
     }
 
     @Override
@@ -125,13 +122,14 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public int addActivity() {
+    public int addActivity(Integer userId) {
         Activity activity = new Activity();
+        activity.setStatus(0);
         activity.setDelFlag("N");
         activity.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setCreateById(1);
+        activity.setCreateById(userId);
         activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setUpdateById(1);
+        activity.setUpdateById(userId);
 
         activityMapper.create(activity);
 
@@ -162,7 +160,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void update(ActivityCreateDTO activityDTO) {
+    public void update(ActivityDTO activityDTO, Integer userId) {
         Activity activity = new Activity();
         activity.setId(activityDTO.getActivityId());
         activity.setTitle(activityDTO.getTitle());
@@ -170,19 +168,32 @@ public class ActivityServiceImpl implements ActivityService {
         activity.setStaffCount(activityDTO.getStaffCount());
         activity.setVolunteerCount(activityDTO.getVolunteerCount());
         activity.setServiceObjectCount(activityDTO.getServiceObjectCount());
-        activity.setStatus(activityDTO.getStatus());
-        activity.setDelFlag("N");
-
         activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setUpdateById(1);
+        activity.setUpdateById(userId);
 
         activityMapper.update(activity);
 
     }
 
     @Override
-    public PageInfo<Activity> queryByCreateId(Integer createId) {
-        return activityMapper.queryByCreateId(createId);
+    public PageInfo<Activity> queryByCreateId(Integer createId, ActivityDTO activityDTO,int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(activityMapper.queryByCreateId(createId,activityDTO));
+    }
+
+    @Override
+    public void submitActivity(ActivityDTO activityDTO, Integer id) {
+        Activity activity = new Activity();
+        activity.setStatus(1);
+        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setUpdateById(id);
+        activity.setId(activityDTO.getActivityId());
+        activityMapper.submit(activity);
+    }
+
+    @Override
+    public ActivityFiles getById(int newId) {
+        return activityFilesMapper.findById(newId);
     }
 
 

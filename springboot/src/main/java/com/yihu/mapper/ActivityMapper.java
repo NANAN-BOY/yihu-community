@@ -3,8 +3,11 @@ package com.yihu.mapper;
 
 
 import com.github.pagehelper.PageInfo;
+import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.File;
+
+import java.util.List;
 
 public interface ActivityMapper {
     int create(Activity activity);
@@ -14,5 +17,7 @@ public interface ActivityMapper {
 
     void update(Activity activity);
 
-    PageInfo<Activity> queryByCreateId(Integer createId);
+    List<Activity> queryByCreateId(Integer createId, ActivityDTO activityDTO);
+
+    void submit(Activity activity);
 }

@@ -12,6 +12,7 @@ import com.yihu.entity.User;
 import com.yihu.service.ActivityService;
 import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -122,7 +123,7 @@ public class ActivityController {
 
 
     @GetMapping("/queryByCreateId") // 查询用户活动列表
-    public Result query(@RequestBody ActivityDTO activityDTO,
+    public Result queryByCreateId(@RequestParam(required = false) String title,
                         @RequestParam(defaultValue = "1") int pageNum,
                         @RequestParam(defaultValue = "10") int pageSize) {
         try {
@@ -130,7 +131,7 @@ public class ActivityController {
             if (currentUser == null) {
                 return Result.error("用户未登录");
             }
-            PageInfo<Activity> activityList = activityService.queryByCreateId(currentUser.getId(),activityDTO,pageNum,pageSize);
+            PageInfo<Activity> activityList = activityService.queryByCreateId(currentUser.getId(),title,pageNum,pageSize);
             System.out.println(activityList);
             return Result.success(activityList);
         } catch (Exception e) {

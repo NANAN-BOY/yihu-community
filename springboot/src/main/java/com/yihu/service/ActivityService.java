@@ -38,7 +38,7 @@ public interface ActivityService {
 
     void update(ActivityDTO activityDTO, Integer userId);
 
-    PageInfo<Activity> queryByCreateId(Integer createId, ActivityDTO activityDTO,int pageNum, int pageSize);
+    PageInfo<Activity> queryByCreateId(Integer createId, String title,int pageNum, int pageSize);
 
     void submitActivity(ActivityDTO activityDTO, Integer id);
 

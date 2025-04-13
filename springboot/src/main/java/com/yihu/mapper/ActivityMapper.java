@@ -17,7 +17,7 @@ public interface ActivityMapper {
 
     void update(Activity activity);
 
-    List<Activity> queryByCreateId(Integer createId, ActivityDTO activityDTO);
+    List<Activity> queryByCreateId(Activity activity);
 
     void submit(Activity activity);
 

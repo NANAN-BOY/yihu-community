@@ -164,9 +164,12 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public PageInfo<Activity> queryByCreateId(Integer createId, ActivityDTO activityDTO,int pageNum, int pageSize) {
+    public PageInfo<Activity> queryByCreateId(Integer createId, String title,int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
-        return new PageInfo<>(activityMapper.queryByCreateId(createId,activityDTO));
+        Activity activity = new Activity();
+        activity.setCreateById(createId);
+        activity.setTitle(title);
+        return new PageInfo<>(activityMapper.queryByCreateId(activity));
     }
 
     @Override

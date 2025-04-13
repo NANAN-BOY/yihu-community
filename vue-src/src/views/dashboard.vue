@@ -215,8 +215,8 @@ import user2ActivityTemplateManagement
 import user2SocialOrganizationManagement
   from '../components/user2component/SocialOrganizationManagement/SocialOrganizationManagement.vue';
 //User3Component
-import user3ProjectManagement from '../components/user3component/ProjectManagement/user3ProjectManagement.vue';
 import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
+import ActivityManagement from '../components/user3component/ProjectManagement/ActivityManagement/ActivityManagement.vue'
 
 //User4Component
 import ReceiveOrder from '../components/user4component/ReceiveOrder/ReceiveOrder.vue';
@@ -254,7 +254,7 @@ const menus = [
   {role: 2, index: '2-4', icon: UserFilled, title: '社会组织管理'},
   {role: 2, index: '2-5', icon: Document, title: '关于我的信息'},
 
-  {role: 3, index: '3-1', icon: Document, title: '项目管理'},
+  {role: 3, index: '3-1', icon: Document, title: '活动管理'},
   {role: 3, index: '3-2', icon: StarFilled, title: '专家定制'},
   {role: 3, index: '3-3', icon: Document, title: '关于我的信息'},
 
@@ -300,7 +300,7 @@ const handleSelect = (index) => {
       currentComponent.value = aboutMyInfo;
       break;
     case '3-1':
-      currentComponent.value = user3ProjectManagement;
+      currentComponent.value = ActivityManagement;
       break;
     case '3-2':
       currentComponent.value = ExpertCustomization;
@@ -392,9 +392,7 @@ const checkExpertInvite = () => {
       }
     }
 
-  }).then((action) => {
   })
-
 }
 //MyVIPArea
 const MembershipStatusLoading = ref(false);
@@ -487,13 +485,13 @@ const BuyYiHu_Vip = (type) => {
             openPayInfoDialogVisible();
             BuyYiHuLoading.value = false;
           } else {
-            throw new Error(response.data.msg || '购买失败');
             BuyYiHuLoading.value = false;
+            throw new Error(response.data.msg || '购买失败');
           }
         }
         else{
-          throw new Error(response.data.msg || '购买失败');
           BuyYiHuLoading.value = false;
+          throw new Error(response.data.msg || '购买失败');
         }
       })
       .catch(error => {
@@ -523,7 +521,6 @@ const CheckPayStatus = () => {
             closeBuyVIPAreaDialogVisible();
             checkMembershipStatus();
             openVIPAreaDialogVisible();
-            return;
           } else {
             ElMessage.error('没有查询到您的支付信息！');
           }
@@ -590,6 +587,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  text-align: center;
 }
 
 .right-menu {

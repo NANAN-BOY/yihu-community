@@ -3,6 +3,8 @@ package com.yihu.mapper;
 
 import com.yihu.entity.ActivityFiles;
 
+import java.util.List;
+
 public interface ActivityFilesMapper {
     int insert(ActivityFiles activityFiles);
 
@@ -12,4 +14,6 @@ public interface ActivityFilesMapper {
     ActivityFiles findById(Integer id);
 
     void deleteById(Integer id);
+
+    List<ActivityFiles> findByActivityId(Integer activityId);
 }

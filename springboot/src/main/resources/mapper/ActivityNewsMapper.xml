@@ -10,11 +10,18 @@
     </insert>
 
 
-    <!-- 根据活动ID删除新闻记录 -->
+
     <delete id="deleteByActivityId" parameterType="java.lang.Integer">
-        DELETE FROM activity_news
+        update activity_news
+        SET del_flag = 'Y'
         WHERE activity_id = #{activityId}
     </delete>
+
+    <select id="findByActivityId" parameterType="java.lang.Integer" resultType="com.yihu.entity.ActivityNews">
+        SELECT * FROM activity_news
+        WHERE activity_id = #{activityId} AND del_flag = 'N'
+    </select>
+
 
 
 </mapper>

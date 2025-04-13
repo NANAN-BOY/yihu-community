@@ -13,11 +13,13 @@ public interface ActivityMapper {
     int create(Activity activity);
 
     // 根据活动ID删除活动记录
-    void deleteById(Integer id);
+    void deleteById(Activity activity);
 
     void update(Activity activity);
 
     List<Activity> queryByCreateId(Integer createId, ActivityDTO activityDTO);
 
     void submit(Activity activity);
+
+    Activity findById(Integer id);
 }

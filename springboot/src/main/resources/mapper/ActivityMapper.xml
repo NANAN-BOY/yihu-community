@@ -14,10 +14,13 @@
     </insert>
 
 
-    <!-- 根据活ID删除记录 -->
-    <delete id="deleteById" parameterType="java.lang.Integer">
-        DELETE FROM activity
-        WHERE id = #{id}
+
+    <delete id="deleteById" parameterType="com.yihu.entity.Activity">
+        update activity
+        set del_flag = 'Y',
+            update_time = #{updateTime},
+            update_by_id = #{updateById}
+        where id = #{id}
     </delete>
 
     <update id="update" parameterType="com.yihu.entity.Activity">
@@ -29,7 +32,7 @@
             <if test="volunteerCount != null">volunteer_count = #{volunteerCount},</if>
             <if test="serviceObjectCount != null">service_object_count = #{serviceObjectCount},</if>
             update_time = #{updateTime},
-            update_by_id = #{updateById},
+            update_by_id = #{updateById}
         </set>
         where id = #{id}
     </update>
@@ -51,6 +54,12 @@
         update_by_id = #{updateById}
         where id = #{id}
     </update>
+
+    <select id="findById" resultType="com.yihu.entity.Activity">
+        SELECT *
+        FROM activity
+        WHERE id = #{id}
+    </select>
 
 
 </mapper>

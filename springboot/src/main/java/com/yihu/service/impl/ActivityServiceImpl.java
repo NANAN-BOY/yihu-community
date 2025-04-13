@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -39,24 +40,6 @@ public class ActivityServiceImpl implements ActivityService {
     @Autowired
     private ActivityNewsMapper activityNewsMapper;
 
-    @Override
-    public int create(ActivityDTO activityDTO) {
-        Activity activity = new Activity();
-        activity.setTitle(activityDTO.getTitle());
-        activity.setNoticeContent(activityDTO.getNoticeContent());
-        activity.setStaffCount(activityDTO.getStaffCount());
-        activity.setVolunteerCount(activityDTO.getVolunteerCount());
-        activity.setServiceObjectCount(activityDTO.getServiceObjectCount());
-        activity.setStatus(activityDTO.getStatus());
-        activity.setDelFlag("N");
-        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setUpdateById(1);
-
-        activityMapper.create(activity);
-
-        //返回新增数据的id
-        return activity.getId();
-    }
 
     @Override
     public int uploadFile(MultipartFile file, Integer activityId,Integer sort) throws IOException, NoSuchAlgorithmException, IOException, NoSuchAlgorithmException {
@@ -104,12 +87,17 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void deleteActivityById(Integer id,String title) {
+    public void deleteActivityById(Integer id,Integer userId) {
         // 删除活动记录
-        activityMapper.deleteById(id);
+        Activity activity = new Activity();
+        activity.setId(id);
+        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setUpdateById(userId);
 
-        // 数据库全部删除完成，删除title文件夹
-        Path titleDir = Paths.get(storageDir, title);
+        activityMapper.deleteById(activity);
+
+        // 数据库全部删除完成，删除活动id文件夹
+        Path titleDir = Paths.get(storageDir, id.toString());
         try {
             if (Files.exists(titleDir)) {
                 FileUtil.del(titleDir.toFile()); // 使用Hutool工具类删除文件夹
@@ -196,6 +184,21 @@ public class ActivityServiceImpl implements ActivityService {
         return activityFilesMapper.findById(newId);
     }
 
+    @Override
+    public Activity getActivityById(Integer id) {
+        return activityMapper.findById(id);
+    }
+
+    @Override
+    public List<ActivityFiles> getFilesByActivityId(Integer activityId) {
+        return activityFilesMapper.findByActivityId(activityId);
+    }
+
+    @Override
+    public List<ActivityNews> getNewsByActivityId(Integer activityId) {
+        return activityNewsMapper.findByActivityId(activityId);
+    }
+
 
     /**
      * 保存文件到存储目录
@@ -206,13 +209,14 @@ public class ActivityServiceImpl implements ActivityService {
                 .substring(file.getOriginalFilename().lastIndexOf("."));
 
         // 2. 根据sort决定子目录名称
-        String subDir = switch(sort) {
-            case 2 -> "签到";
-            case 3 -> "活动过程";
-            case 4 -> "纸质新闻稿";
-            case 5 -> "附件";
+        String subDir = switch (sort) {
+            case 1, 2, 3 -> "签到"; // sort 为 1、2、3 时，子目录为 "签到"
+            case 4 -> "活动过程";    // sort 为 4 时，子目录为 "活动过程"
+            case 5 -> "纸质新闻稿";  // sort 为 5 时，子目录为 "纸质新闻稿"
+            case 6 -> "附件";       // sort 为 6 时，子目录为 "附件"
             default -> throw new IllegalArgumentException("非法的sort值: " + sort);
         };
+
 
         // 3. 构建完整存储路径（格式：根目录/活动id/子目录/）
         Path targetDir = Paths.get(storageDir, activityId.toString(), subDir);

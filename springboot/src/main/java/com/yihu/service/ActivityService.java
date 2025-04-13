@@ -4,15 +4,16 @@ import com.github.pagehelper.PageInfo;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
+import com.yihu.entity.ActivityNews;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 
 public interface ActivityService {
 
-    int create(ActivityDTO activityDTO);
 
     /**
      * 上传文件
@@ -29,7 +30,7 @@ public interface ActivityService {
 
     void deleteNewsByActivityId(Integer activityId);
 
-    void deleteActivityById(Integer id,String title);
+    void deleteActivityById(Integer id,Integer userId);
 
     int addActivity(Integer userId);
 
@@ -42,4 +43,10 @@ public interface ActivityService {
     void submitActivity(ActivityDTO activityDTO, Integer id);
 
     ActivityFiles getById(int newId);
+
+    Activity getActivityById(Integer activityId);
+
+    List<ActivityFiles> getFilesByActivityId(Integer activityId);
+
+    List<ActivityNews> getNewsByActivityId(Integer id);
 }

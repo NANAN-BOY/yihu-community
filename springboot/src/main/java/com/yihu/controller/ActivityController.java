@@ -4,8 +4,10 @@ import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.dto.ActivityDTO;
+import com.yihu.dto.ActivityQueryDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
+import com.yihu.entity.ActivityNews;
 import com.yihu.entity.User;
 import com.yihu.service.ActivityService;
 import com.yihu.utils.TokenUtils;
@@ -27,126 +29,6 @@ public class ActivityController {
     public ActivityController(ActivityService activityService) {
         this.activityService = activityService;
     }
-
-    /**
-     * 文件上传接口
-     *
-     * // 1. 构造 JSON 数据
-     * const activityData = {
-     *     status: 1,
-     *     title: "志愿活动",
-     *     noticeContent: "活动详情...",
-     *     staffCount: 10,
-     *     volunteerCount: 50,
-     *     serviceObjectCount: 100,
-     *     news: [  // 包含多个平台链接
-     *         { platform: "知乎", url: "https://www.zhihu.com" },
-     *         { platform: "微信", url: "https://weixin.qq.com" }
-     *     ]
-     * };
-     *
-     * // 2. 构造 FormData（如果有文件上传）
-     * const formData = new FormData();
-     * formData.append("activityData", JSON.stringify(activityData)); // JSON 数据
-     * // formData.append("files", file1); // 如果有文件，可以这样添加
-     *
-     * // 3. 发送请求
-     * axios.post("/api/activity/create", formData, {
-     *     headers: { "Content-Type": "multipart/form-data" }
-     * });
-     */
-    /*
-    *
-
-    @AuthAccess
-    @PostMapping("/create")
-    @Transactional(rollbackFor = Exception.class)
-    public Result create(@RequestPart("signfiles") MultipartFile[] signfiles,
-                         @RequestPart("activityfiles") MultipartFile[] activityfiles,
-                         @RequestPart("newsfiles") MultipartFile[] newsfiles,
-                         @RequestPart("attachmentfile") MultipartFile attachmentfile,
-                         @RequestPart("activityData") String activityDataJson) throws JsonProcessingException {
-
-
-        // 解析 JSON
-        ObjectMapper objectMapper = new ObjectMapper();
-        ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
-
-        // 1. 删除旧数据（在创建新活动之前）
-        // 假设 activityDTO 中包含活动的唯一标识（如 activityId）
-        if (activityDTO.getId() != null) {
-            // 更新activity记录
-            activityService.deleteFilesByActivityId(activityDTO.getId());
-
-            // 删除与该活动相关的新闻记录
-            activityService.deleteNewsByActivityId(activityDTO.getId());
-
-            // 删除活动记录（如果需要）
-            activityService.deleteActivityById(activityDTO.getId(),activityDTO.getTitle());
-        }
-
-        // 2. 创建新活动
-
-        try {
-            int activityId = activityService.create(activityDTO);;
-            if (activityId != 0){
-                // 遍历签到照片
-                for (MultipartFile file : signfiles) {
-                    if (!file.isEmpty()) {
-                        // 保存文件到本地或云存储...
-                        activityService.uploadFile(file,activityId,2,activityDTO.getTitle());
-                    }
-                }
-                // 遍历活动过程照片
-                for (MultipartFile file : activityfiles) {
-                    if (!file.isEmpty()) {
-                        // 保存文件到本地或云存储...
-                        activityService.uploadFile(file,activityId,3,activityDTO.getTitle());
-                    }
-                }
-                // 遍历纸质新闻稿
-                if (newsfiles != null) {
-                    for (MultipartFile file : newsfiles) {
-                        if (!file.isEmpty()) {
-                            // 保存文件到本地或云存储...
-                            activityService.uploadFile(file,activityId,4,activityDTO.getTitle());
-                        }
-                    }
-                }
-
-                // 判断附件是否有附件
-                if (!attachmentfile.isEmpty()) {
-                    String fileName = attachmentfile.getOriginalFilename();
-                    System.out.println("接收到文件: " + fileName);
-                    // 保存文件到本地或云存储...
-                    activityService.uploadFile(attachmentfile,activityId,6,activityDTO.getTitle());
-                }
-
-                // 获取 news 数据并遍历
-                List<ActivityCreateDTO.NewsItem> newsList = activityDTO.getNews();
-                if (newsList != null) {
-                    for (ActivityCreateDTO.NewsItem newsItem : newsList) {
-                        String platform = newsItem.getPlatform();
-                        String link = newsItem.getLink();
-                        System.out.println("平台: " + platform + ", URL: " + link);
-                        // 存储到数据库...
-                        activityService.insertnews(activityId, platform,link);
-                    }
-                }
-
-
-                return Result.success();
-            }else {
-                return Result.error("保存失败");
-            }
-        } catch (Exception e) {
-            return Result.error("保存失败");
-        }
-
-    }
-    *
-    * */
-
 
 
     @PostMapping("/addActivity")
@@ -220,23 +102,22 @@ public class ActivityController {
 
 
     @AuthAccess
-    @DeleteMapping("/deleteById")
-    public Result delete(@PathVariable ActivityDTO activityDTO) {
+    @DeleteMapping("/deleteById") // 表数据不删除，存储的文件需要删除
+    public Result delete(@RequestParam Integer activityId) {
 
-        // 解析 JSON
-        //ObjectMapper objectMapper = new ObjectMapper();
-        //ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
-
-        // 删除活动记录
-        activityService.deleteActivityById(activityDTO.getActivityId(), activityDTO.getTitle());
+        User currentUser = TokenUtils.getCurrentUser();
 
         // 删除与该活动相关的新闻记录
-        activityService.deleteNewsByActivityId(activityDTO.getActivityId());
+        activityService.deleteNewsByActivityId(activityId);
 
         // 删除与该活动相关的文件记录
-        activityService.deleteFilesByActivityId(activityDTO.getActivityId());
+        activityService.deleteFilesByActivityId(activityId);
 
-        return Result.success();
+
+        // 删除活动记录
+        activityService.deleteActivityById(activityId, currentUser.getId());
+
+        return Result.success("删除活动成功");
     }
 
 
@@ -269,6 +150,32 @@ public class ActivityController {
         }
 
     }
+
+    @GetMapping("/getActivityById")
+    public Result getActivityById(@RequestParam Integer activityId) {
+        try {
+            // 查询活动基本信息
+            Activity activity = activityService.getActivityById(activityId);
+
+            // 查询活动相关文件列表
+            List<ActivityFiles> files = activityService.getFilesByActivityId(activityId);
+
+            // 查询活动相关新闻列表
+            List<ActivityNews> news = activityService.getNewsByActivityId(activityId);
+
+            // 封装到 ActivityDetailDTO
+            ActivityQueryDTO activityQueryDTO = new ActivityQueryDTO();
+            activityQueryDTO.setActivity(activity);
+            activityQueryDTO.setFiles(files);
+            activityQueryDTO.setNews(news);
+
+            return Result.success(activityQueryDTO);
+        } catch (Exception e) {
+            log.error("获取活动详情失败", e);
+            return Result.error("获取活动详情失败");
+        }
+    }
+
 
 
 

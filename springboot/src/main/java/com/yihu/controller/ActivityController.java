@@ -5,18 +5,25 @@ import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.dto.ActivityQueryDTO;
-import com.yihu.entity.Activity;
-import com.yihu.entity.ActivityFiles;
-import com.yihu.entity.ActivityNews;
-import com.yihu.entity.User;
+import com.yihu.entity.*;
 import com.yihu.service.ActivityService;
 import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -61,6 +68,96 @@ public class ActivityController {
         }
 
     }
+
+    /**
+     * 文件下载接口
+     */
+    @AuthAccess
+    @GetMapping("/download/{id}")
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Integer id) {
+        try {
+            // 获取文件信息
+            ActivityFiles activityFilesEntity = activityService.getFileById(id);
+            if (activityFilesEntity == null) {
+                log.error("File not found: {}", id);
+                return ResponseEntity.notFound().build();
+
+            }
+
+            // 获取文件路径
+            java.io.File file = new java.io.File(activityFilesEntity.getFileUrl());
+            if (!file.exists()) {
+                log.error("File not found at path: {}", activityFilesEntity.getFileUrl());
+                return ResponseEntity.notFound().build();
+            }
+
+            // 创建 InputStreamResource
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+
+            // 3. 获取文件名和扩展名
+            String fileName = activityFilesEntity.getName();
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+
+            // 4. 验证文件类型
+            boolean isValid = false;
+            String mimeType = "application/octet-stream"; // 默认类型
+            switch (extension) {
+                case "jpg":
+                case "jpeg":
+                    mimeType = "image/jpeg";
+                    isValid = true;
+                    break;
+                case "png":
+                    mimeType = "image/png";
+                    isValid = true;
+                    break;
+                case "zip":
+                    mimeType = "application/zip";
+                    isValid = true;
+                    break;
+                case "rar":
+                    mimeType = "application/x-rar-compressed";
+                    isValid = true;
+                    break;
+                case "7z":
+                    mimeType = "application/x-7z-compressed";
+                    isValid = true;
+                    break;
+                default:
+                    // 不支持的文件类型
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(new InputStreamResource(new ByteArrayInputStream("不支持的文件类型".getBytes())));
+            }
+
+            // 5. 构建响应
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""
+                            + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()) + "\"")
+                    .contentType(MediaType.valueOf(mimeType))
+                    .body(resource);
+
+        } catch (FileNotFoundException e) {
+            log.error("File not found: {}", id);
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error downloading file: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @AuthAccess
+    @GetMapping("/getFileInformation/{id}")
+    public Result getFileInformation(@PathVariable Integer id) {
+        ActivityFiles activityFiles = activityService.getFileById(id);
+        if(activityFiles != null){
+            return Result.success(activityFiles);
+        }
+        else {
+            return Result.error("文件不存在");
+        }
+    }
+
 
     @DeleteMapping("deleteFileById")
     public Result deleteFileById(@RequestParam Integer fileId){
@@ -131,9 +228,17 @@ public class ActivityController {
             if (currentUser == null) {
                 return Result.error("用户未登录");
             }
-            PageInfo<Activity> activityList = activityService.queryByCreateId(currentUser.getId(),title,pageNum,pageSize);
-            System.out.println(activityList);
-            return Result.success(activityList);
+            if (currentUser.getRole() == 1){
+                // 管理员查询 查询所有已经提交的
+                PageInfo<Activity> activityList = activityService.queryAllSubmited(title,pageNum,pageSize);
+                return Result.success(activityList);
+            }else{
+                // 用户查询 查询当前用户未删除的
+                PageInfo<Activity> activityList = activityService.queryByCreateId(currentUser.getId(),title,pageNum,pageSize);
+                System.out.println(activityList);
+                return Result.success(activityList);
+            }
+
         } catch (Exception e) {
             log.error("查询用户活动列表失败", e);
             return Result.error("查询失败");
@@ -174,6 +279,18 @@ public class ActivityController {
         } catch (Exception e) {
             log.error("获取活动详情失败", e);
             return Result.error("获取活动详情失败");
+        }
+    }
+
+    @PostMapping("/withdrawSubmission")  //管理员撤回提交申请
+    public Result withdrawSubmission(@RequestParam Integer activityId) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            activityService.withdrawSubmission(activityId, currentUser.getId());
+            return Result.success("撤回提交成功");
+        } catch (Exception e) {
+            log.error("撤回提交失败", e);
+            return Result.error("撤回提交失败");
         }
     }
 

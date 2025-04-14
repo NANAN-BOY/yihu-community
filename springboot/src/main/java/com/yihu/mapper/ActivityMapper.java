@@ -19,7 +19,13 @@ public interface ActivityMapper {
 
     List<Activity> queryByCreateId(Activity activity);
 
+    List<Activity> queryAllSubmited(Activity activity);
+
     void submit(Activity activity);
 
     Activity findById(Integer id);
+
+    void withdrawSubmission(Activity activity);
+
+
 }

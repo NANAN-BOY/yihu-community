@@ -38,7 +38,11 @@ public interface ActivityService {
 
     void update(ActivityDTO activityDTO, Integer userId);
 
+    ActivityFiles getFileById(Integer id);
+
     PageInfo<Activity> queryByCreateId(Integer createId, String title,int pageNum, int pageSize);
+
+    PageInfo<Activity> queryAllSubmited(String title, int pageNum, int pageSize);
 
     void submitActivity(ActivityDTO activityDTO, Integer id);
 
@@ -49,4 +53,7 @@ public interface ActivityService {
     List<ActivityFiles> getFilesByActivityId(Integer activityId);
 
     List<ActivityNews> getNewsByActivityId(Integer id);
+
+    void withdrawSubmission(Integer activityId, Integer userId);
+
 }

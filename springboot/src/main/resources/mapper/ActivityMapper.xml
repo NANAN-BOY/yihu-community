@@ -61,5 +61,22 @@
         WHERE id = #{id} AND del_flag = 'N'
     </select>
 
+    <update id="withdrawSubmission" parameterType="com.yihu.entity.Activity">
+        update activity
+        set status = 0,
+        update_time = #{updateTime},
+        update_by_id = #{updateById}
+        where id = #{id}
+    </update>
+
+    <select id="queryAllSubmited" parameterType="com.yihu.entity.Activity">
+        SELECT *
+        FROM activity
+        WHERE status = 1 AND del_flag = 'N'
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+    </select>
+
 
 </mapper>

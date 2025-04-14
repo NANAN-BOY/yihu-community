@@ -164,12 +164,26 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public ActivityFiles getFileById(Integer id) {
+        return activityFilesMapper.findById(id);
+    }
+
+    @Override
     public PageInfo<Activity> queryByCreateId(Integer createId, String title,int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         Activity activity = new Activity();
+
         activity.setCreateById(createId);
         activity.setTitle(title);
         return new PageInfo<>(activityMapper.queryByCreateId(activity));
+    }
+
+    @Override
+    public PageInfo<Activity> queryAllSubmited(String title, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        Activity activity = new Activity();
+        activity.setTitle(title);
+        return new PageInfo<>(activityMapper.queryAllSubmited(activity));
     }
 
     @Override
@@ -200,6 +214,16 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public List<ActivityNews> getNewsByActivityId(Integer activityId) {
         return activityNewsMapper.findByActivityId(activityId);
+    }
+
+    @Override
+    public void withdrawSubmission(Integer activityId, Integer userId) {
+        Activity activity = new Activity();
+        activity.setId(activityId);
+        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        activity.setUpdateById(userId);
+
+        activityMapper.withdrawSubmission(activity);
     }
 
 

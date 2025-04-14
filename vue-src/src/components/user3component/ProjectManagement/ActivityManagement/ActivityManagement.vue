@@ -107,18 +107,22 @@ const activityForm = reactive({
   articleUrl: '',
   newsFiles: []
 })
-//OldData
-//step 1 data
-const activityId_Old = ref(null)
-const activityTitle_Old = ref(null)
-const activityNoticeContent_Old = ref(null)
-//step 2 data
-const activityStaffCount_Old = ref(null)
-const activityVolunteerCount_Old = ref(null)
-const activityServiceObjectCount_Old = ref(null)
-//File
-const activityFiles_Old = ref([])
-const activityNews_Old = ref([])
+// 统一管理所有旧数据的对象
+const oldData = {
+  // Step 1 Data
+  activityId_Old: ref(null),
+  activityTitle_Old: ref(null),
+  activityNoticeContent_Old: ref(null),
+
+  // Step 2 Data
+  activityStaffCount_Old: ref(null),
+  activityVolunteerCount_Old: ref(null),
+  activityServiceObjectCount_Old: ref(null),
+
+  // File Data
+  activityFiles_Old: ref([]),
+  activityNews_Old: ref([]),
+};
 //NewData
 //step 1 data
 const activityId = ref(null)
@@ -132,23 +136,25 @@ const activityServiceObjectCount = ref(null)
 const activityFiles = ref([])
 const activityNews = ref([])
 
-
+const isChanged = (field) => {
+  return oldData[`${field}_Old`].value !== eval(field).value;
+}
 const openActivityDetail = async (id) => {
   const nowActivity = await getActivityInfo(id)
   if(nowActivity !== 0){
     //OldData
-    activityId_Old.value = id;
-    activityTitle_Old.value = nowActivity.activity.title;
-    activityNoticeContent_Old.value = nowActivity.activity.notice;
-    activityStaffCount_Old.value = nowActivity.activity.staffCount;
-    activityVolunteerCount_Old.value = nowActivity.activity.volunteerCount;
-    activityServiceObjectCount_Old.value = nowActivity.activity.serviceObjectCount;
-    activityFiles_Old.value = nowActivity.files;
-    activityNews_Old.value = nowActivity.news;
+    oldData["activityId_Old"].value = id;
+    oldData["activityTitle_Old"].value = nowActivity.activity.title;
+    oldData["activityNoticeContent_Old"].value = nowActivity.activity.notice;
+    oldData["activityStaffCount_Old"].value = nowActivity.activity.staffCount;
+    oldData["activityVolunteerCount_Old"].value = nowActivity.activity.volunteerCount;
+    oldData["activityServiceObjectCount_Old"].value = nowActivity.activity.serviceObjectCount;
+    oldData["activityFiles_Old"].value = nowActivity.files;
+    oldData["activityNews_Old"].value = nowActivity.news;
     //NewData
     activityId.value = id;
     activityTitle.value = nowActivity.activity.title;
-    activityNoticeContent.value = nowActivity.activity.notice;
+    activityNoticeContent.value = nowActivity.activity.noticeContent;
     activityStaffCount.value = nowActivity.activity.staffCount;
     activityVolunteerCount.value = nowActivity.activity.volunteerCount;
     activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
@@ -160,14 +166,14 @@ const openActivityDetail = async (id) => {
 const closeActivityDetail = ()=>{
   pageNum.value = 1;
   //OldData
-  activityId_Old.value = id;
-  activityTitle_Old.value = null;
-  activityNoticeContent_Old.value = null;
-  activityStaffCount_Old.value = null;
-  activityVolunteerCount_Old.value = null;
-  activityServiceObjectCount_Old.value = null;
-  activityFiles_Old.value = null;
-  activityNews_Old.value = null;
+  oldData["activityId_Old"].value = null;
+  oldData["activityTitle_Old"].value = null;
+  oldData["activityNoticeContent_Old"].value = null;
+  oldData["activityStaffCount_Old"].value = null;
+  oldData["activityVolunteerCount_Old"].value = null;
+  oldData["activityServiceObjectCount_Old"].value = null;
+  oldData["activityFiles_Old"].value = null;
+  oldData["activityNews_Old"].value = null;
   //NewData
   activityId.value = null;
   activityTitle.value  = null;
@@ -179,6 +185,7 @@ const closeActivityDetail = ()=>{
   activityNews.value = null;
   //step
   nowStep.value = '描述';
+  refreshActivityList();
 }
 //Get activity info
 const ActivityInfoLoading = ref(false);
@@ -207,15 +214,25 @@ const getActivityInfo = async (activityId) => {
   }
 };
 // update activity info
-const updateActivityInfo = async (paramName, paramValue) => {
+const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
   try {
     const requestBody = {
-      [paramName]: paramValue
+      activityId: activityId.value,
+      [apiParamName]: paramValue
     };
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/updateActivity`, requestBody);
+    console.log(requestBody);
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/update`, requestBody
+        , {headers: {token: store.state.token}});
     console.log(response.data);
   } catch (error) {
     console.error('API 请求失败:', error);
+  }
+  console.log(apiParamName + paramValue);
+  const key = `${constParamName}_Old`; // 动态生成键名，如 "activityId_Old"
+  if (oldData[key]) {
+    oldData[key].value = paramValue; // 更新对应的 ref 值
+  } else {
+    console.error(`旧数据字段 ${key} 不存在`);
   }
 };
 </script>
@@ -275,6 +292,11 @@ const updateActivityInfo = async (paramName, paramValue) => {
       <div v-if="nowStep === '描述'">
         <el-form-item label="活动名称" prop="activityName">
           <el-input v-model="activityTitle" placeholder="请输入活动名称" />
+          <el-button
+              v-if="isChanged('activityTitle')"
+              @click="updateActivityInfo('title','activityTitle', activityTitle)"
+          >保存修改
+          </el-button>
         </el-form-item>
         <el-form-item label="活动通知" prop="notice">
           <el-input
@@ -283,6 +305,11 @@ const updateActivityInfo = async (paramName, paramValue) => {
               :rows="4"
               placeholder="请输入活动通知内容"
           />
+          <el-button
+              v-if="isChanged('activityNoticeContent')"
+              @click="updateActivityInfo('noticeContent','activityNoticeContent', activityNoticeContent)"
+          >保存修改
+          </el-button>
         </el-form-item>
       </div>
 
@@ -292,6 +319,11 @@ const updateActivityInfo = async (paramName, paramValue) => {
         <h4 class="form-section-title">工作人员签到</h4>
         <el-form-item label="人数">
           <el-input-number v-model="activityStaffCount" :min="0" />
+          <el-button
+              v-if="isChanged('activityStaffCount')"
+              @click="updateActivityInfo('staffCount','activityStaffCount', activityStaffCount)"
+          >保存修改
+          </el-button>
         </el-form-item>
         <el-form-item label="签到照片">
           <el-upload
@@ -309,6 +341,11 @@ const updateActivityInfo = async (paramName, paramValue) => {
         <h4 class="form-section-title">志愿者签到</h4>
         <el-form-item label="人数">
           <el-input-number v-model="activityVolunteerCount" :min="0" />
+          <el-button
+              v-if="isChanged('activityVolunteerCount')"
+              @click="updateActivityInfo('volunteerCount','activityVolunteerCount', activityVolunteerCount)"
+          >保存修改
+          </el-button>
         </el-form-item>
         <el-form-item label="签到照片">
           <el-upload
@@ -326,6 +363,11 @@ const updateActivityInfo = async (paramName, paramValue) => {
         <h4 class="form-section-title">服务对象签到</h4>
         <el-form-item label="人数">
           <el-input-number v-model="activityServiceObjectCount" :min="0" />
+          <el-button
+              v-if="isChanged('activityServiceObjectCount')"
+              @click="updateActivityInfo('serviceObjectCount','activityServiceObjectCount', activityServiceObjectCount)"
+          >保存修改
+          </el-button>
         </el-form-item>
         <el-form-item label="签到照片">
           <el-upload

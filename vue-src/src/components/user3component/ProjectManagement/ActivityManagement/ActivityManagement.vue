@@ -5,6 +5,7 @@ import {Plus, Search} from "@element-plus/icons-vue";
 import {computed, reactive, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
+import CustomUpload from "./CustomUpload.vue";
 const pageNum = ref(1)
 
 
@@ -213,8 +214,10 @@ const getActivityInfo = async (activityId) => {
     ActivityInfoLoading.value = false; // 结束加载状态
   }
 };
+const updateActivityInfoLoading = ref(false);
 // update activity info
 const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
+  updateActivityInfoLoading.value = true;
   try {
     const requestBody = {
       activityId: activityId.value,
@@ -231,9 +234,11 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
   const key = `${constParamName}_Old`; // 动态生成键名，如 "activityId_Old"
   if (oldData[key]) {
     oldData[key].value = paramValue; // 更新对应的 ref 值
+    ElMessage.success("保存成功")
   } else {
     console.error(`旧数据字段 ${key} 不存在`);
   }
+  updateActivityInfoLoading.value = false;
 };
 </script>
 
@@ -243,7 +248,7 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
       <el-breadcrumb-item><strong>活动管理</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br />
-    <el-button type="primary" @click="createNewActivity()" v-loading="createNewActivityLoading">创建新活动</el-button>&nbsp;
+    <el-button :loading="createNewActivityLoading" type="primary" @click="createNewActivity()">创建新活动</el-button>&nbsp;
     <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchProjects" />
     <el-button type="primary" @click="searchProjects">
       <el-icon><Search /></el-icon>
@@ -295,6 +300,7 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           <el-button
               v-if="isChanged('activityTitle')"
               @click="updateActivityInfo('title','activityTitle', activityTitle)"
+              :loading="updateActivityInfoLoading"
           >保存修改
           </el-button>
         </el-form-item>
@@ -308,6 +314,7 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           <el-button
               v-if="isChanged('activityNoticeContent')"
               @click="updateActivityInfo('noticeContent','activityNoticeContent', activityNoticeContent)"
+              :loading="updateActivityInfoLoading"
           >保存修改
           </el-button>
         </el-form-item>
@@ -322,19 +329,16 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           <el-button
               v-if="isChanged('activityStaffCount')"
               @click="updateActivityInfo('staffCount','activityStaffCount', activityStaffCount)"
+              :loading="updateActivityInfoLoading"
           >保存修改
           </el-button>
         </el-form-item>
         <el-form-item label="签到照片">
-          <el-upload
-              v-model:file-list="activityForm.staffFiles"
-              action="#"
-              list-type="picture-card"
-              multiple
-              :auto-upload="false"
-          >
-            <el-icon><Plus /></el-icon>
-          </el-upload>
+          <CustomUpload
+              ref="uploadRef"
+              @add="handleFileAdd"
+              @remove="handleFileRemove"
+          />
         </el-form-item>
 
         <!-- 志愿者 -->
@@ -344,6 +348,7 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           <el-button
               v-if="isChanged('activityVolunteerCount')"
               @click="updateActivityInfo('volunteerCount','activityVolunteerCount', activityVolunteerCount)"
+              :loading="updateActivityInfoLoading"
           >保存修改
           </el-button>
         </el-form-item>
@@ -366,6 +371,7 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           <el-button
               v-if="isChanged('activityServiceObjectCount')"
               @click="updateActivityInfo('serviceObjectCount','activityServiceObjectCount', activityServiceObjectCount)"
+              :loading="updateActivityInfoLoading"
           >保存修改
           </el-button>
         </el-form-item>
@@ -462,4 +468,5 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
   color: #606266;
   font-size: 16px;
 }
+
 </style>

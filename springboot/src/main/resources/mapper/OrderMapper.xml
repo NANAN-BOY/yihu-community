@@ -66,7 +66,7 @@
 
     <select id="queryOrder" resultType="com.yihu.entity.Order">
         SELECT * FROM `order`
-        WHERE buyer_id = #{userId}
+        WHERE buyer_id = #{userId} AND delete_flag IS NULL
         <if test="orderQueryDTO.type != null">
             AND type = #{orderQueryDTO.type}
         </if>
@@ -81,6 +81,7 @@
         FROM `order`
         WHERE payee_id = #{userId}
           AND status = #{status}
+          AND delete_flag IS NULL
         ORDER BY create_at DESC
     </select>
 

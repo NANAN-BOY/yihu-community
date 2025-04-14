@@ -107,6 +107,19 @@ const activityForm = reactive({
   articleUrl: '',
   newsFiles: []
 })
+//OldData
+//step 1 data
+const activityId_Old = ref(null)
+const activityTitle_Old = ref(null)
+const activityNoticeContent_Old = ref(null)
+//step 2 data
+const activityStaffCount_Old = ref(null)
+const activityVolunteerCount_Old = ref(null)
+const activityServiceObjectCount_Old = ref(null)
+//File
+const activityFiles_Old = ref([])
+const activityNews_Old = ref([])
+//NewData
 //step 1 data
 const activityId = ref(null)
 const activityTitle = ref(null)
@@ -123,6 +136,16 @@ const activityNews = ref([])
 const openActivityDetail = async (id) => {
   const nowActivity = await getActivityInfo(id)
   if(nowActivity !== 0){
+    //OldData
+    activityId_Old.value = id;
+    activityTitle_Old.value = nowActivity.activity.title;
+    activityNoticeContent_Old.value = nowActivity.activity.notice;
+    activityStaffCount_Old.value = nowActivity.activity.staffCount;
+    activityVolunteerCount_Old.value = nowActivity.activity.volunteerCount;
+    activityServiceObjectCount_Old.value = nowActivity.activity.serviceObjectCount;
+    activityFiles_Old.value = nowActivity.files;
+    activityNews_Old.value = nowActivity.news;
+    //NewData
     activityId.value = id;
     activityTitle.value = nowActivity.activity.title;
     activityNoticeContent.value = nowActivity.activity.notice;
@@ -136,6 +159,16 @@ const openActivityDetail = async (id) => {
 }
 const closeActivityDetail = ()=>{
   pageNum.value = 1;
+  //OldData
+  activityId_Old.value = id;
+  activityTitle_Old.value = null;
+  activityNoticeContent_Old.value = null;
+  activityStaffCount_Old.value = null;
+  activityVolunteerCount_Old.value = null;
+  activityServiceObjectCount_Old.value = null;
+  activityFiles_Old.value = null;
+  activityNews_Old.value = null;
+  //NewData
   activityId.value = null;
   activityTitle.value  = null;
   activityNoticeContent.value  = null;
@@ -144,9 +177,10 @@ const closeActivityDetail = ()=>{
   activityServiceObjectCount.value  = null;
   activityFiles.value  = null;
   activityNews.value = null;
+  //step
   nowStep.value = '描述';
 }
-//查看或编辑活动信息
+//Get activity info
 const ActivityInfoLoading = ref(false);
 const getActivityInfo = async (activityId) => {
   ActivityInfoLoading.value = true;
@@ -170,6 +204,18 @@ const getActivityInfo = async (activityId) => {
     return 0;
   } finally {
     ActivityInfoLoading.value = false; // 结束加载状态
+  }
+};
+// update activity info
+const updateActivityInfo = async (paramName, paramValue) => {
+  try {
+    const requestBody = {
+      [paramName]: paramValue
+    };
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/updateActivity`, requestBody);
+    console.log(response.data);
+  } catch (error) {
+    console.error('API 请求失败:', error);
   }
 };
 </script>

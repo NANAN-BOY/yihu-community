@@ -145,7 +145,7 @@ const openActivityDetail = async (id) => {
     //OldData
     oldData["activityId_Old"].value = id;
     oldData["activityTitle_Old"].value = nowActivity.activity.title;
-    oldData["activityNoticeContent_Old"].value = nowActivity.activity.notice;
+    oldData["activityNoticeContent_Old"].value = nowActivity.activity.noticeContent;
     oldData["activityStaffCount_Old"].value = nowActivity.activity.staffCount;
     oldData["activityVolunteerCount_Old"].value = nowActivity.activity.volunteerCount;
     oldData["activityServiceObjectCount_Old"].value = nowActivity.activity.serviceObjectCount;

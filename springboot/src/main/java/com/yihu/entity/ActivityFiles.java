@@ -4,6 +4,7 @@ public class ActivityFiles {
     private Integer id;
     private Integer activityId;
     private String name;
+    private String storageName;
     private Integer fileSort;
     private String fileUrl;
     private String delFlag;
@@ -32,6 +33,13 @@ public class ActivityFiles {
         this.name = name;
     }
 
+    public String getStorageName() {
+        return storageName;
+    }
+    public void setStorageName(String storageNamel) {
+        this.storageName = storageNamel;
+    }
+
     public Integer getFileSort() {
         return fileSort;
     }
@@ -56,12 +64,15 @@ public class ActivityFiles {
         this.delFlag = delFlag;
     }
 
+
+
     @Override
     public String toString() {
         return "ActivityFiles{" +
                 "id=" + id +
                 ", activityId=" + activityId +
                 ", name='" + name + '\'' +
+                ", storageName='" + storageName + '\'' +
                 ", fileSort=" + fileSort +
                 ", fileUrl='" + fileUrl + '\'' +
                 ", delFlag='" + delFlag + '\'' +

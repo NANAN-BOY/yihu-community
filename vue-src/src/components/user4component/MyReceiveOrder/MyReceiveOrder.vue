@@ -220,7 +220,7 @@ const endOrder = (orderNo) => {
   </div>
   <div v-if="checkOrderDetailisVisible">
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong @click="checkOrderDetailisVisible = false">我的订单</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="closeCheckOrderDetail">我的订单</strong></el-breadcrumb-item>
       <el-breadcrumb-item><strong>订单详情</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br>

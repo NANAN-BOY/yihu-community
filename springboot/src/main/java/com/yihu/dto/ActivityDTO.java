@@ -8,14 +8,15 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ActivityCreateDTO {
-    private Integer id;
+public class ActivityDTO {
+    private Integer activityId;
     private Integer status;
     private String title;
     private String noticeContent;
     private Integer staffCount;
     private Integer volunteerCount;
     private Integer serviceObjectCount;
+    private Integer fileSort;
     private List<NewsItem> news; // 包含 news 数据
 
     @Data

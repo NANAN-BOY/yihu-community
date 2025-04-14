@@ -7,6 +7,8 @@ import QRCode from "qrcode.vue";
 import {ElMessage} from "element-plus";
 import {EventBus} from "../../../utils/event-bus";
 
+const pageNum = ref(1)
+//Data required for order list
 const OrderList = ref([])
 const currentPage = ref(1)
 const loading = ref(false)
@@ -14,30 +16,7 @@ const error = ref('')
 const hasMore = ref(true)
 const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
-
-//订单分类
-const orderStstusValue = ref('全部')
-const orderStstusOptions = ['全部', '未支付', '待接单', '进行中', '已完结']
-watch(orderStstusValue, () => {
-  refreshOrderList()
-})
-const orderStatusConvert = async (ststus) => {
-  switch (ststus) {
-    case '全部':
-      return null
-    case '未支付':
-      return 0
-    case '待接单':
-      return 1
-    case '进行中':
-      return 2
-    case '已完结':
-      return 3
-    default:
-      return null
-  }
-}
-
+//Order loading method
 const OrderListLoad = async () => {
   if (disabled.value) return
   if (loading.value) return
@@ -76,7 +55,7 @@ const OrderListLoad = async () => {
     loading.value = false
   }
 }
-
+//Refresh order list
 const refreshOrderList = async () => {
   currentPage.value = 1
   OrderList.value = []
@@ -86,9 +65,30 @@ const refreshOrderList = async () => {
   await OrderListLoad()
   await OrderListLoad()
 }
+//Order status classification
+const orderStstusValue = ref('全部')
+const orderStstusOptions = ['全部', '未支付', '待接单', '进行中', '已完结']
+watch(orderStstusValue, () => {
+  refreshOrderList()
+})
+const orderStatusConvert = async (ststus) => {
+  switch (ststus) {
+    case '全部':
+      return null
+    case '未支付':
+      return 0
+    case '待接单':
+      return 1
+    case '进行中':
+      return 2
+    case '已完结':
+      return 3
+    default:
+      return null
+  }
+}
 
-
-//BuyBusinessArea
+//Data required for Buy Business Area
 const BuyBusinessAreaDialogVisible = ref(false);
 const openBuyBusinessPAreaDialogVisible = () => {
   BuyBusinessAreaDialogVisible.value = true;
@@ -96,7 +96,7 @@ const openBuyBusinessPAreaDialogVisible = () => {
 const closeBuyBusinessAreaDialogVisible = () => {
   BuyBusinessAreaDialogVisible.value = false;
 }
-//PayInfo
+//Data required for Pay Info
 const PayInfoDialogVisible = ref(false);
 const openPayInfoDialogVisible = () => {
   PayInfoDialogVisible.value = true;
@@ -208,48 +208,94 @@ const checkBusinessCommunicate = (orderNo) => {
       })
 
 }
+//Processing method after the order is completed
 onMounted(() => {
   EventBus.on('endOrder1',refreshOrderList);
 });
 onBeforeUnmount(() => {
   EventBus.off('endOrder1',refreshOrderList);
 });
+//Data required for Page Two
+const nowOrder = ref(null);
+const openCheckOrderDetail = (order) => {
+  console.log(order)
+  nowOrder.value = order;
+  pageNum.value = 2;
+}
+const closeCheckOrderDetail = () => {
+  pageNum.value = 1;
+  nowOrder.value = null;
+}
 </script>
 
 <template>
-  <el-breadcrumb separator="/">
-    <el-breadcrumb-item><strong>专家定制</strong></el-breadcrumb-item>
-  </el-breadcrumb>
-  <h1>定制服务</h1>
-  <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
-  <!-- 我的订单无限滚动列表 -->
-  <el-button type="primary" @click="refreshOrderList" v-loading="loading">刷新</el-button>
-  <!--  订单状态分类-->
-  <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
-    <el-segmented v-model="orderStstusValue" :options="orderStstusOptions" size="large"/>
+  <!--  Page 1 -->
+  <div v-if="pageNum === 1">
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item><strong>专家定制</strong></el-breadcrumb-item>
+    </el-breadcrumb>
+    <h1>定制服务</h1>
+    <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
+    <!-- 我的订单无限滚动列表 -->
+    <el-button type="primary" @click="refreshOrderList" v-loading="loading">刷新</el-button>
+    <!--  订单状态分类-->
+    <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
+      <el-segmented v-model="orderStstusValue" :options="orderStstusOptions" size="large"/>
+    </div>
+    <div class="infinite-list-wrapper" style="overflow: auto">
+      <ul
+          v-infinite-scroll="OrderListLoad"
+          class="list"
+          :infinite-scroll-disabled="disabled"
+          v-loading="businessLoading"
+      >
+        <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
+            @click="openCheckOrderDetail(Order)">
+          <el-tag v-if="Order.status === 0" type="info">未支付</el-tag>
+          <el-tag v-if="Order.status  === 1" type="primary">待接单</el-tag>
+          <el-tag v-if="Order.status  === 2" type="success">进行中</el-tag>
+          <el-tag type="danger" v-if="Order.status  === 3">已完结</el-tag>
+          <div>{{ Order.createAt }}</div>
+        </li>
+        <li v-if="loading" v-loading="loading" class="list-item"></li>
+      </ul>
+      <p v-if="loading">加载中...</p>
+      <p v-if="noMore">没有更多数据了</p>
+      <p v-if="error" style="color: red">{{ error }}</p>
+    </div>
   </div>
-  <div class="infinite-list-wrapper" style="overflow: auto">
-    <ul
-        v-infinite-scroll="OrderListLoad"
-        class="list"
-        :infinite-scroll-disabled="disabled"
-        v-loading="businessLoading"
-    >
-      <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
-          @click="checkBusinessCommunicate(Order.orderNo)">
-        <el-tag v-if="Order.status === 0" type="info">未支付</el-tag>
-        <el-tag v-if="Order.status  === 1" type="primary">待接单</el-tag>
-        <el-tag v-if="Order.status  === 2" type="success">进行中</el-tag>
-        <el-tag type="danger" v-if="Order.status  === 3">已完结</el-tag>
-        <div>{{ Order.createAt }}</div>
-      </li>
-      <li v-if="loading" v-loading="loading" class="list-item"></li>
-    </ul>
-    <p v-if="loading">加载中...</p>
-    <p v-if="noMore">没有更多数据了</p>
-    <p v-if="error" style="color: red">{{ error }}</p>
+  <!--  Page 2 -->
+  <div v-if="pageNum === 2">
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item><strong @click="closeCheckOrderDetail">我的订单</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong>订单详情</strong></el-breadcrumb-item>
+    </el-breadcrumb>
+    <br>
+    <el-page-header @back="closeCheckOrderDetail" title="返回">
+      <template #content>
+        <span class="text-large font-600 mr-3"> 订单详情 </span>
+      </template>
+    </el-page-header>
+    <br>
+    <el-button type="primary" @click="checkBusinessCommunicate(nowOrder.orderNo)">进入订单</el-button>
+    <el-form>
+      <el-form-item label="订单号:">{{ nowOrder.orderNo }}
+      </el-form-item>
+      <el-form-item label="订单状态">
+        <el-tag v-if="nowOrder.status === 0" type="info">未支付</el-tag>
+        <el-tag v-if="nowOrder.status  === 1" type="primary">待接单</el-tag>
+        <el-tag v-if="nowOrder.status  === 2" type="success">进行中</el-tag>
+        <el-tag v-if="nowOrder.status  === 3" type="danger">已完结</el-tag>
+      </el-form-item>
+      <el-form-item :label="(nowOrder.status === 0)? '待付款金额' : '付款金额'">
+        <div style="color: #3e72f5;font-weight: bold;">{{nowOrder.paymentAmount}}</div>元
+      </el-form-item>
+      <el-form-item label="下单时间">
+        {{nowOrder.createAt}}
+      </el-form-item>
+    </el-form>
   </div>
-  <!-- BuyVIPArea -->
+  <!-- Buy VIP dialog-->
   <el-dialog
       v-model="BuyBusinessAreaDialogVisible"
       title="购买服务"
@@ -271,7 +317,7 @@ onBeforeUnmount(() => {
       </div>
     </template>
   </el-dialog>
-  <!-- PayInfo -->
+  <!-- Pay info dialog -->
   <el-dialog
       v-model="PayInfoDialogVisible"
       title="支付信息"

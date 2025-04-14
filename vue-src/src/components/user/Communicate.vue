@@ -12,13 +12,24 @@ const hiddenReasons = computed(() => store.state.expert.input.hiddenReasons)
 const messages = ref([])
 const inputMessage = ref('')
 const socket = ref(null)
-const connectionStatus = ref('disconnected')
+const connectionStatus = computed(() => store.state.connectionStatus)
 let reconnectTimer = null
 const MAX_RETRY = 5
 let retryCount = 0
 const scrollbarRef = ref(null)
 const isMobile = ref(window.innerWidth < 768)
 const receiveUserInfo = ref({name: '请等待',})
+import { Howl } from 'howler';
+const onClose = new Howl({
+  src: ['TipSound/onClose.mp3'],
+  preload: true, // 预加载
+  volume: 0.7    // 音量
+});
+const onOpen = new Howl({
+  src: ['TipSound/onOpen.mp3'],
+  preload: true, // 预加载
+  volume: 0.7    // 音量
+});
 
 // 从store获取用户信息
 const sendUserId = computed(() => store.state.user.id)
@@ -100,14 +111,14 @@ watch(isVisible, async (newVal) => {
 // 初始化WebSocket连接
 const initWebSocket = () => {
   clearTimeout(reconnectTimer)
-  connectionStatus.value = 'connecting'
+  store.state.connectionStatus = 'connecting'
   const token = store.state.token
 
   try {
     socket.value = new WebSocket(`${import.meta.env.VITE_BACKEND_WebSocket}/imserverSingle?token=${token}`)
 
     socket.value.onopen = () => {
-      connectionStatus.value = 'connected'
+      store.state.connectionStatus = 'connected'
       retryCount = 0
     }
 
@@ -133,26 +144,28 @@ const initWebSocket = () => {
           } else {
             await showNewMessageNotification(serverMsg)
           }
+          onOpen.play()
         }
         if (!isVisible.value && serverMsg.sendUserId !== sendUserId.value) {
           await showNewMessageNotification(serverMsg)
+          onClose.play()
         }
       }
     }
 
     socket.value.onclose = (event) => {
-      connectionStatus.value = 'disconnected'
+      store.state.connectionStatus = 'disconnected'
       if (!event.wasClean && retryCount < MAX_RETRY) {
         scheduleReconnect()
       }
     }
 
     socket.value.onerror = () => {
-      connectionStatus.value = 'disconnected'
+      store.state.connectionStatus = 'disconnected'
       socket.value?.close()
     }
   } catch (error) {
-    connectionStatus.value = 'disconnected'
+    store.state.connectionStatus =  'disconnected'
     scheduleReconnect()
   }
 }
@@ -435,7 +448,35 @@ const parseMessageContent = (content) => {
 
   return segments
 }
+const timeVisible = ref(false)
+const formatTime = (timestamp) =>  {
+  const msgDate = new Date(timestamp)
+  const now = new Date()
+  const currentYear = now.getFullYear()
 
+  // 辅助函数：补零操作
+  const pad = n => n.toString().padStart(2, '0')
+
+  // 判断年份
+  if (msgDate.getFullYear() < currentYear) {
+    return `${msgDate.getFullYear()}-${pad(msgDate.getMonth() + 1)}-${pad(msgDate.getDate())}`
+  }
+
+  // 判断是否同一天
+  const isSameDay = now.toDateString() === msgDate.toDateString()
+
+  return isSameDay
+      ? `${pad(msgDate.getHours())}:${pad(msgDate.getMinutes())}`
+      : `${pad(msgDate.getMonth() + 1)}-${pad(msgDate.getDate())}`
+}
+const formatFullTime = (timestamp) => {
+  const msgDate = new Date(timestamp)
+  const pad = n => n.toString().padStart(2, '0')
+
+  // 直接返回完整时间格式
+  return `${msgDate.getFullYear()}-${pad(msgDate.getMonth() + 1)}-${pad(msgDate.getDate())} ` +
+      `${pad(msgDate.getHours())}:${pad(msgDate.getMinutes())}:${pad(msgDate.getSeconds())}`
+}
 
 onUnmounted(closeConnection)
 </script>
@@ -495,7 +536,7 @@ onUnmounted(closeConnection)
             :class="['message', msg.sendUserId === sendUserId ? 'sent' : 'received']"
         >
           <div class="message-content">
-            <!-- 修改后的消息内容显示 -->
+            <!-- 消息内容显示 -->
             <div class="message-text">
               <template v-for="(segment, segIndex) in parseMessageContent(msg.content)" :key="segIndex">
                 <!-- 普通文本 -->
@@ -518,17 +559,18 @@ onUnmounted(closeConnection)
 
             <!-- 原有状态显示 -->
             <div class="message-status">
-              <span class="time">{{ new Date(msg.time).toLocaleTimeString() }}</span>
+              <span class="time" @click="timeVisible=true" v-if="!timeVisible" style="cursor: pointer">{{ formatTime(msg.time) }}</span>
+              <span class="time" @click="timeVisible=false" v-else style="cursor: pointer">{{ formatFullTime(msg.time) }}</span>
               <template v-if="msg.sendUserId === sendUserId">
                 <el-icon v-if="msg.status === 'sending'" class="loading-icon">
                   <Loading/>
                 </el-icon>
                 <span v-else-if="msg.status === 'failed'" class="failed-tip">
-            发送失败
-            <el-button type="danger" size="small" @click="resendMessage(msg)">
-              重试
-            </el-button>
-          </span>
+                发送失败
+                <el-button type="danger" size="small" @click="resendMessage(msg)">
+                 重试
+                </el-button>
+              </span>
               </template>
             </div>
           </div>

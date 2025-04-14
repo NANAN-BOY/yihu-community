@@ -1,24 +1,25 @@
 package com.yihu.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
-import com.yihu.dto.ActivityCreateDTO;
-import com.yihu.entity.File;
+import com.yihu.dto.ActivityDTO;
+import com.yihu.dto.ActivityQueryDTO;
+import com.yihu.entity.*;
 import com.yihu.service.ActivityService;
-import com.yihu.service.FileService;
+import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URLEncoder;
@@ -27,7 +28,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/activity")
+@RequestMapping("/api/activity")
 public class ActivityController {
 
     private final ActivityService activityService;
@@ -37,135 +38,269 @@ public class ActivityController {
         this.activityService = activityService;
     }
 
+
+    @PostMapping("/addActivity")
+    public Result addActivity(){
+        User currentUser = TokenUtils.getCurrentUser();
+        int activityId = activityService.addActivity(currentUser.getId());
+        if(activityId != 0){
+            return Result.success(activityId);
+        }
+        return Result.error();
+    }
+
+
+    @PostMapping("/uploadFile")
+    public Result uploadFile(@RequestParam("file") MultipartFile file,
+                             @RequestParam Integer sort, @RequestParam Integer activityId){
+
+        try{
+            int newId = activityService.uploadFile(file,activityId,sort);
+            if (newId != 0){
+                // 返回文件的所有信息
+                ActivityFiles activityFiles = activityService.getById(newId);
+                return Result.success(activityFiles);
+            }else {
+                return Result.error("文件上传失败");
+            }
+        } catch (Exception e){
+            return Result.error("文件上传失败");
+        }
+
+    }
+
     /**
-     * 文件上传接口
-     *
-     * // 1. 构造 JSON 数据
-     * const activityData = {
-     *     status: 1,
-     *     title: "志愿活动",
-     *     noticeContent: "活动详情...",
-     *     staffCount: 10,
-     *     volunteerCount: 50,
-     *     serviceObjectCount: 100,
-     *     news: [  // 包含多个平台链接
-     *         { platform: "知乎", url: "https://www.zhihu.com" },
-     *         { platform: "微信", url: "https://weixin.qq.com" }
-     *     ]
-     * };
-     *
-     * // 2. 构造 FormData（如果有文件上传）
-     * const formData = new FormData();
-     * formData.append("activityData", JSON.stringify(activityData)); // JSON 数据
-     * // formData.append("files", file1); // 如果有文件，可以这样添加
-     *
-     * // 3. 发送请求
-     * axios.post("/api/activity/create", formData, {
-     *     headers: { "Content-Type": "multipart/form-data" }
-     * });
+     * 文件下载接口
      */
     @AuthAccess
-    @PostMapping("/create")
-    @Transactional(rollbackFor = Exception.class)
-    public Result create(@RequestPart("signfiles") MultipartFile[] signfiles,
-                         @RequestPart("activityfiles") MultipartFile[] activityfiles,
-                         @RequestPart("newsfiles") MultipartFile[] newsfiles,
-                         @RequestPart("attachmentfile") MultipartFile attachmentfile,
-                         @RequestPart("activityData") String activityDataJson) throws JsonProcessingException {
-
-
-        // 解析 JSON
-        ObjectMapper objectMapper = new ObjectMapper();
-        ActivityCreateDTO activityDTO = objectMapper.readValue(activityDataJson, ActivityCreateDTO.class);
-
-        // 1. 删除旧数据（在创建新活动之前）
-        // 假设 activityDTO 中包含活动的唯一标识（如 activityId）
-        if (activityDTO.getId() != null) {
-            // 更新activity记录
-            activityService.deleteFilesByActivityId(activityDTO.getId());
-
-            // 删除与该活动相关的新闻记录
-            activityService.deleteNewsByActivityId(activityDTO.getId());
-
-            // 删除活动记录（如果需要）
-            activityService.deleteActivityById(activityDTO.getId(),activityDTO.getTitle());
-        }
-
-        // 2. 创建新活动
-
+    @GetMapping("/download/{id}")
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Integer id) {
         try {
-            int activityId = activityService.create(activityDTO);;
-            if (activityId != 0){
-                // 遍历签到照片
-                for (MultipartFile file : signfiles) {
-                    if (!file.isEmpty()) {
-                        // 保存文件到本地或云存储...
-                        activityService.uploadFile(file,activityId,2,activityDTO.getTitle());
-                    }
-                }
-                // 遍历活动过程照片
-                for (MultipartFile file : activityfiles) {
-                    if (!file.isEmpty()) {
-                        // 保存文件到本地或云存储...
-                        activityService.uploadFile(file,activityId,3,activityDTO.getTitle());
-                    }
-                }
-                // 遍历纸质新闻稿
-                if (newsfiles != null) {
-                    for (MultipartFile file : newsfiles) {
-                        if (!file.isEmpty()) {
-                            // 保存文件到本地或云存储...
-                            activityService.uploadFile(file,activityId,4,activityDTO.getTitle());
-                        }
-                    }
-                }
+            // 获取文件信息
+            ActivityFiles activityFilesEntity = activityService.getFileById(id);
+            if (activityFilesEntity == null) {
+                log.error("File not found: {}", id);
+                return ResponseEntity.notFound().build();
 
-                // 判断附件是否有附件
-                if (!attachmentfile.isEmpty()) {
-                    String fileName = attachmentfile.getOriginalFilename();
-                    System.out.println("接收到文件: " + fileName);
-                    // 保存文件到本地或云存储...
-                    activityService.uploadFile(attachmentfile,activityId,6,activityDTO.getTitle());
-                }
+            }
 
-                // 获取 news 数据并遍历
-                List<ActivityCreateDTO.NewsItem> newsList = activityDTO.getNews();
+            // 获取文件路径
+            java.io.File file = new java.io.File(activityFilesEntity.getFileUrl());
+            if (!file.exists()) {
+                log.error("File not found at path: {}", activityFilesEntity.getFileUrl());
+                return ResponseEntity.notFound().build();
+            }
+
+            // 创建 InputStreamResource
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+
+            // 3. 获取文件名和扩展名
+            String fileName = activityFilesEntity.getName();
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+
+            // 4. 验证文件类型
+            boolean isValid = false;
+            String mimeType = "application/octet-stream"; // 默认类型
+            switch (extension) {
+                case "jpg":
+                case "jpeg":
+                    mimeType = "image/jpeg";
+                    isValid = true;
+                    break;
+                case "png":
+                    mimeType = "image/png";
+                    isValid = true;
+                    break;
+                case "zip":
+                    mimeType = "application/zip";
+                    isValid = true;
+                    break;
+                case "rar":
+                    mimeType = "application/x-rar-compressed";
+                    isValid = true;
+                    break;
+                case "7z":
+                    mimeType = "application/x-7z-compressed";
+                    isValid = true;
+                    break;
+                default:
+                    // 不支持的文件类型
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(new InputStreamResource(new ByteArrayInputStream("不支持的文件类型".getBytes())));
+            }
+
+            // 5. 构建响应
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""
+                            + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()) + "\"")
+                    .contentType(MediaType.valueOf(mimeType))
+                    .body(resource);
+
+        } catch (FileNotFoundException e) {
+            log.error("File not found: {}", id);
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error downloading file: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @AuthAccess
+    @GetMapping("/getFileInformation/{id}")
+    public Result getFileInformation(@PathVariable Integer id) {
+        ActivityFiles activityFiles = activityService.getFileById(id);
+        if(activityFiles != null){
+            return Result.success(activityFiles);
+        }
+        else {
+            return Result.error("文件不存在");
+        }
+    }
+
+
+    @DeleteMapping("deleteFileById")
+    public Result deleteFileById(@RequestParam Integer fileId){
+        try {
+            activityService.deleteFile(fileId);
+            return Result.success();
+        }catch (Exception e){
+            return Result.error("文件删除失败");
+        }
+    }
+
+    @PostMapping("/update")
+    public Result update(@RequestBody ActivityDTO activityDTO) {
+        User currentUser = TokenUtils.getCurrentUser();
+        try {
+            // 更新activity表
+            activityService.update(activityDTO,currentUser.getId());;
+            // 获取 news 数据并更新
+            List<ActivityDTO.NewsItem> newsList = activityDTO.getNews();
+            if (newsList != null) {
+                // 先删除旧数据
+                activityService.deleteNewsByActivityId(activityDTO.getActivityId());
+                // 遍历newsList 插入新数据
                 if (newsList != null) {
-                    for (ActivityCreateDTO.NewsItem newsItem : newsList) {
+                    // 遍历newsList 插入新数据
+                    for (ActivityDTO.NewsItem newsItem : newsList) {
                         String platform = newsItem.getPlatform();
                         String link = newsItem.getLink();
-                        System.out.println("平台: " + platform + ", URL: " + link);
-                        // 存储到数据库...
-                        activityService.insertnews(activityId, platform,link);
+                        // 插入到数据库...
+                        activityService.insertnews(activityDTO.getActivityId(), platform,link);
                     }
                 }
-
-
-                return Result.success();
-            }else {
-                return Result.error("保存失败");
             }
-        } catch (Exception e) {
-            return Result.error("保存失败");
+            return Result.success("更新成功");
+        }catch (Exception e){
+            return Result.error("更新失败");
         }
-
     }
+
 
 
     @AuthAccess
-    @DeleteMapping("/deleteById")
-    public Result delete(@PathVariable ActivityCreateDTO activityCreateDTO) {
-        // 删除活动记录
-        activityService.deleteActivityById(activityCreateDTO.getId(),activityCreateDTO.getTitle());
+    @DeleteMapping("/deleteById") // 表数据不删除，存储的文件需要删除
+    public Result delete(@RequestParam Integer activityId) {
+
+        User currentUser = TokenUtils.getCurrentUser();
 
         // 删除与该活动相关的新闻记录
-        activityService.deleteNewsByActivityId(activityCreateDTO.getId());
+        activityService.deleteNewsByActivityId(activityId);
 
         // 删除与该活动相关的文件记录
-        activityService.deleteFilesByActivityId(activityCreateDTO.getId());
+        activityService.deleteFilesByActivityId(activityId);
 
-        return Result.success();
+
+        // 删除活动记录
+        activityService.deleteActivityById(activityId, currentUser.getId());
+
+        return Result.success("删除活动成功");
     }
+
+
+    @GetMapping("/queryByCreateId") // 查询用户活动列表
+    public Result queryByCreateId(@RequestParam(required = false) String title,
+                        @RequestParam(defaultValue = "1") int pageNum,
+                        @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("用户未登录");
+            }
+            if (currentUser.getRole() == 1){
+                // 管理员查询 查询所有已经提交的
+                PageInfo<Activity> activityList = activityService.queryAllSubmited(title,pageNum,pageSize);
+                return Result.success(activityList);
+            }else{
+                // 用户查询 查询当前用户未删除的
+                PageInfo<Activity> activityList = activityService.queryByCreateId(currentUser.getId(),title,pageNum,pageSize);
+                System.out.println(activityList);
+                return Result.success(activityList);
+            }
+
+        } catch (Exception e) {
+            log.error("查询用户活动列表失败", e);
+            return Result.error("查询失败");
+        }
+    }
+
+    @PostMapping("/submitActivity")
+    public Result submitActivity(@RequestBody ActivityDTO activityDTO) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            activityService.submitActivity(activityDTO,currentUser.getId());
+            return Result.success("保存并提交成功");
+        } catch (Exception e){
+            return Result.error("保存并提交失败");
+        }
+
+    }
+
+    @GetMapping("/getActivityById")
+    public Result getActivityById(@RequestParam Integer activityId) {
+        try {
+            // 查询活动基本信息
+            Activity activity = activityService.getActivityById(activityId);
+
+            // 查询活动相关文件列表
+            List<ActivityFiles> files = activityService.getFilesByActivityId(activityId);
+
+            // 查询活动相关新闻列表
+            List<ActivityNews> news = activityService.getNewsByActivityId(activityId);
+
+            // 封装到 ActivityDetailDTO
+            ActivityQueryDTO activityQueryDTO = new ActivityQueryDTO();
+            activityQueryDTO.setActivity(activity);
+            activityQueryDTO.setFiles(files);
+            activityQueryDTO.setNews(news);
+
+            return Result.success(activityQueryDTO);
+        } catch (Exception e) {
+            log.error("获取活动详情失败", e);
+            return Result.error("获取活动详情失败");
+        }
+    }
+
+    @PostMapping("/withdrawSubmission")  //管理员撤回提交申请
+    public Result withdrawSubmission(@RequestParam Integer activityId) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            activityService.withdrawSubmission(activityId, currentUser.getId());
+            return Result.success("撤回提交成功");
+        } catch (Exception e) {
+            log.error("撤回提交失败", e);
+            return Result.error("撤回提交失败");
+        }
+    }
+
+
+
+
+
+
+
+
 }
 
 

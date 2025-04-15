@@ -12,6 +12,7 @@ import java.util.Date;
 public class Product {
     private Integer id;
     private String name;
+    private Integer type;
     private Float price;
     private Float discount;
     private Float proportion;
@@ -25,26 +26,19 @@ public class Product {
     public Product() {
     }
 
-    public Product(Integer id, String name, Float price, Float discount, Float proportion,
+    public Product(Integer id, String name, Integer type,
+                   Float price, Float discount, Float proportion,
                    Integer createUser, Integer updateUser, Date createAt, Date updateAt) {
         this.id = id;
         this.name = name;
         this.price = price;
+        this.type = type;
         this.discount = discount;
         this.proportion = proportion;
         this.createUser = createUser;
         this.updateUser = updateUser;
         this.createAt = createAt;
         this.updateAt = updateAt;
-    }
-
-    public Product(Date createAt, Integer createUser, Float proportion, Float discount, Float price, String name) {
-        this.createAt = createAt;
-        this.createUser = createUser;
-        this.proportion = proportion;
-        this.discount = discount;
-        this.price = price;
-        this.name = name;
     }
 
     public Product(Integer id, String name, Float price, Float discount, Float proportion, Integer updateUser, Date updateAt) {
@@ -55,5 +49,14 @@ public class Product {
         this.proportion = proportion;
         this.updateUser = updateUser;
         this.updateAt = updateAt;
+    }
+
+    public Product(Integer id, String name, Integer type, Float price, Float discount, Float proportion) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.price = price;
+        this.discount = discount;
+        this.proportion = proportion;
     }
 }

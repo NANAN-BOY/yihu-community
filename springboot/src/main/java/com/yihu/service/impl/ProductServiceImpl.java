@@ -49,4 +49,9 @@ public class ProductServiceImpl implements ProductService {
                 new Date());
         return productMapper.updateProduct(product);
     }
+
+    @Override
+    public List<Product> findProductList(Integer type) {
+        return productMapper.findProductList(type);
+    }
 }

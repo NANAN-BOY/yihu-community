@@ -68,5 +68,14 @@ public class ProductController {
         return Result.success(productService.findProduct());
     }
 
+    @GetMapping("/product/get-list")
+    public Result findProductList(@RequestParam Integer type) {
+        User user = TokenUtils.getCurrentUser();
+        if (user == null) {
+            return Result.error(401, "未授权，请登录");
+        }
+        return Result.success(productService.findProductList(type));
+    }
+
 
 }

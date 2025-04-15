@@ -14,4 +14,6 @@ public interface ProductMapper {
     List<Product> findProduct();
 
     Boolean updateProduct(Product product);
+
+    List<Product> findProductList(@Param(("type")) Integer type);
 }

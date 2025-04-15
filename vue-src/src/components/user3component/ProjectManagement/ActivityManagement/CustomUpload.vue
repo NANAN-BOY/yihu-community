@@ -15,21 +15,26 @@
     <!-- 隐藏的input用于实际选择文件 -->
     <input
         ref="fileInput"
-        accept="image/*"
+        :accept="acceptType"
         multiple
         style="display: none"
         type="file"
         @change="handleFileChange"
     />
 
-    <!-- 图片预览列表 -->
+    <!-- 文件预览列表 -->
     <div class="preview-list">
       <div
           v-for="(file, index) in filteredFileList"
           :key="file.id"
           class="preview-item"
       >
-        <img :src="file.url" class="preview-image"/>
+        <img v-if="isImage" :src="file.url" alt="" class="preview-image"/>
+        <div v-else class="file-icon">
+          <el-icon>
+            <Document/>
+          </el-icon>
+        </div>
         <div class="preview-actions">
           <el-icon @click="handleRemove(index)">
             <Close/>
@@ -43,79 +48,92 @@
 
 <script setup>
 import {computed, ref} from 'vue';
-import {Plus, Close} from '@element-plus/icons-vue';
+import {Plus, Close, Document} from '@element-plus/icons-vue';
+import axios from 'axios';
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: Array,
+    default: () => []
+  },
+  fileType: {
+    type: [String, Number],
     required: true
   },
-  fileType: String,
   fileTypeName: String,
+  isImage: {
+    type: Boolean,
+    default: true
+  },
+  accept: {
+    type: String,
+    default: 'image/*'
+  }
 });
-const emit = defineEmits(['update:modelValue']);
+
+const emit = defineEmits(['update:modelValue', 'remove']);
+
+const fileInput = ref(null);
+const uploadFileLoading = ref(false);
+const acceptType = computed(() => props.isImage ? 'image/*' : props.accept);
 
 const filteredFileList = computed(() => {
-  // 过滤出符合fileType条件的文件
-  if (!props.modelValue || !Array.isArray(props.modelValue)) return [];
-
   return props.modelValue
-      .filter(file => file.fileSort === props.fileType)
+      .filter(file => file.fileSort == props.fileType)
       .map(file => ({
         ...file,
-        // 处理文件列表，添加URL
-        url: `${import.meta.env.VITE_BACKEND_IP}/api/activity/download/${file.id}`
+        url: file.fileUrl || `${import.meta.env.VITE_BACKEND_IP}/api/activity/download/${file.id}`
       }));
 });
 
-const fileInput = ref(null);
-const fileList = ref([]);
-
-const uploadFileLoading = ref(false)
-// 点击添加按钮
 const handleAddClick = () => {
-  uploadFileLoading.value = true;
-  console.log(props.modelValue);
-  console.log(props.fileType)
+  fileInput.value.value = null;
   fileInput.value.click();
 };
 
-// 文件选择变化
-const handleFileChange = (e) => {
+const handleFileChange = async (e) => {
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
 
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const newFile = {
-        id: Date.now() + Math.random().toString(36).substr(2, 9),
-        file: file,
-        url: e.target.result
-      };
-      fileList.value.push(newFile);
-      emit('add', newFile);
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // 清空input以便重复选择相同文件
-  e.target.value = '';
-};
-
-// 删除文件
-const handleRemove = (index) => {
-  const removedFile = fileList.value[index];
-  fileList.value.splice(index, 1);
-  emit('remove', removedFile);
-};
-
-// 暴露方法给父组件
-defineExpose({
-  clearFiles: () => {
-    fileList.value = [];
+  uploadFileLoading.value = true;
+  try {
+    const uploadPromises = files.map(file => uploadFile(file));
+    const results = await Promise.all(uploadPromises);
+    const newFiles = results.map(res => res.data);
+    emit('update:modelValue', [...props.modelValue, ...newFiles]);
+  } catch (error) {
+    console.error('上传失败', error);
+    ElMessage.error('文件上传失败');
+  } finally {
+    uploadFileLoading.value = false;
+    e.target.value = '';
   }
-});
+};
+
+const uploadFile = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('fileSort', props.fileType);
+
+  try {
+    const response = await axios.post('/api/your-upload-endpoint', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Upload error:', error);
+    throw error;
+  }
+};
+
+const handleRemove = (index) => {
+  const fileId = filteredFileList.value[index].id;
+  const newFiles = props.modelValue.filter(file => file.id !== fileId);
+  emit('update:modelValue', newFiles);
+  emit('remove', fileId);
+};
 </script>
 
 <style scoped>

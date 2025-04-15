@@ -1,7 +1,7 @@
 <script setup>
 
 import {ElButton, ElInput, ElMessage} from "element-plus";
-import {Plus, Search} from "@element-plus/icons-vue";
+import {Search} from "@element-plus/icons-vue";
 import {computed, reactive, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
@@ -340,7 +340,8 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
               v-model="activityFiles"
               :fileType="1"
               :fileTypeName="'图片'"
-          />
+              :accept-file-type="'image/*'"
+              :activityId="activityId"/>
         </el-form-item>
 
         <!-- 志愿者 -->
@@ -360,6 +361,8 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
               v-model="activityFiles"
               :fileType="2"
               :fileTypeName="'图片'"
+              :accept-file-type="'image/*'"
+              :activity-id="activityId"
           />
         </el-form-item>
 
@@ -380,6 +383,7 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
               v-model="activityFiles"
               :fileType="3"
               :fileTypeName="'图片'"
+              :activityId="activityId"
           />
         </el-form-item>
       </div>
@@ -392,6 +396,8 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
               v-model="activityFiles"
               :fileType="4"
               :fileTypeName="'图片'"
+              :accept-file-type="'image/*'"
+              :activityId="activityId"
           />
         </el-form-item>
       </div>
@@ -409,15 +415,14 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           />
         </el-form-item>
         <el-form-item label="新闻图片">
-          <el-upload
-              v-model:file-list="activityForm.newsFiles"
-              action="#"
-              list-type="picture-card"
-              multiple
-              :auto-upload="false"
-          >
-            <el-icon><Plus /></el-icon>
-          </el-upload>
+          <CustomUpload
+              ref="uploadRef"
+              v-model="activityFiles"
+              :fileType="4"
+              :fileTypeName="'图片'"
+              :accept-file-type="'image/*'"
+              :activityId="activityId"
+          />
         </el-form-item>
       </div>
 
@@ -427,8 +432,10 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
         <CustomUpload
             ref="uploadRef"
             v-model="activityFiles"
-            :fileType="4"
+            :fileType="5"
             :fileTypeName="'压缩包'"
+            :accept-file-type="'application/zip,application/x-zip,application/x-zip-compressed'"
+            :activityId="activityId"
         />
       </div>
     </el-form>

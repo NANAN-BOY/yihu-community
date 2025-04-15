@@ -6,8 +6,8 @@
 <mapper namespace="com.yihu.mapper.ProductMapper">
 
     <insert id="addProduct" parameterType="com.yihu.entity.Product">
-        INSERT INTO product (name, price, discount, proportion, create_user, create_at)
-        VALUES (#{name}, #{price}, #{discount}, #{proportion}, #{createUser}, #{createAt})
+        INSERT INTO product (name, type, price, discount, proportion, create_user, create_at)
+        VALUES (#{name}, #{type}, #{price}, #{discount}, #{proportion}, #{createUser}, #{createAt})
     </insert>
 
     <delete id="deleteProduct">
@@ -25,21 +25,27 @@
         UPDATE product
         <set>
             <if test="name != null and name != ''">
-                name = #{name}
+                name = #{name},
             </if>
             <if test="price != null and price != ''">
-                price = #{price}
+                price = #{price},
             </if>
             <if test="discount != null and discount != ''">
-                discount = #{discount}
+                discount = #{discount},
             </if>
             <if test="proportion != null and proportion != ''">
-                proportion = #{proportion}
+                proportion = #{proportion},
             </if>
             update_user = #{updateUser},
             update_at = #{updateAt}
         </set>
         WHERE id = #{id}
     </update>
+
+    <select id="findProductList" resultType="com.yihu.entity.Product">
+        SELECT id, name, price, discount, proportion
+        FROM product
+        where type = #{type}
+    </select>
 
 </mapper>

@@ -13,4 +13,6 @@ public interface ProductService {
     List<Product> findProduct();
 
     Boolean updateProduct(ProductDTO productDTO, Integer userId);
+
+    List<Product> findProductList(Integer type);
 }

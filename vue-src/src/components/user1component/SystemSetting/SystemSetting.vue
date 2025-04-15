@@ -52,6 +52,7 @@ onMounted(
         <el-table :data="ProductData" style="width: 100%">
           <el-table-column prop="name" label="名称" width="180" />
           <el-table-column prop="price" label="售卖价格" width="180" />
+          <el-table-column prop="discount" label="折扣" />
           <el-table-column prop="proportion" label="提成比例" />
           <el-table-column fixed="right" label="操作" min-width="120">
             <template #default>

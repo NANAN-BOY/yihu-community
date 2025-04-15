@@ -161,6 +161,7 @@ const openActivityDetail = async (id) => {
     activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
     activityFiles.value = nowActivity.files;
     activityNews.value = nowActivity.news;
+    console.log(nowActivity.files)
     pageNum.value = 2;
   }
 }
@@ -336,8 +337,9 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
         <el-form-item label="签到照片">
           <CustomUpload
               ref="uploadRef"
-              @add="handleFileAdd"
-              @remove="handleFileRemove"
+              v-model="activityFiles"
+              :fileType="1"
+              :fileTypeName="'图片'"
           />
         </el-form-item>
 
@@ -353,15 +355,12 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           </el-button>
         </el-form-item>
         <el-form-item label="签到照片">
-          <el-upload
-              v-model:file-list="activityForm.volunteerFiles"
-              action="#"
-              list-type="picture-card"
-              multiple
-              :auto-upload="false"
-          >
-            <el-icon><Plus /></el-icon>
-          </el-upload>
+          <CustomUpload
+              ref="uploadRef"
+              v-model="activityFiles"
+              :fileType="2"
+              :fileTypeName="'图片'"
+          />
         </el-form-item>
 
         <!-- 服务对象 -->
@@ -376,30 +375,24 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
           </el-button>
         </el-form-item>
         <el-form-item label="签到照片">
-          <el-upload
-              v-model:file-list="activityForm.clientFiles"
-              action="#"
-              list-type="picture-card"
-              multiple
-              :auto-upload="false"
-          >
-            <el-icon><Plus /></el-icon>
-          </el-upload>
+          <CustomUpload
+              ref="uploadRef"
+              v-model="activityFiles"
+              :fileType="3"
+              :fileTypeName="'图片'"
+          />
         </el-form-item>
       </div>
 
       <!-- 第四步 活动过程档案 -->
       <div v-if="nowStep === '档案'">
         <el-form-item label="活动照片">
-          <el-upload
-              v-model:file-list="activityForm.processFiles"
-              action="#"
-              list-type="picture-card"
-              multiple
-              :auto-upload="false"
-          >
-            <el-icon><Plus /></el-icon>
-          </el-upload>
+          <CustomUpload
+              ref="uploadRef"
+              v-model="activityFiles"
+              :fileType="4"
+              :fileTypeName="'图片'"
+          />
         </el-form-item>
       </div>
 
@@ -431,6 +424,12 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
         <!-- 满意度调查和附件上传 -->
+        <CustomUpload
+            ref="uploadRef"
+            v-model="activityFiles"
+            :fileType="4"
+            :fileTypeName="'压缩包'"
+        />
       </div>
     </el-form>
   </div>

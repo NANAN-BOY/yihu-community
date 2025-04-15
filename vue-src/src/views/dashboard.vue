@@ -276,7 +276,7 @@ const handleSelect = (index) => {
       currentComponent.value = user1ExpertLibraryManagement;
       break;
     case '1-2':
-      router.push('/user1component/ExpertLibraryManagement/ExpertLibraryManagement');
+      currentComponent.value = SystemSetting;
       break;
     case '1-3':
       currentComponent.value = aboutMyInfo;
@@ -463,6 +463,7 @@ const closePayInfoDialogVisible = () => {
   PayInfoDialogVisible.value = false;
 }
 import QRCode from 'qrcode.vue';
+import SystemSetting from "../components/user1component/SystemSetting/SystemSetting.vue";
 const PayInfo =ref(null);
 const BuyYiHuLoading = ref(false);
 const BuyYiHu_Vip = (type) => {

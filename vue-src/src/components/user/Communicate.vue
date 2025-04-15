@@ -331,15 +331,20 @@ async function uploadFile() {
   try {
     // 触发文件选择
     console.log('[2/4] 打开文件选择器');
-    fileInput.click();
+    let file = null;
+    try {
+      fileInput.click();
 
-    // 等待文件选择
-    const file = await new Promise((resolve, reject) => {
-      fileInput.onchange = () => resolve(fileInput.files[0]);
-      fileInput.oncancel = () => reject('用户取消选择');
-    });
+      // 等待文件选择
+      file = await new Promise((resolve, reject) => {
+        fileInput.onchange = () => resolve(fileInput.files[0]);
+        fileInput.oncancel = () => reject('用户取消选择');
+      });
 
-    console.log('[选择文件]', file ? file.name : '无文件');
+      console.log('[选择文件]', file ? file.name : '无文件');
+    }catch (e){
+      throw new Error('未选择文件');
+    }
 
     // 基础验证
     if (!file)
@@ -357,10 +362,12 @@ async function uploadFile() {
       headers: {'Content-Type': 'multipart/form-data'},
       timeout: 10000
     });
-
-    console.log('[4/4] 上传完成', response.data);
-    return response.data;
-
+    if(response.data.code===200){
+      console.log('[4/4] 上传完成', response.data);
+      return response.data;
+    }else{
+      throw new Error(response.data.data);
+    }
   } catch (error) {
     console.error('[上传中断]', error.message);
     throw error; // 抛出错误供外部处理
@@ -388,7 +395,7 @@ async function handleUpload() {
     }
   } catch (error) {
     uploadFileLoading.value = false
-    ElMessage.error(error)
+    ElMessage.error(error.message)
   }
 }
 

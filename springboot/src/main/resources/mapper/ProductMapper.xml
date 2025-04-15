@@ -25,16 +25,16 @@
         UPDATE product
         <set>
             <if test="name != null and name != ''">
-                name = #{name}
+                name = #{name},
             </if>
             <if test="price != null and price != ''">
-                price = #{price}
+                price = #{price},
             </if>
             <if test="discount != null and discount != ''">
-                discount = #{discount}
+                discount = #{discount},
             </if>
             <if test="proportion != null and proportion != ''">
-                proportion = #{proportion}
+                proportion = #{proportion},
             </if>
             update_user = #{updateUser},
             update_at = #{updateAt}

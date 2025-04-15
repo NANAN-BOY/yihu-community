@@ -47,7 +47,8 @@ public class Product {
         this.name = name;
     }
 
-    public Product(String name, Float price, Float discount, Float proportion, Integer updateUser, Date updateAt) {
+    public Product(Integer id, String name, Float price, Float discount, Float proportion, Integer updateUser, Date updateAt) {
+        this.id = id;
         this.name = name;
         this.price = price;
         this.discount = discount;

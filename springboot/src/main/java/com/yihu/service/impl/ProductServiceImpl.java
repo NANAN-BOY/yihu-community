@@ -40,7 +40,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Boolean updateProduct(ProductDTO productDTO, Integer userId) {
-        Product product = new Product(productDTO.getName(),
+        Product product = new Product(productDTO.getId(),
+                productDTO.getName(),
                 productDTO.getPrice(),
                 productDTO.getDiscount(),
                 productDTO.getProportion(),

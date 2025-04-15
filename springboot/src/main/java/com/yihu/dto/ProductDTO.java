@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProductDTO {
+    private Integer id;
     private String name;
     private Float price;
     private Float discount;

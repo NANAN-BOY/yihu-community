@@ -19,20 +19,38 @@
           :key="file.id"
           class="preview-item"
       >
-        <img v-if="props.fileTypeName==='图片'" :src="file.url" alt="" class="preview-image"/>
+        <img v-if="props.fileTypeName==='图片'" :src="file.url" alt="" class="preview-image"  @click.stop="openFileDetailVisible(file)"/>
         <div v-else class="file-icon">
           <el-icon>
             <Document/>
           </el-icon>
         </div>
-        <div class="preview-actions">
-          <el-icon @click="handleRemove(index)">
+        <div class="preview-actions" @click.stop="openFileDetailVisible(file)" >
+          <el-icon @click="handleRemove(index)">d
             <Close/>
           </el-icon>
         </div>
       </div>
     </div>
   </div>
+  <el-dialog
+      v-model="fileDetailVisible"
+      title="详情"
+      width="500"
+      align-center
+  >
+    <span v-if="fileDetailVisible">
+      <img v-if="props.fileTypeName==='图片'" :src="nowOnClickFile.url" alt="" class="preview-image"/>
+    </span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="clostFileDetailVisible">Cancel</el-button>
+        <el-button type="primary" @click="clostFileDetailVisible">
+          Confirm
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 
@@ -188,6 +206,16 @@ const handleRemove = (index) => {
   const newFiles = props.modelValue.filter(file => file.id !== fileId);
   emit('update:modelValue', newFiles);
   emit('remove', fileId);
+};
+const fileDetailVisible = ref(false);
+const nowOnClickFile = ref(null)
+const openFileDetailVisible = (file) => {
+  nowOnClickFile.value=file;
+  fileDetailVisible.value = true;
+};
+const clostFileDetailVisible = () => {
+  nowOnClickFile.value=null;
+  fileDetailVisible.value = false;
 };
 </script>
 

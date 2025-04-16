@@ -4,7 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yihu.common.WebSocketSingleServer;
+import com.yihu.common.WebSocketServer;
 import com.yihu.dto.OrderQueryDTO;
 import com.yihu.entity.*;
 import com.yihu.mapper.*;
@@ -234,7 +234,7 @@ public class OrderServiceImpl implements OrderService {
             communication.setStatus(1);
 
             String message = JSON.toJSONString(communication);
-            WebSocketSingleServer.sendMessageToUser(order.getBuyerId(), message);
+            WebSocketServer.sendMessageToUser(order.getBuyerId(), message);
         }
     }
 

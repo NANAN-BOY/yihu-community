@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint(value = "/imserverSingle")
 @Component
-public class WebSocketSingleServer implements InitializingBean {
-    private static final Logger log = LoggerFactory.getLogger(WebSocketSingleServer.class);
+public class WebSocketServer implements InitializingBean {
+    private static final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
 
     // 记录用户ID与 Session 的映射
     public static final Map<Integer, Session> userSessionMap = new ConcurrentHashMap<>();

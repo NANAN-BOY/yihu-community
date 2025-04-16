@@ -26,7 +26,7 @@
           </el-icon>
         </div>
         <div class="preview-actions" @click.stop="openFileDetailVisible(file)" >
-          <el-icon @click="handleRemove(index)">d
+          <el-icon @click.stop="handleRemove(file,true)">
             <Close/>
           </el-icon>
         </div>
@@ -44,6 +44,7 @@
     </span>
     <template #footer>
       <div class="dialog-footer">
+        <el-button type=danger @click="handleRemove(nowOnClickFile,false)">删除文件</el-button>
         <el-button @click="clostFileDetailVisible">Cancel</el-button>
         <el-button type="primary" @click="clostFileDetailVisible">
           Confirm
@@ -55,10 +56,10 @@
 
 
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, h, ref} from 'vue';
 import {Plus, Close, Document} from '@element-plus/icons-vue';
 import axios from 'axios';
-import {ElMessage} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 import store from "../../../../store";
 
 const props = defineProps({
@@ -201,11 +202,60 @@ const handleFileTagClick = (fileId) => {
   console.log(`开始下载文件 ${fileId}`)
   ElMessage.info('下载已开始，请查看浏览器下载列表')
 }
-const handleRemove = (index) => {
-  const fileId = filteredFileList.value[index].id;
-  const newFiles = props.modelValue.filter(file => file.id !== fileId);
-  emit('update:modelValue', newFiles);
-  emit('remove', fileId);
+const handleRemove = (file, photoVisible) => {
+  ElMessageBox({
+    title: '警告',
+    message: h('div', null, [
+      h('p', {style: 'color: red; margin-bottom: 10px'}, '确认要删除此文件吗？'),
+      photoVisible && file.url && h('img', {
+        src: file.url,
+        style: 'max-width: 100%; max-height: 200px; display: block; margin: 0 auto; border-radius: 4px;',
+        alt: '文件预览'
+      }),
+    ]),
+    showCancelButton: true,
+    confirmButtonText: '确认删除',
+    cancelButtonText: '取消',
+    beforeClose: async (action, instance, done) => {
+      if (action === 'confirm') {
+        try {
+          instance.confirmButtonLoading = true;
+          instance.confirmButtonText = '删除中...';
+
+          const response = await axios.delete(`${import.meta.env.VITE_BACKEND_IP}/api/activity/deleteFileById`, {
+            params: {fileId: file.id},
+            headers: {
+              'token': store.state.token
+            }
+          });
+          console.log(response);
+          if (response.data.code === 200) {
+            done();
+            ElMessage.success('删除成功');
+            instance.confirmButtonLoading = false;
+            instance.confirmButtonText = '确认删除';
+            //如果打开文件详情
+            clostFileDetailVisible()
+            //从列表删除
+            const newFiles = props.modelValue.filter(f => f.id !== file.id);
+            emit('update:modelValue', newFiles);
+          } else {
+            ElMessage.error(response.data.data);
+            instance.confirmButtonLoading = false;
+            instance.confirmButtonText = '确认删除';
+          }
+        } catch (error) {
+          ElMessage.error(error.response?.data?.message || '删除失败');
+          instance.confirmButtonLoading = false;
+          instance.confirmButtonText = '确认删除';
+        }
+      } else {
+        done();
+      }
+    },
+  }).catch(() => {
+    // 取消操作不做处理
+  });
 };
 const fileDetailVisible = ref(false);
 const nowOnClickFile = ref(null)

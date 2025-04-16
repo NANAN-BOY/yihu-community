@@ -6,9 +6,10 @@
 <mapper namespace="com.yihu.mapper.OrderMapper">
 
     <insert id="insertOrder" parameterType="com.yihu.entity.Order">
-        INSERT INTO `order` (order_no, buyer_id, type, payment_amount, status, create_at)
-        VALUES (
-                 #{orderNo}, #{buyerId}, #{type}, #{paymentAmount}, #{status}, #{createAt}
+        INSERT INTO `order` (order_no, buyer_id, type, payment_amount, status, create_at, draw_proportion,
+                             received_amount)
+        VALUES (#{orderNo}, #{buyerId}, #{type}, #{paymentAmount}, #{status}, #{createAt}, #{drawProportion},
+                #{receivedAmount}
                  )
     </insert>
 

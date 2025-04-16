@@ -16,6 +16,7 @@ public class Product {
     private Float price;
     private Float discount;
     private Float proportion;
+    private Integer vipTime;
     private Integer createUser;
     private Integer updateUser;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
@@ -26,37 +27,49 @@ public class Product {
     public Product() {
     }
 
-    public Product(Integer id, String name, Integer type,
-                   Float price, Float discount, Float proportion,
-                   Integer createUser, Integer updateUser, Date createAt, Date updateAt) {
+    public Product(Integer id, String name, Integer type, Float price, Float discount,
+                   Float proportion, Integer vipTime, Integer createUser,
+                   Integer updateUser, Date createAt, Date updateAt) {
         this.id = id;
         this.name = name;
-        this.price = price;
         this.type = type;
+        this.price = price;
         this.discount = discount;
         this.proportion = proportion;
+        this.vipTime = vipTime;
         this.createUser = createUser;
         this.updateUser = updateUser;
         this.createAt = createAt;
         this.updateAt = updateAt;
     }
 
-    public Product(Integer id, String name, Float price, Float discount, Float proportion, Integer updateUser, Date updateAt) {
+    public Product(Integer id, String name, Float price, Float discount,
+                   Float proportion, Integer vipTime, Integer updateUser, Date updateAt) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.discount = discount;
         this.proportion = proportion;
+        this.vipTime = vipTime;
         this.updateUser = updateUser;
         this.updateAt = updateAt;
     }
 
-    public Product(Integer id, String name, Integer type, Float price, Float discount, Float proportion) {
+    public Product(Integer id, String name, Integer type, Float price, Float discount, Float proportion, Integer vipTime) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.price = price;
         this.discount = discount;
         this.proportion = proportion;
+        this.vipTime = vipTime;
+    }
+
+    public Product(String name, Float price, Float discount, Float proportion, Integer vipTime) {
+        this.name = name;
+        this.price = price;
+        this.discount = discount;
+        this.proportion = proportion;
+        this.vipTime = vipTime;
     }
 }

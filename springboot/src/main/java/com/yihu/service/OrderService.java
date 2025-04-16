@@ -9,7 +9,7 @@ public interface OrderService {
 
     String generateOrderNo();
 
-    Boolean createOrder(String orderNo, Integer buyerId, Integer type, Integer status, float paymentAmount);
+    Boolean createOrder(String orderNo, Integer buyerId, Integer type, Integer status, float drawProportion, float paymentAmount);
 
     Order findByOrderNo(String orderNo);
 

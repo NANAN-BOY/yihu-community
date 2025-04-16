@@ -13,7 +13,8 @@ import java.util.List;
 public interface OrderMapper {
 
     int insertOrder(@Param("orderNo") String orderNo,@Param("buyerId") Integer buyerId,@Param("type") Integer type,
-                    @Param("status") Integer status,@Param("paymentAmount") float paymentAmount,
+                    @Param("status") Integer status, @Param("drawProportion") float drawProportion,
+                    @Param("receivedAmount") float receivedAmount, @Param("paymentAmount") float paymentAmount,
                     @Param("createAt") Date createAt);
 
     Order findByOrderNo(@Param("orderNo") String orderNo);

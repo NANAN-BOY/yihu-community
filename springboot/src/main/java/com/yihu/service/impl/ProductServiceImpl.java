@@ -45,6 +45,7 @@ public class ProductServiceImpl implements ProductService {
                 productDTO.getPrice(),
                 productDTO.getDiscount(),
                 productDTO.getProportion(),
+                productDTO.getVipTime(),
                 userId,
                 new Date());
         return productMapper.updateProduct(product);
@@ -53,5 +54,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findProductList(Integer type) {
         return productMapper.findProductList(type);
+    }
+
+    @Override
+    public Product getProduct(Integer id) {
+        return productMapper.getProduct(id);
     }
 }

@@ -11,4 +11,5 @@ public class ProductDTO {
     private Float price;
     private Float discount;
     private Float proportion;
+    private Integer vipTime;
 }

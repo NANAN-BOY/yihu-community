@@ -8,8 +8,10 @@ import com.yihu.common.Result;
 import com.yihu.dto.OrderQueryDTO;
 import com.yihu.entity.Business;
 import com.yihu.entity.Order;
+import com.yihu.entity.Product;
 import com.yihu.entity.User;
 import com.yihu.service.OrderService;
+import com.yihu.service.ProductService;
 import com.yihu.utils.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
     private final PaymentService paymentService;
     private final OrderService orderService;
+    private final ProductService productService;
 
     @GetMapping("/pay/create")
     public String createOrder(@RequestParam Integer type) {
@@ -31,23 +34,29 @@ public class OrderController {
             throw new RuntimeException("用户未登录");
         }
 
-        ProductType productType = ProductType.getByType(type);
-        if (productType == null) {
-            throw new RuntimeException("无效的商品类型");
-        }
-
-        String productName = productType.getProductName();
-        float paymentAmount = productType.getPaymentAmount();
+        Product productType = productService.getProduct(type);
+//        ProductType productType = ProductType.getByType(type);
+//        if (productType == null) {
+//            throw new RuntimeException("无效的商品类型");
+//        }
+//
+//        String productName = productType.getProductName();
+//        float paymentAmount = productType.getPaymentAmount();
 
         String orderNo = orderService.generateOrderNo();
 
-        boolean createSuccess = orderService.createOrder(orderNo, currentUser.getId(), type, 0, paymentAmount);
+        boolean createSuccess = orderService.createOrder(orderNo,
+                currentUser.getId(),
+                type,
+                0,
+                productType.getProportion(),
+                productType.getPrice() * productType.getDiscount());
 
         if (!createSuccess) {
             throw new RuntimeException("订单创建失败");
         }
 
-        return paymentService.createOrder(productName, orderNo, paymentAmount);
+        return paymentService.createOrder(productType.getName(), orderNo, productType.getPrice() * productType.getDiscount());
     }
 
     @AuthAccess

@@ -6,13 +6,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yihu.common.WebSocketSingleServer;
 import com.yihu.dto.OrderQueryDTO;
-import com.yihu.entity.Business;
-import com.yihu.entity.Communication;
-import com.yihu.entity.MemberShip;
-import com.yihu.entity.Order;
-import com.yihu.mapper.BusinessMapper;
-import com.yihu.mapper.MemberShipMapper;
-import com.yihu.mapper.OrderMapper;
+import com.yihu.entity.*;
+import com.yihu.mapper.*;
 import com.yihu.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +26,14 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final MemberShipMapper memberShipMapper;
     private final BusinessMapper businessMapper;
+    private final ProductMapper productMapper;
 
     @Autowired
-    public OrderServiceImpl(OrderMapper orderMapper, MemberShipMapper memberShipMapper, BusinessMapper businessMapper) {
+    public OrderServiceImpl(OrderMapper orderMapper, MemberShipMapper memberShipMapper, BusinessMapper businessMapper, UserMapper userMapper, ProductMapper productMapper) {
         this.orderMapper = orderMapper;
         this.memberShipMapper = memberShipMapper;
         this.businessMapper = businessMapper;
+        this.productMapper = productMapper;
     }
 
 
@@ -47,11 +44,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Boolean createOrder(String orderNo, Integer buyerId, Integer type, Integer status, float paymentAmount) {
+    public Boolean createOrder(String orderNo, Integer buyerId, Integer type, Integer status, float drawProportion, float paymentAmount) {
         try {
             Date currentDate = new Date();
             Timestamp currentTimestamp = new Timestamp(currentDate.getTime());
-            int isSuccess = orderMapper.insertOrder(orderNo, buyerId, type, status, paymentAmount, currentTimestamp);
+            float receivedAmount = this.getReceivedAmount(paymentAmount, drawProportion);
+            int isSuccess = orderMapper.insertOrder(orderNo, buyerId, type, status, drawProportion, receivedAmount,
+                    paymentAmount, currentTimestamp);
             return isSuccess > 0;
         } catch (Exception e) {
             System.err.println("订单创建异常: " + e.getMessage());
@@ -85,9 +84,9 @@ public class OrderServiceImpl implements OrderService {
         order.setPayAt(new Date());
         order.setOtherOrderNo(tradeNo);
         order.setPaymentType(1);
+        Product product = productMapper.getProduct(order.getType()); //获取产品信息
         //专家服务订单
-        if (order.getType() == 0) {
-            // 执行乐观锁更新
+        if (product.getVipTime() == null) {
             int affectedRows = orderMapper.ExpertOrder(
                     order.getOrderNo(),
                     order.getStatus() - 1,  // 旧状态=已支付状态-1
@@ -104,6 +103,24 @@ public class OrderServiceImpl implements OrderService {
                 return false;
             }
         }
+//        if (order.getType() == 0) {
+//            // 执行乐观锁更新
+//            int affectedRows = orderMapper.ExpertOrder(
+//                    order.getOrderNo(),
+//                    order.getStatus() - 1,  // 旧状态=已支付状态-1
+//                    order.getStatus(), //新状态=已支付状态
+//                    order.getOtherOrderNo(),
+//                    new Date(),// payAt=当前时间
+//                    order.getPaymentType()
+//                    //endAt在服务结束后再通过别的方法写入
+//            );
+//            if (affectedRows != 0) {
+//                log.info("订单状态更新成功");
+//                return true;
+//            } else {
+//                return false;
+//            }
+//        }
 
         //购买vip
         Calendar calendar = Calendar.getInstance();
@@ -123,11 +140,7 @@ public class OrderServiceImpl implements OrderService {
                 new Date() //endAt=当前时间
         );
         if (affectedRows != 0) {
-            if (order.getType() == 1) {
-                calendar.add(Calendar.MONTH, 1);
-            } else if (order.getType() == 2) {
-                calendar.add(Calendar.YEAR, 1);
-            }
+            calendar.add(Calendar.MONTH, product.getVipTime());
             MemberShip memberShip = new MemberShip(order.getOrderNo(),
                     order.getBuyerId(), order.getPayAt(), calendar.getTime(), 1);
             if (ms == null) {
@@ -195,6 +208,7 @@ public class OrderServiceImpl implements OrderService {
                             business.getStatus(),
                             business.getStatus() + 1,
                             new Date());
+//                    int isUpdate = userMapper.addBalance(order.getPayeeId(),order.getPaymentAmount());
                     if (affectedRows > 0) {
                         return 0;//成功
                     }
@@ -222,6 +236,10 @@ public class OrderServiceImpl implements OrderService {
             String message = JSON.toJSONString(communication);
             WebSocketSingleServer.sendMessageToUser(order.getBuyerId(), message);
         }
+    }
+
+    private float getReceivedAmount(float paymentAmount, float drawProportion) {
+        return paymentAmount - (paymentAmount * drawProportion);
     }
 
 }

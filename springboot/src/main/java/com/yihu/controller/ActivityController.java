@@ -5,11 +5,13 @@ import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.dto.ActivityQueryDTO;
-import com.yihu.entity.*;
+import com.yihu.entity.Activity;
+import com.yihu.entity.ActivityFiles;
+import com.yihu.entity.ActivityNews;
+import com.yihu.entity.User;
 import com.yihu.service.ActivityService;
 import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -159,7 +161,7 @@ public class ActivityController {
     }
 
 
-    @DeleteMapping("deleteFileById")
+    @DeleteMapping("/deleteFileById")
     public Result deleteFileById(@RequestParam Integer fileId){
         try {
             activityService.deleteFile(fileId);

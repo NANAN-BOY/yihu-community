@@ -95,4 +95,10 @@
           And phone = #{oldPhone}
     </update>
 
+    <update id="addBalance">
+        UPDATE user
+        SET balance = balance + #{balance}
+        WHERE id = #{userId}
+    </update>
+
 </mapper>

@@ -34,4 +34,6 @@ public interface UserMapper {
 
     void updateLastLogin(@Param("userId") Integer userId,
                          @Param("lastLoginTime") Date lastLoginTime);
+
+    int addBalance(@Param("userId") Integer userId, @Param("balance") Float balance);
 }

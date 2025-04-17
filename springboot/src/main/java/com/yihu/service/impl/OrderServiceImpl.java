@@ -27,13 +27,15 @@ public class OrderServiceImpl implements OrderService {
     private final MemberShipMapper memberShipMapper;
     private final BusinessMapper businessMapper;
     private final ProductMapper productMapper;
+    private final UserMapper userMapper;
 
     @Autowired
-    public OrderServiceImpl(OrderMapper orderMapper, MemberShipMapper memberShipMapper, BusinessMapper businessMapper, UserMapper userMapper, ProductMapper productMapper) {
+    public OrderServiceImpl(OrderMapper orderMapper, MemberShipMapper memberShipMapper, BusinessMapper businessMapper, UserMapper userMapper, ProductMapper productMapper, UserMapper userMapper1) {
         this.orderMapper = orderMapper;
         this.memberShipMapper = memberShipMapper;
         this.businessMapper = businessMapper;
         this.productMapper = productMapper;
+        this.userMapper = userMapper1;
     }
 
 
@@ -208,8 +210,8 @@ public class OrderServiceImpl implements OrderService {
                             business.getStatus(),
                             business.getStatus() + 1,
                             new Date());
-//                    int isUpdate = userMapper.addBalance(order.getPayeeId(),order.getPaymentAmount());
-                    if (affectedRows > 0) {
+                    int isUpdate = userMapper.addBalance(order.getPayeeId(), order.getReceivedAmount());
+                    if (affectedRows > 0 && isUpdate > 0) {
                         return 0;//成功
                     }
                 }

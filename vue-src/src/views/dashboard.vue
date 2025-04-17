@@ -173,7 +173,7 @@
     <el-form ref="buyVIPForm" v-loading="BuyYiHuLoading || VipListLoading" label-width="100px">
       <!-- 动态渲染会员列表 -->
       <div v-for="item in VipList" :key="item.id" class="vip-item">
-        <h1>
+        <h2>
           <el-icon>
             <Star/>
           </el-icon>
@@ -184,7 +184,7 @@
           >
             立即购买（¥{{ calculatePrice(item) }}）
           </el-button>
-        </h1>
+        </h2>
         <!-- 如果有折扣，显示折扣信息 -->
         <div v-if="item.discount < 1" class="discount-info">
           原价¥{{ item.price }}，{{ (item.discount * 10) }}折优惠

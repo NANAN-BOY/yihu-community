@@ -92,10 +92,51 @@ const orderStatusConvert = async (ststus) => {
 const BuyBusinessAreaDialogVisible = ref(false);
 const openBuyBusinessPAreaDialogVisible = () => {
   BuyBusinessAreaDialogVisible.value = true;
+  getBusinessList();
 }
 const closeBuyBusinessAreaDialogVisible = () => {
   BuyBusinessAreaDialogVisible.value = false;
 }
+const BusinessListLoading = ref(false);
+const BusinessList = ref([]);
+const getBusinessList = () => {
+  BusinessListLoading.value = true;
+  axios.get(
+      `${import.meta.env.VITE_BACKEND_IP}/api/product/get-list`,
+      {
+        params: {
+          type: 0
+        },
+        headers: {
+          'token': store.state.token
+        }
+      }
+  )
+      .then(response => {
+        console.log(response.data);
+        if (response.data.code === 200) {
+          if (response.data.data !== null) {
+            BusinessList.value = response.data.data
+          } else {
+            ElMessage.error(`加载失败，请重试`)
+          }
+        }
+      })
+      .catch(error => {
+        ElMessage.error(`${error.message}`)
+      }).finally(() => {
+    BusinessListLoading.value = false;
+  })
+}
+// 计算实际价格（考虑折扣）
+const calculatePrice = (item) => {
+  return (item.price * item.discount).toFixed(2);
+};
+
+// 根据会员ID返回按钮类型（保持你原来的样式逻辑）
+const getButtonType = (id) => {
+  return id === 1 ? 'info' : id === 2 ? 'success' : 'primary';
+};
 //Data required for Pay Info
 const PayInfoDialogVisible = ref(false);
 const openPayInfoDialogVisible = () => {
@@ -295,21 +336,33 @@ const closeCheckOrderDetail = () => {
       </el-form-item>
     </el-form>
   </div>
-  <!-- Buy VIP dialog-->
+  <!-- Buy Business dialog-->
   <el-dialog
       v-model="BuyBusinessAreaDialogVisible"
       title="购买服务"
       width="500"
       align-center
   >
-    <el-form v-loading="BuyYiHuLoading" ref="buyVIPForm" label-width="100px">
-      <h1>
-        <el-icon>
-          <Star/>
-        </el-icon>
-        一对一专家定制服务
-        <el-button type="success" @click="BuyBusiness(0)">立即购买</el-button>
-      </h1>
+    <el-form ref="buyBusinessForm" v-loading="BuyYiHuLoading || BusinessListLoading" label-width="100px">
+      <!-- 动态渲染会员列表 -->
+      <div v-for="item in BusinessList" :key="item.id" class="Business-item">
+        <h2>
+          <el-icon>
+            <Star/>
+          </el-icon>
+          {{ item.name }}
+          <el-button
+              :type="getButtonType(item.id)"
+              @click="BuyBusiness(item.id)"
+          >
+            立即购买（¥{{ calculatePrice(item) }}）
+          </el-button>
+        </h2>
+        <!-- 如果有折扣，显示折扣信息 -->
+        <div v-if="item.discount < 1" class="discount-info">
+          原价¥{{ item.price }}，{{ (item.discount * 10) }}折优惠
+        </div>
+      </div>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
@@ -393,5 +446,26 @@ const closeCheckOrderDetail = () => {
   .infinite-list-wrapper .list-item + .list-item {
     margin-top: 10px;
   }
+}
+
+/* 服务列表 */
+.Business-item {
+  margin-bottom: 20px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.Business-item h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.discount-info {
+  color: #f56c6c;
+  font-size: 12px;
+  margin-left: 30px;
+  margin-top: 5px;
 }
 </style>

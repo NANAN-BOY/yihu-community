@@ -278,7 +278,7 @@ const closeCheckOrderDetail = () => {
     <h1>定制服务</h1>
     <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
     <!-- 我的订单无限滚动列表 -->
-    <el-button type="primary" @click="refreshOrderList" v-loading="loading">刷新</el-button>
+    <el-button :loading="loading" type="primary" @click="refreshOrderList">刷新</el-button>
     <!--  订单状态分类-->
     <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
       <el-segmented v-model="orderStstusValue" :options="orderStstusOptions" size="large"/>

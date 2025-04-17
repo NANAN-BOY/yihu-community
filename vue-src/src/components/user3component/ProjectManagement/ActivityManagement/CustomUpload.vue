@@ -301,6 +301,8 @@ const clostFileDetailVisible = () => {
 }
 
 .preview-item {
+  border-radius: 6px;
+  background: #a6a6a6;
   position: relative;
   width: 100px;
   height: 100px;

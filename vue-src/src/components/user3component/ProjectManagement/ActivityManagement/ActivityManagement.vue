@@ -1,8 +1,8 @@
 <script setup>
 
-import {ElButton, ElInput, ElMessage} from "element-plus";
+import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
 import {Search} from "@element-plus/icons-vue";
-import {computed, reactive, ref} from "vue";
+import {computed, h, reactive, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
 import CustomUpload from "./CustomUpload.vue";
@@ -93,7 +93,7 @@ const createNewActivity = async () => {
 }
 //活动信息编辑页面所需信息
 const nowStep = ref('描述')
-const stepOptions = ['描述', '签到', '档案', '新闻稿', '满意度', '7']
+const stepOptions = ['描述', '签到', '档案', '新闻稿', '满意度', '管理']
 const activityForm = reactive({
   activityName: '',
   notice: '',
@@ -137,6 +137,10 @@ const activityServiceObjectCount = ref(null)
 const activityFiles = ref([])
 const activityNews = ref([])
 
+//OtherInfo
+const activityCreateTime = ref(null)
+const activityUpdateTime = ref(null)
+
 const isChanged = (field) => {
   return oldData[`${field}_Old`].value !== eval(field).value;
 }
@@ -161,7 +165,8 @@ const openActivityDetail = async (id) => {
     activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
     activityFiles.value = nowActivity.files;
     activityNews.value = nowActivity.news;
-    console.log(nowActivity.files)
+    activityCreateTime.value = nowActivity.activity.createTime;
+    activityUpdateTime.value = nowActivity.activity.updateTime;
     pageNum.value = 2;
   }
 }
@@ -185,6 +190,8 @@ const closeActivityDetail = ()=>{
   activityServiceObjectCount.value  = null;
   activityFiles.value  = null;
   activityNews.value = null;
+  activityCreateTime.value = null;
+  activityUpdateTime.value = null;
   //step
   nowStep.value = '描述';
   refreshActivityList();
@@ -227,7 +234,6 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
     console.log(requestBody);
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/update`, requestBody
         , {headers: {token: store.state.token}});
-    console.log(response.data);
   } catch (error) {
     console.error('API 请求失败:', error);
   }
@@ -236,11 +242,52 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
   if (oldData[key]) {
     oldData[key].value = paramValue; // 更新对应的 ref 值
     ElMessage.success("保存成功")
+    activityUpdateTime.value=Date.now();
   } else {
     console.error(`旧数据字段 ${key} 不存在`);
   }
   updateActivityInfoLoading.value = false;
 };
+const deleteActivityWarning = () => {
+  ElMessageBox({
+    title: '删除确认',
+    message: h('div', null, [
+      h('p', null, `确认删除“${!activityTitle.value ? "未命名活动": activityTitle.value}”活动吗？`),
+      h('p', { style: 'color: #ff4d4f; margin-top: 8px;' }, '此操作不可撤销')
+    ]),
+    showCancelButton: true,
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    confirmButtonClass: 'confirm-delete-button',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true
+        instance.confirmButtonText = '删除中...'
+        axios.delete(`${import.meta.env.VITE_BACKEND_IP}/api/activity/deleteById`,
+            {
+              headers: {token: store.state.token},
+              params: {activityId: activityId.value}
+            })
+            .then(response => {
+              if (response.data.code === 200) {
+                ElMessage.success("删除成功")
+                closeActivityDetail();
+                done()
+              } else {
+                ElMessage.error("删除失败")
+                instance.confirmButtonLoading = false
+              }
+            })
+            .catch(error => {
+              console.error('API 请求失败:', error);
+            })
+      } else {
+        done()
+      }
+    }
+  })
+}
 </script>
 
 <template>
@@ -437,6 +484,27 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
             :accept-file-type="'application/zip,application/x-zip,application/x-zip-compressed'"
             :activityId="activityId"
         />
+      </div>
+
+      <div v-if="nowStep === '管理'">
+        <br><h4>活动管理</h4>
+        <el-button @click="deleteActivityWarning" type="danger">
+          移除活动
+        </el-button>
+        <br><h4>活动信息</h4>
+        活动创建时间：{{new Date(activityCreateTime).getFullYear()+"年"+
+          new Date(activityCreateTime).getMonth()+"月"+
+          new Date(activityCreateTime).getDate()+"日"+
+          new Date(activityCreateTime).getHours()+":"+
+          new Date(activityCreateTime).getMinutes()+":"+
+          new Date(activityCreateTime).getSeconds()}}
+        <br>
+        上次更新时间：{{new Date(activityUpdateTime).getFullYear()+"年"+
+          new Date(activityUpdateTime).getMonth()+"月"+
+          new Date(activityUpdateTime).getDate()+"日"+
+          new Date(activityUpdateTime).getHours()+":"+
+          new Date(activityUpdateTime).getMinutes()+":"+
+          new Date(activityUpdateTime).getSeconds()}}
       </div>
     </el-form>
   </div>

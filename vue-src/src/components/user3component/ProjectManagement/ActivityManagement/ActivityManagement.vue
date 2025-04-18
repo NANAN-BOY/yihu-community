@@ -319,10 +319,10 @@ const deleteActivityWarning = () => {
     </el-breadcrumb>
     <br />
     <el-button :loading="createNewActivityLoading" type="primary" @click="createNewActivity()">创建新活动</el-button>&nbsp;
-    <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchProjects" />
-    <el-button type="primary" @click="searchProjects">
-      <el-icon><Search /></el-icon>
-    </el-button>
+    <!--    <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchProjects" />-->
+    <!--    <el-button type="primary" @click="">-->
+    <!--      <el-icon><Search /></el-icon>-->
+    <!--    </el-button>-->
     <br /><br />
 
     <!-- 活动列表显示无限滚动列表 -->
@@ -331,7 +331,7 @@ const deleteActivityWarning = () => {
           v-infinite-scroll="activityListLoad"
           class="list"
           :infinite-scroll-disabled="disabled"
-          v-loading="businessLoading"
+          v-loading=""
       >
         <li v-for="activity in activityList" :key="activity.id" class="list-item"
             @click="openActivityDetail(activity.id)">
@@ -355,24 +355,26 @@ const deleteActivityWarning = () => {
     <!-- 页面标题 -->
     <el-page-header @back="closeActivityDetail" title="返回">
       <template #content>
-        <span class="text-large font-600 mr-3">活动编辑</span>
+        <span class="text-large font-600 mr-3">
+          活动编辑
+          {{ updateActivityInfoLoading ? '(保存中)' : '' }}
+        </span>
       </template>
     </el-page-header><br>
     <div class="flex flex-col items-start gap-4">
       <el-segmented v-model="nowStep" :options="stepOptions" size="large" />
     </div>
     <!-- 步骤表单 -->
-    <el-form :model="activityForm" label-width="120px">
+    <el-form :model="activityForm" label-width="120px" @submit.native.prevent="">
       <!-- 第一步 -->
       <div v-if="nowStep === '描述'">
         <el-form-item label="活动名称" prop="activityName">
-          <el-input v-model="activityTitle" placeholder="请输入活动名称" />
-          <el-button
-              v-if="isChanged('activityTitle')"
-              @click="updateActivityInfo('title','activityTitle', activityTitle)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input
+              v-model="activityTitle"
+              placeholder="请输入活动名称"
+              @blur="updateActivityInfo('title','activityTitle', activityTitle)"
+              @keyup.enter.native.prevent="updateActivityInfo('title','activityTitle', activityTitle)"
+          />
         </el-form-item>
         <el-form-item label="活动通知" prop="notice">
           <el-input
@@ -380,13 +382,8 @@ const deleteActivityWarning = () => {
               type="textarea"
               :rows="4"
               placeholder="请输入活动通知内容"
+              @blur="updateActivityInfo('noticeContent','activityNoticeContent', activityNoticeContent)"
           />
-          <el-button
-              v-if="isChanged('activityNoticeContent')"
-              @click="updateActivityInfo('noticeContent','activityNoticeContent', activityNoticeContent)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
         </el-form-item>
       </div>
 
@@ -395,13 +392,10 @@ const deleteActivityWarning = () => {
         <!-- 工作人员 -->
         <h4 class="form-section-title">工作人员签到</h4>
         <el-form-item label="人数">
-          <el-input-number v-model="activityStaffCount" :min="0" />
-          <el-button
-              v-if="isChanged('activityStaffCount')"
-              @click="updateActivityInfo('staffCount','activityStaffCount', activityStaffCount)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input-number v-model="activityStaffCount"
+                           :min="0"
+                           @change="updateActivityInfo('staffCount','activityStaffCount', activityStaffCount)"
+          />
         </el-form-item>
         <el-form-item label="签到照片">
           <CustomUpload
@@ -416,13 +410,11 @@ const deleteActivityWarning = () => {
         <!-- 志愿者 -->
         <h4 class="form-section-title">志愿者签到</h4>
         <el-form-item label="人数">
-          <el-input-number v-model="activityVolunteerCount" :min="0" />
-          <el-button
-              v-if="isChanged('activityVolunteerCount')"
-              @click="updateActivityInfo('volunteerCount','activityVolunteerCount', activityVolunteerCount)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input-number
+              v-model="activityVolunteerCount"
+              :min="0"
+              @change="updateActivityInfo('volunteerCount','activityVolunteerCount', activityVolunteerCount)"
+          />
         </el-form-item>
         <el-form-item label="签到照片">
           <CustomUpload
@@ -438,13 +430,11 @@ const deleteActivityWarning = () => {
         <!-- 服务对象 -->
         <h4 class="form-section-title">服务对象签到</h4>
         <el-form-item label="人数">
-          <el-input-number v-model="activityServiceObjectCount" :min="0" />
-          <el-button
-              v-if="isChanged('activityServiceObjectCount')"
-              @click="updateActivityInfo('serviceObjectCount','activityServiceObjectCount', activityServiceObjectCount)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input-number
+              v-model="activityServiceObjectCount"
+              :min="0"
+              @change="updateActivityInfo('serviceObjectCount','activityServiceObjectCount', activityServiceObjectCount)"
+          />
         </el-form-item>
         <el-form-item label="签到照片">
           <CustomUpload

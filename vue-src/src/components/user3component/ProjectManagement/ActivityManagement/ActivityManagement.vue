@@ -94,37 +94,6 @@ const createNewActivity = async () => {
 //活动信息编辑页面所需信息
 const nowStep = ref('描述')
 const stepOptions = ['描述', '签到', '档案', '新闻稿', '满意度', '管理']
-const activityForm = reactive({
-  activityName: '',
-  notice: '',
-  staffCount: 0,
-  volunteerCount: 0,
-  clientCount: 0,
-  staffFiles: [],
-  volunteerFiles: [],
-  clientFiles: [],
-  processFiles: [],
-  platform: '',
-  articleUrl: '',
-  newsFiles: []
-})
-// 统一管理所有旧数据的对象
-const oldData = {
-  // Step 1 Data
-  activityId_Old: ref(null),
-  activityTitle_Old: ref(null),
-  activityNoticeContent_Old: ref(null),
-
-  // Step 2 Data
-  activityStaffCount_Old: ref(null),
-  activityVolunteerCount_Old: ref(null),
-  activityServiceObjectCount_Old: ref(null),
-
-  // News Data
-  activityNews_Old: ref([]),
-  // File Data
-  activityFiles_Old: ref([]),
-};
 //NewData
 //step 1 data
 const activityId = ref(null)
@@ -144,14 +113,19 @@ const activityUpdateTime = ref(null)
 
 
 const lastUpdateTime = ref(new Date())
+
+
+// 新闻稿
 const addNewsItem = () => {
   activityNews.value.push({
     platform: "",
     link: "",
   });
+  updateActivityInfo('news','activityNews', activityNews.value)
 };
 const removeNewsItem = (index) => {
   activityNews.value.splice(index, 1);
+  updateActivityInfo('news','activityNews', activityNews.value)
 };
 const openLink = (url) => {
   if (url) {
@@ -160,26 +134,10 @@ const openLink = (url) => {
     ElMessage.warning('请先输入有效的链接')
   }
 }
-import {isEqual} from 'lodash-es';
-const isChanged = (field) => {
-  const current = eval(field).value;
-  const old = oldData[`${field}_Old`].value;
-  return !isEqual(current, old);
-};
-
 const openActivityDetail = async (id) => {
   const nowActivity = await getActivityInfo(id)
   if(nowActivity !== 0){
-    //OldData
-    oldData["activityId_Old"].value = id;
-    oldData["activityTitle_Old"].value = nowActivity.activity.title;
-    oldData["activityNoticeContent_Old"].value = nowActivity.activity.noticeContent;
-    oldData["activityStaffCount_Old"].value = nowActivity.activity.staffCount;
-    oldData["activityVolunteerCount_Old"].value = nowActivity.activity.volunteerCount;
-    oldData["activityServiceObjectCount_Old"].value = nowActivity.activity.serviceObjectCount;
-    oldData["activityFiles_Old"].value = nowActivity.files;
-    oldData["activityNews_Old"].value = JSON.parse(JSON.stringify(nowActivity.news));
-    //NewData
+    //Data
     activityId.value = id;
     activityTitle.value = nowActivity.activity.title;
     activityNoticeContent.value = nowActivity.activity.noticeContent;
@@ -195,16 +153,7 @@ const openActivityDetail = async (id) => {
 }
 const closeActivityDetail = ()=>{
   pageNum.value = 1;
-  //OldData
-  oldData["activityId_Old"].value = null;
-  oldData["activityTitle_Old"].value = null;
-  oldData["activityNoticeContent_Old"].value = null;
-  oldData["activityStaffCount_Old"].value = null;
-  oldData["activityVolunteerCount_Old"].value = null;
-  oldData["activityServiceObjectCount_Old"].value = null;
-  oldData["activityFiles_Old"].value = null;
-  oldData["activityNews_Old"].value = null;
-  //NewData
+  //Data
   activityId.value = null;
   activityTitle.value  = null;
   activityNoticeContent.value  = null;
@@ -246,29 +195,21 @@ const getActivityInfo = async (activityId) => {
 };
 const updateActivityInfoLoading = ref(false);
 // update activity info
-const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
+const updateActivityInfo = async (apiParamName, paramValue) => {
   updateActivityInfoLoading.value = true;
   try {
     const requestBody = {
       activityId: activityId.value,
       [apiParamName]: paramValue
     };
-    console.log(requestBody);
     await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/update`, requestBody
         , {headers: {token: store.state.token}});
   } catch (error) {
     console.error('API 请求失败:', error);
   }
-  console.log(apiParamName + paramValue);
-  const key = `${constParamName}_Old`; // 动态生成键名，如 "activityId_Old"
-  if (oldData[key]) {
-    oldData[key].value = JSON.parse(JSON.stringify(paramValue)); // 更新对应的 ref 值
     activityUpdateTime.value = Date.now();
     lastUpdateTime.value = Date.now();
-  } else {
-    console.error(`旧数据字段 ${key} 不存在`);
-  }
-  updateActivityInfoLoading.value = false;
+    updateActivityInfoLoading.value = false;
 };
 const deleteActivityWarning = () => {
   ElMessageBox({
@@ -375,15 +316,15 @@ const deleteActivityWarning = () => {
       <el-segmented v-model="nowStep" :options="stepOptions" size="large" />
     </div>
     <!-- 步骤表单 -->
-    <el-form :model="activityForm" label-width="120px" @submit.native.prevent="">
+    <el-form label-width="120px" @submit.native.prevent="">
       <!-- 第一步 -->
       <div v-if="nowStep === '描述'">
         <el-form-item label="活动名称" prop="activityName">
           <el-input
               v-model="activityTitle"
               placeholder="请输入活动名称"
-              @blur="updateActivityInfo('title','activityTitle', activityTitle)"
-              @keyup.enter.native.prevent="updateActivityInfo('title','activityTitle', activityTitle)"
+              @blur="updateActivityInfo('title', activityTitle)"
+              @keyup.enter.native.prevent="updateActivityInfo('title', activityTitle)"
           />
         </el-form-item>
         <el-form-item label="活动通知" prop="notice">
@@ -392,7 +333,7 @@ const deleteActivityWarning = () => {
               type="textarea"
               :rows="4"
               placeholder="请输入活动通知内容"
-              @blur="updateActivityInfo('noticeContent','activityNoticeContent', activityNoticeContent)"
+              @blur="updateActivityInfo('noticeContent', activityNoticeContent)"
           />
         </el-form-item>
       </div>
@@ -404,7 +345,7 @@ const deleteActivityWarning = () => {
         <el-form-item label="人数">
           <el-input-number v-model="activityStaffCount"
                            :min="0"
-                           @change="updateActivityInfo('staffCount','activityStaffCount', activityStaffCount)"
+                           @change="updateActivityInfo('staffCount', activityStaffCount)"
           />
         </el-form-item>
         <el-form-item label="签到照片">
@@ -423,7 +364,7 @@ const deleteActivityWarning = () => {
           <el-input-number
               v-model="activityVolunteerCount"
               :min="0"
-              @change="updateActivityInfo('volunteerCount','activityVolunteerCount', activityVolunteerCount)"
+              @change="updateActivityInfo('volunteerCount', activityVolunteerCount)"
           />
         </el-form-item>
         <el-form-item label="签到照片">
@@ -443,7 +384,7 @@ const deleteActivityWarning = () => {
           <el-input-number
               v-model="activityServiceObjectCount"
               :min="0"
-              @change="updateActivityInfo('serviceObjectCount','activityServiceObjectCount', activityServiceObjectCount)"
+              @change="updateActivityInfo('serviceObjectCount', activityServiceObjectCount)"
           />
         </el-form-item>
         <el-form-item label="签到照片">
@@ -502,6 +443,7 @@ const deleteActivityWarning = () => {
                   v-model="item.platform"
                   clearable
                   placeholder="如：微信公众号、今日头条等"
+                  @blur="updateActivityInfo('news',activityNews)"
               />
             </el-form-item>
 
@@ -510,6 +452,7 @@ const deleteActivityWarning = () => {
                   v-model="item.link"
                   clearable
                   placeholder="请输入完整的文章URL"
+                  @blur="updateActivityInfo('news', activityNews)"
               >
                 <template #append>
                   <el-button :icon="Link" @click="openLink(item.link)"/>
@@ -525,16 +468,6 @@ const deleteActivityWarning = () => {
                 @click="addNewsItem"
             >
               添加新闻稿
-            </el-button>
-
-            <el-button
-                v-if="isChanged('activityNews')"
-                :icon="Upload"
-                :loading="updateActivityInfoLoading"
-                type="success"
-                @click="updateActivityInfo('news','activityNews', activityNews)"
-            >
-              保存修改
             </el-button>
           </div>
         </el-form>

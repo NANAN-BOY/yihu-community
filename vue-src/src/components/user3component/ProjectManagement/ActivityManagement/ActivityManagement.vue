@@ -1,7 +1,7 @@
 <script setup>
 
 import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Search} from "@element-plus/icons-vue";
+import {Delete, Link, Plus, Search, Upload} from "@element-plus/icons-vue";
 import {computed, h, reactive, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
@@ -120,9 +120,10 @@ const oldData = {
   activityVolunteerCount_Old: ref(null),
   activityServiceObjectCount_Old: ref(null),
 
+  // News Data
+  activityNews_Old: ref([]),
   // File Data
   activityFiles_Old: ref([]),
-  activityNews_Old: ref([]),
 };
 //NewData
 //step 1 data
@@ -133,17 +134,38 @@ const activityNoticeContent = ref(null)
 const activityStaffCount = ref(null)
 const activityVolunteerCount = ref(null)
 const activityServiceObjectCount = ref(null)
+// News Data
+const activityNews = ref([]);
 //File
 const activityFiles = ref([])
-const activityNews = ref([])
-
 //OtherInfo
 const activityCreateTime = ref(null)
 const activityUpdateTime = ref(null)
-
-const isChanged = (field) => {
-  return oldData[`${field}_Old`].value !== eval(field).value;
+const addNewsItem = () => {
+  activityNews.value.push({
+    platform: "",
+    link: "",
+  });
+  console.log(activityNews.value);
+  console.log(oldData["activityNews_Old"].value);
+};
+const removeNewsItem = (index) => {
+  activityNews.value.splice(index, 1);
+};
+const openLink = (url) => {
+  if (url) {
+    window.open(url, '_blank')
+  } else {
+    ElMessage.warning('请先输入有效的链接')
+  }
 }
+import {isEqual} from 'lodash-es';
+const isChanged = (field) => {
+  const current = eval(field).value;
+  const old = oldData[`${field}_Old`].value;
+  return !isEqual(current, old);
+};
+
 const openActivityDetail = async (id) => {
   const nowActivity = await getActivityInfo(id)
   if(nowActivity !== 0){
@@ -155,7 +177,7 @@ const openActivityDetail = async (id) => {
     oldData["activityVolunteerCount_Old"].value = nowActivity.activity.volunteerCount;
     oldData["activityServiceObjectCount_Old"].value = nowActivity.activity.serviceObjectCount;
     oldData["activityFiles_Old"].value = nowActivity.files;
-    oldData["activityNews_Old"].value = nowActivity.news;
+    oldData["activityNews_Old"].value = JSON.parse(JSON.stringify(nowActivity.news));
     //NewData
     activityId.value = id;
     activityTitle.value = nowActivity.activity.title;
@@ -164,7 +186,7 @@ const openActivityDetail = async (id) => {
     activityVolunteerCount.value = nowActivity.activity.volunteerCount;
     activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
     activityFiles.value = nowActivity.files;
-    activityNews.value = nowActivity.news;
+    activityNews.value = JSON.parse(JSON.stringify(nowActivity.news));
     activityCreateTime.value = nowActivity.activity.createTime;
     activityUpdateTime.value = nowActivity.activity.updateTime;
     pageNum.value = 2;
@@ -232,7 +254,7 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
       [apiParamName]: paramValue
     };
     console.log(requestBody);
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/update`, requestBody
+    await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/update`, requestBody
         , {headers: {token: store.state.token}});
   } catch (error) {
     console.error('API 请求失败:', error);
@@ -240,9 +262,9 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
   console.log(apiParamName + paramValue);
   const key = `${constParamName}_Old`; // 动态生成键名，如 "activityId_Old"
   if (oldData[key]) {
-    oldData[key].value = paramValue; // 更新对应的 ref 值
+    oldData[key].value = JSON.parse(JSON.stringify(paramValue)); // 更新对应的 ref 值
     ElMessage.success("保存成功")
-    activityUpdateTime.value=Date.now();
+    activityUpdateTime.value = Date.now();
   } else {
     console.error(`旧数据字段 ${key} 不存在`);
   }
@@ -450,27 +472,72 @@ const deleteActivityWarning = () => {
       </div>
 
       <!-- 第五步 新闻稿 -->
-      <div v-if="nowStep === '新闻稿'">
-        <el-form-item label="发布平台">
-          <el-input v-model="activityForm.platform" placeholder="请输入平台名称" />
-        </el-form-item>
-        <el-form-item label="文章链接">
-          <el-input
-              v-model="activityForm.articleUrl"
-              type="text"
-              placeholder="请输入文章链接"
-          />
-        </el-form-item>
-        <el-form-item label="新闻图片">
-          <CustomUpload
-              ref="uploadRef"
-              v-model="activityFiles"
-              :fileType="4"
-              :fileTypeName="'图片'"
-              :accept-file-type="'image/*'"
-              :activityId="activityId"
-          />
-        </el-form-item>
+      <div v-if="nowStep === '新闻稿'" class="news-container">
+        <el-form
+            class="news-form"
+            label-position="top"
+            label-width="120px"
+        >
+          <el-card
+              v-for="(item, index) in activityNews"
+              :key="index"
+              class="news-card"
+              shadow="hover"
+          >
+            <template #header>
+              <div class="card-header">
+                <span>新闻稿 #{{ index + 1 }}</span>
+                <el-button
+                    :icon="Delete"
+                    circle
+                    size="small"
+                    type="danger"
+                    @click="removeNewsItem(index)"
+                />
+              </div>
+            </template>
+
+            <el-form-item label="发布平台" prop="platform">
+              <el-input
+                  v-model="item.platform"
+                  clearable
+                  placeholder="如：微信公众号、今日头条等"
+              />
+            </el-form-item>
+
+            <el-form-item label="文章链接" prop="link">
+              <el-input
+                  v-model="item.link"
+                  clearable
+                  placeholder="请输入完整的文章URL"
+              >
+                <template #append>
+                  <el-button :icon="Link" @click="openLink(item.link)"/>
+                </template>
+              </el-input>
+            </el-form-item>
+          </el-card>
+
+          <div class="form-actions">
+            <el-button
+                :icon="Plus"
+                type="primary"
+                @click="addNewsItem"
+            >
+              添加新闻稿
+            </el-button>
+
+            <el-button
+                v-if="isChanged('activityNews')"
+                :icon="Upload"
+                :loading="updateActivityInfoLoading"
+                type="success"
+                @click="updateActivityInfo('news','activityNews', activityNews)"
+            >
+              保存修改
+            </el-button>
+          </div>
+        </el-form>
       </div>
 
       <!-- 第六步 -->

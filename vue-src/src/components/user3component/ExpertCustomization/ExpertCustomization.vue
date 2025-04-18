@@ -63,7 +63,6 @@ const refreshOrderList = async () => {
   error.value = ''
   loading.value = false
   await OrderListLoad()
-  await OrderListLoad()
 }
 //Order status classification
 const orderStstusValue = ref('全部')

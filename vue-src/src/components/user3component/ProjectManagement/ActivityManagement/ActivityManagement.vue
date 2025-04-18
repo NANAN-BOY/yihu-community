@@ -141,13 +141,14 @@ const activityFiles = ref([])
 //OtherInfo
 const activityCreateTime = ref(null)
 const activityUpdateTime = ref(null)
+
+
+const lastUpdateTime = ref(new Date())
 const addNewsItem = () => {
   activityNews.value.push({
     platform: "",
     link: "",
   });
-  console.log(activityNews.value);
-  console.log(oldData["activityNews_Old"].value);
 };
 const removeNewsItem = (index) => {
   activityNews.value.splice(index, 1);
@@ -231,7 +232,6 @@ const getActivityInfo = async (activityId) => {
         token: store.state.token
       }
     });
-    console.log(response);
     if (response.data.code === 200 && response.data.data) {
           return response.data.data;
     } else {
@@ -263,8 +263,8 @@ const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
   const key = `${constParamName}_Old`; // 动态生成键名，如 "activityId_Old"
   if (oldData[key]) {
     oldData[key].value = JSON.parse(JSON.stringify(paramValue)); // 更新对应的 ref 值
-    ElMessage.success("保存成功")
     activityUpdateTime.value = Date.now();
+    lastUpdateTime.value = Date.now();
   } else {
     console.error(`旧数据字段 ${key} 不存在`);
   }
@@ -357,8 +357,18 @@ const deleteActivityWarning = () => {
       <template #content>
         <span class="text-large font-600 mr-3">
           活动编辑
-          {{ updateActivityInfoLoading ? '(保存中)' : '' }}
-        </span>
+            {{ updateActivityInfoLoading ?
+                '(保存中)' :
+                '(最后保存于'+ (
+                    ( (new Date() - new Date(lastUpdateTime)) < 60000
+                            ? '1分钟前'
+                            : ( (new Date() - new Date(lastUpdateTime)) < 3600000
+                                    ? Math.floor( (new Date() - new Date(lastUpdateTime)) / 60000 ) + '分钟前'
+                                    : Math.floor( (new Date() - new Date(lastUpdateTime)) / 3600000 ) + '小时前'
+                            )
+                    )
+                ) + ')' }}
+</span>
       </template>
     </el-page-header><br>
     <div class="flex flex-col items-start gap-4">

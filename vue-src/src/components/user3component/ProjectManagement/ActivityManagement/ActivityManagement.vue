@@ -1,8 +1,8 @@
 <script setup>
 
 import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Delete, Link, Plus, Search, Upload} from "@element-plus/icons-vue";
-import {computed, h, reactive, ref} from "vue";
+import {Delete, Link, Plus} from "@element-plus/icons-vue";
+import {computed, h, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
 import CustomUpload from "./CustomUpload.vue";
@@ -492,19 +492,23 @@ const deleteActivityWarning = () => {
           移除活动
         </el-button>
         <br><h4>活动信息</h4>
-        活动创建时间：{{new Date(activityCreateTime).getFullYear()+"年"+
-          new Date(activityCreateTime).getMonth()+"月"+
-          new Date(activityCreateTime).getDate()+"日"+
-          new Date(activityCreateTime).getHours()+":"+
-          new Date(activityCreateTime).getMinutes()+":"+
-          new Date(activityCreateTime).getSeconds()}}
+        活动创建时间：{{
+          new Date(activityCreateTime).getFullYear() + "年" +
+          (new Date(activityCreateTime).getMonth() + 1) + "月" +  // 月份+1
+          new Date(activityCreateTime).getDate() + "日" +
+          String(new Date(activityCreateTime).getHours()).padStart(2, '0') + ":" +  // 补零
+          String(new Date(activityCreateTime).getMinutes()).padStart(2, '0') + ":" +
+          String(new Date(activityCreateTime).getSeconds()).padStart(2, '0')
+        }}
         <br>
-        上次更新时间：{{new Date(activityUpdateTime).getFullYear()+"年"+
-          new Date(activityUpdateTime).getMonth()+"月"+
-          new Date(activityUpdateTime).getDate()+"日"+
-          new Date(activityUpdateTime).getHours()+":"+
-          new Date(activityUpdateTime).getMinutes()+":"+
-          new Date(activityUpdateTime).getSeconds()}}
+        上次更新时间：{{
+          new Date(activityUpdateTime).getFullYear() + "年" +
+          (new Date(activityUpdateTime).getMonth() + 1) + "月" +  // 月份+1
+          new Date(activityUpdateTime).getDate() + "日" +
+          String(new Date(activityUpdateTime).getHours()).padStart(2, '0') + ":" +  // 补零
+          String(new Date(activityUpdateTime).getMinutes()).padStart(2, '0') + ":" +
+          String(new Date(activityUpdateTime).getSeconds()).padStart(2, '0')
+        }}
       </div>
     </el-form>
   </div>

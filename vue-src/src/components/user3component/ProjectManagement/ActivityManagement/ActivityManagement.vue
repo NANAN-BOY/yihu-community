@@ -7,6 +7,8 @@ import axios from "axios";
 import store from "../../../../store";
 import CustomUpload from "./CustomUpload.vue";
 const pageNum = ref(1)
+const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
+if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
 
 
 //Data required for activity list
@@ -93,8 +95,7 @@ const createNewActivity = async () => {
 }
 //活动信息编辑页面所需信息
 const nowStep = ref('描述')
-const stepOptions = ['描述', '签到', '档案', '新闻稿', '满意度', '管理']
-//NewData
+const stepOptions = ['描述', '签到', '档案', '新闻稿', '满意度','附件', '管理']
 //step 1 data
 const activityId = ref(null)
 const activityTitle = ref(null)
@@ -110,8 +111,6 @@ const activityFiles = ref([])
 //OtherInfo
 const activityCreateTime = ref(null)
 const activityUpdateTime = ref(null)
-
-
 const lastUpdateTime = ref(new Date())
 
 
@@ -121,11 +120,20 @@ const addNewsItem = () => {
     platform: "",
     link: "",
   });
-  updateActivityInfo('news','activityNews', activityNews.value)
+  updateActivityInfo('news', activityNews.value)
 };
 const removeNewsItem = (index) => {
-  activityNews.value.splice(index, 1);
-  updateActivityInfo('news','activityNews', activityNews.value)
+  ElMessageBox.confirm('确定要删除这条新闻吗？', '确认删除', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    // 确认删除
+    activityNews.value.splice(index, 1);
+    updateActivityInfo('news', activityNews.value)
+  }).catch(() => {
+    // 取消删除
+  });
 };
 const openLink = (url) => {
   if (url) {
@@ -145,7 +153,7 @@ const openActivityDetail = async (id) => {
     activityVolunteerCount.value = nowActivity.activity.volunteerCount;
     activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
     activityFiles.value = nowActivity.files;
-    activityNews.value = JSON.parse(JSON.stringify(nowActivity.news));
+    activityNews.value = nowActivity.news;
     activityCreateTime.value = nowActivity.activity.createTime;
     activityUpdateTime.value = nowActivity.activity.updateTime;
     pageNum.value = 2;
@@ -272,7 +280,7 @@ const deleteActivityWarning = () => {
           v-infinite-scroll="activityListLoad"
           class="list"
           :infinite-scroll-disabled="disabled"
-          v-loading=""
+          v-loading="loading"
       >
         <li v-for="activity in activityList" :key="activity.id" class="list-item"
             @click="openActivityDetail(activity.id)">
@@ -313,7 +321,7 @@ const deleteActivityWarning = () => {
       </template>
     </el-page-header><br>
     <div class="flex flex-col items-start gap-4">
-      <el-segmented v-model="nowStep" :options="stepOptions" size="large" />
+      <el-segmented v-model="nowStep" :options="stepOptions" :size="onMobile ?'default':'large'"/>
     </div>
     <!-- 步骤表单 -->
     <el-form label-width="120px" @submit.native.prevent="">
@@ -475,7 +483,10 @@ const deleteActivityWarning = () => {
 
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
-        <!-- 满意度调查和附件上传 -->
+
+      </div>
+      <div v-if="nowStep === '附件'">
+        <!-- 附件上传 -->
         <CustomUpload
             ref="uploadRef"
             v-model="activityFiles"
@@ -485,7 +496,6 @@ const deleteActivityWarning = () => {
             :activityId="activityId"
         />
       </div>
-
       <div v-if="nowStep === '管理'">
         <br><h4>活动管理</h4>
         <el-button @click="deleteActivityWarning" type="danger">

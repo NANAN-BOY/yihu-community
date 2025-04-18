@@ -12,7 +12,6 @@ const getProductDataList = async () => {
   try {
     ProductDataLoading.value = true
     ProductDataError.value = ''
-
     const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_IP}/api/product/get`,
         {
@@ -38,6 +37,32 @@ const getProductDataList = async () => {
 onMounted(
     getProductDataList
 )
+const editProductDataDialogVisible = ref(false)
+const openEditProductDataDialog = (product) => {
+  console.log(product)
+  editProductDataDialogVisible.value = true
+}
+const closeEditProductDataDialog = () => {
+  editProductDataDialogVisible.value = false
+}
+const editProductData = async () => {
+  try {
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/product/update`,
+        {
+          headers: {token: store.state.token}
+        }
+    )
+    console.log(response.data)
+    if (response.data.code === 200) {
+
+    } else if (response.data.code === 404) {
+    } else {
+    }
+  }catch (err){
+
+  }
+}
 </script>
 
 <template>
@@ -46,14 +71,26 @@ onMounted(
       <el-breadcrumb-item><strong>系统设置</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br>
-    <el-text class="mx-1" size="large">系统商品设置</el-text>
+    <el-text class="mx-1" size="large">系统会员设置</el-text>
     <el-form v-loading="ProductDataLoading">
       <el-form-item>
-        <el-table :data="ProductData" style="width: 100%">
-          <el-table-column prop="name" label="名称" width="180" />
-          <el-table-column prop="price" label="售卖价格" width="180" />
-          <el-table-column prop="discount" label="折扣" />
-          <el-table-column prop="proportion" label="提成比例" />
+        <el-table :data="ProductData.filter(item => item.type === 1)" style="width: 100%">
+          <el-table-column prop="name" label="名称" width="130" />
+          <el-table-column prop="price" label="售卖价格" width="100">
+            <template #default="{row}">
+              {{ row.price.toFixed(2) }}元
+            </template>
+          </el-table-column>
+          <el-table-column prop="discount" label="折扣" width="80">
+            <template #default="{row}">
+              {{ (row.discount * 100).toFixed(0) }}%
+            </template>
+          </el-table-column>
+          <el-table-column prop="vipTime" label="授予月份数" width="100">
+            <template #default="{row}">
+              {{ row.vipTime }}个月
+            </template>
+          </el-table-column>
           <el-table-column fixed="right" label="操作" min-width="120">
             <template #default>
               <el-button link type="primary" size="small" @click="handleClick">
@@ -67,6 +104,47 @@ onMounted(
         </el-table>
       </el-form-item>
     </el-form>
+    <el-text class="mx-1" size="large">系统商品设置</el-text>
+    <el-form v-loading="ProductDataLoading">
+      <el-form-item>
+        <el-table :data="ProductData.filter(item => item.type === 0)" style="width: 100%">
+          <el-table-column prop="name" label="名称" width="130" />
+          <el-table-column prop="price" label="售卖价格" width="100">
+            <template #default="{row}">
+              {{ row.price.toFixed(2) }}元
+            </template>
+          </el-table-column>
+          <el-table-column prop="discount" label="折扣" width="80">
+            <template #default="{row}">
+              {{ (row.discount * 100).toFixed(0) }}%
+            </template>
+          </el-table-column>
+          <el-table-column prop="proportion" label="提成比例" width="80">
+          <template #default="{row}">
+            {{ (row.proportion * 100).toFixed(0) }}%
+          </template>
+          </el-table-column>
+          <el-table-column fixed="right" label="操作" min-width="120">
+            <template #default="{row}">
+              <el-button link type="primary" size="small" @click="openEditProductDataDialog(row)">
+                编辑
+              </el-button>
+              <el-button link type="warning" size="small" @click="handleClick">
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-form-item>
+    </el-form>
+    <el-dialog title="编辑产品" v-model="editProductDataDialogVisible " width="500" align-center>
+      <div>{{ ProductDataError }}</div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="ProductDataError = ''">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

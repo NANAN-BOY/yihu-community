@@ -87,6 +87,12 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public void physicalDeleteNewsByActivityId(Integer activityId) {
+        // 物理删除删除活动新闻记录
+        activityNewsMapper.physicalDeleteByActivityId(activityId);
+    }
+
+    @Override
     public void deleteActivityById(Integer id,Integer userId) {
         // 删除活动记录
         Activity activity = new Activity();

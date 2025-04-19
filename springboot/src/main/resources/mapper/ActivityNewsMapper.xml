@@ -5,8 +5,8 @@
 
 <mapper namespace="com.yihu.mapper.ActivityNewsMapper">
     <insert id="insert" parameterType="com.yihu.entity.ActivityNews">
-        insert into activity_news(activity_id,news_platform,news_link,del_flag)
-        values(#{activityId},#{newsPlatform},#{newsLink},#{delFlag})
+        insert into activity_news(activity_id,platform,link,del_flag)
+        values(#{activityId},#{platform},#{link},#{delFlag})
     </insert>
 
 

@@ -67,8 +67,8 @@ public class ActivityServiceImpl implements ActivityService {
 
         ActivityNews activityNews = new ActivityNews();
         activityNews.setActivityId(activityId);
-        activityNews.setNewsPlatform(platform);
-        activityNews.setNewsLink(link);
+        activityNews.setPlatform(platform);
+        activityNews.setLink(link);
         activityNews.setDelFlag("N");
         return activityNewsMapper.insert(activityNews);
     }

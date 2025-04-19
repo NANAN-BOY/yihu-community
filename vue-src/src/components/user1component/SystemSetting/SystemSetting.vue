@@ -2,6 +2,8 @@
 import {onMounted, ref} from "vue";
 import axios from "axios";
 import store from "../../../store";
+import PercentageInput from "./PercentageInput.vue";
+import {ElMessage} from "element-plus";
 
 const pageNum = ref(1)
 const ProductData = ref([
@@ -38,29 +40,44 @@ onMounted(
     getProductDataList
 )
 const editProductDataDialogVisible = ref(false)
+const nowEditProductData = ref(null)
 const openEditProductDataDialog = (product) => {
   console.log(product)
+  nowEditProductData.value = JSON.parse(JSON.stringify(product));
   editProductDataDialogVisible.value = true
 }
 const closeEditProductDataDialog = () => {
   editProductDataDialogVisible.value = false
+  nowEditProductData.value = null;
 }
+const editProductDataDialogLoading = ref(false)
 const editProductData = async () => {
+  console.log(nowEditProductData)
+  editProductDataDialogLoading.value = true
   try {
-    const response = await axios.get(
+    const response = await axios.put(
         `${import.meta.env.VITE_BACKEND_IP}/api/product/update`,
+          nowEditProductData.value,
         {
           headers: {token: store.state.token}
         }
     )
     console.log(response.data)
     if (response.data.code === 200) {
-
+      if (response.data.data === true) {
+        ElMessage.success(`修改成功`)
+        closeEditProductDataDialog()
+        ProductData.value = []
+        await getProductDataList()
+      } else {
+        ElMessage.error(`修改失败，请重试`)
+      }
     } else if (response.data.code === 404) {
     } else {
     }
+    editProductDataDialogLoading.value = false
   }catch (err){
-
+    editProductDataDialogLoading.value = false
   }
 }
 </script>
@@ -92,8 +109,8 @@ const editProductData = async () => {
             </template>
           </el-table-column>
           <el-table-column fixed="right" label="操作" min-width="120">
-            <template #default>
-              <el-button link type="primary" size="small" @click="handleClick">
+            <template #default="{row}">
+              <el-button link type="primary" size="small" @click="openEditProductDataDialog(row)">
                 编辑
               </el-button>
               <el-button link type="warning" size="small" @click="handleClick">
@@ -137,11 +154,62 @@ const editProductData = async () => {
         </el-table>
       </el-form-item>
     </el-form>
-    <el-dialog title="编辑产品" v-model="editProductDataDialogVisible " width="500" align-center>
-      <div>{{ ProductDataError }}</div>
+    <el-dialog title="编辑产品" v-model="editProductDataDialogVisible" width="500" align-center>
+      <div>
+        <el-form label-position="top" v-if="editProductDataDialogVisible">
+          <el-form-item label="产品名称" required>
+            <el-input v-model="nowEditProductData.name" />
+          </el-form-item>
+          <el-form-item
+              label="价格(元)"
+              v-if="nowEditProductData.type === 1 || nowEditProductData.type === 0"
+          >
+            <el-input-number
+                v-model="nowEditProductData.price"
+                :min="0"
+                :precision="2"
+            />
+          </el-form-item>
+
+          <el-form-item
+              label="折扣"
+              v-if="nowEditProductData.type === 1 || nowEditProductData.type === 0"
+          >
+            <PercentageInput
+                v-model="nowEditProductData.discount"
+                :min="0"
+                :max="1"
+                :step="0.01"
+            />
+          </el-form-item>
+
+          <el-form-item
+              label="提成比例"
+              v-if="nowEditProductData.type === 0"
+          >
+            <PercentageInput
+                v-model="nowEditProductData.proportion"
+                :min="0"
+                :max="1"
+                :step="0.01"
+            />
+          </el-form-item>
+
+          <el-form-item
+              label="VIP时长(月）"
+              v-if="nowEditProductData.type === 1"
+          >
+            <el-input-number
+                v-model="nowEditProductData.vipTime"
+                :min="0"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="ProductDataError = ''">确 定</el-button>
+          <el-button @click="closeEditProductDataDialog">取 消</el-button>
+          <el-button type="primary" @click="editProductData" :loading="editProductDataDialogLoading" >确 定</el-button>
         </span>
       </template>
     </el-dialog>

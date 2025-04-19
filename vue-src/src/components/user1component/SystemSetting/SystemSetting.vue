@@ -3,7 +3,7 @@ import {onMounted, ref} from "vue";
 import axios from "axios";
 import store from "../../../store";
 import PercentageInput from "./PercentageInput.vue";
-import {ElMessage} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 const pageNum = ref(1)
 const ProductData = ref([
@@ -20,7 +20,6 @@ const getProductDataList = async () => {
           headers: {token: store.state.token}
         }
     )
-    console.log(response.data)
     if (response.data.code === 200) {
       ProductData.value = response.data.data
     } else if (response.data.code === 404) {
@@ -39,20 +38,20 @@ const getProductDataList = async () => {
 onMounted(
     getProductDataList
 )
-const editProductDataDialogVisible = ref(false)
+const ProductDataDialogVisible = ref(false)
+const isEditProductData = ref(false)
 const nowEditProductData = ref(null)
 const openEditProductDataDialog = (product) => {
-  console.log(product)
+  isEditProductData.value = true
   nowEditProductData.value = JSON.parse(JSON.stringify(product));
-  editProductDataDialogVisible.value = true
+  ProductDataDialogVisible.value = true
 }
 const closeEditProductDataDialog = () => {
-  editProductDataDialogVisible.value = false
+  ProductDataDialogVisible.value = false
   nowEditProductData.value = null;
 }
 const editProductDataDialogLoading = ref(false)
 const editProductData = async () => {
-  console.log(nowEditProductData)
   editProductDataDialogLoading.value = true
   try {
     const response = await axios.put(
@@ -62,7 +61,6 @@ const editProductData = async () => {
           headers: {token: store.state.token}
         }
     )
-    console.log(response.data)
     if (response.data.code === 200) {
       if (response.data.data === true) {
         ElMessage.success(`修改成功`)
@@ -73,12 +71,100 @@ const editProductData = async () => {
         ElMessage.error(`修改失败，请重试`)
       }
     } else if (response.data.code === 404) {
+      ElMessage.error(`修改失败，请重试(404)`)
     } else {
+      ElMessage.error(`修改失败，请重试(未知错误)`)
     }
     editProductDataDialogLoading.value = false
   }catch (err){
     editProductDataDialogLoading.value = false
   }
+}
+const openAddNewProductData = async (productType) => {
+  isEditProductData.value = false
+  nowEditProductData.value = {
+    name: '',
+    type: productType,
+    price: 0,
+    discount: 1,
+    proportion: 0,
+    vipTime: 0,
+  }
+  ProductDataDialogVisible.value = true
+}
+const closeAddNewProductData = async () => {
+  ProductDataDialogVisible.value = false
+}
+const addNewProductData = async () => {
+  editProductDataDialogLoading.value = true
+  try {
+    const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_IP}/api/product/add`,
+        nowEditProductData.value,
+        {
+          headers: {token: store.state.token}
+        }
+    )
+    if (response.data.code === 200) {
+      if (response.data.data === true) {
+        ElMessage.success(`添加成功`)
+        await closeAddNewProductData()
+        ProductData.value = []
+        await getProductDataList()
+      } else {
+        ElMessage.error(`添加失败，请重试`)
+      }
+    } else if (response.data.code === 404) {
+      ElMessage.error(`修改失败，请重试(404)`)
+    } else {
+      ElMessage.error(`修改失败，请重试(未知错误)`)
+    }
+    editProductDataDialogLoading.value = false
+  }catch (err){
+    editProductDataDialogLoading.value = false
+  }
+}
+const deleteProductData = (product) => {
+  ElMessageBox.confirm('确定删除该产品吗？', '删除确认', {
+    confirmButtonText: '确认删除',
+    cancelButtonText: '取消',
+    type: 'warning',
+    beforeClose: async (action, instance, done) => {
+      if (action === 'confirm') {
+        try {
+          // 显示加载状态
+          instance.confirmButtonLoading = true
+          instance.confirmButtonText = '删除中...'
+
+          // 发起删除请求
+          const { data } = await axios.delete(
+              `${import.meta.env.VITE_BACKEND_IP}/api/product/delete/${product.id}`,
+              { headers: { token: store.state.token } }
+          )
+
+          if (data.code === 200 && data.data) {
+            ElMessage.success('删除成功')
+            ProductData.value = []
+            await getProductDataList()
+          } else {
+            ElMessage.error(data.msg || '删除失败')
+          }
+        } catch (err) {
+          ElMessage.error(err.response?.data?.msg || '网络请求失败')
+        } finally {
+          done()
+          // 延迟恢复按钮状态避免闪烁
+          setTimeout(() => {
+            instance.confirmButtonLoading = false
+            instance.confirmButtonText = '确认删除'
+          }, 200)
+        }
+      } else {
+        done()
+        ElMessage.info('已取消删除')
+      }
+    }
+  })
 }
 </script>
 
@@ -89,6 +175,7 @@ const editProductData = async () => {
     </el-breadcrumb>
     <br>
     <el-text class="mx-1" size="large">系统会员设置</el-text>
+    <el-button type="primary" @click="openAddNewProductData(1)">添加</el-button>
     <el-form v-loading="ProductDataLoading">
       <el-form-item>
         <el-table :data="ProductData.filter(item => item.type === 1)" style="width: 100%">
@@ -113,7 +200,7 @@ const editProductData = async () => {
               <el-button link type="primary" size="small" @click="openEditProductDataDialog(row)">
                 编辑
               </el-button>
-              <el-button link type="warning" size="small" @click="handleClick">
+              <el-button link type="warning" size="small" @click="deleteProductData(row)">
                 删除
               </el-button>
             </template>
@@ -122,6 +209,7 @@ const editProductData = async () => {
       </el-form-item>
     </el-form>
     <el-text class="mx-1" size="large">系统商品设置</el-text>
+    <el-button type="primary" @click="openAddNewProductData(0)">添加</el-button>
     <el-form v-loading="ProductDataLoading">
       <el-form-item>
         <el-table :data="ProductData.filter(item => item.type === 0)" style="width: 100%">
@@ -146,7 +234,7 @@ const editProductData = async () => {
               <el-button link type="primary" size="small" @click="openEditProductDataDialog(row)">
                 编辑
               </el-button>
-              <el-button link type="warning" size="small" @click="handleClick">
+              <el-button link type="warning" size="small" @click="deleteProductData(row)">
                 删除
               </el-button>
             </template>
@@ -154,9 +242,9 @@ const editProductData = async () => {
         </el-table>
       </el-form-item>
     </el-form>
-    <el-dialog title="编辑产品" v-model="editProductDataDialogVisible" width="500" align-center>
+    <el-dialog :title="isEditProductData? '编辑产品' : '新增产品'" v-model="ProductDataDialogVisible" width="500" align-center>
       <div>
-        <el-form label-position="top" v-if="editProductDataDialogVisible">
+        <el-form label-position="top" v-if="ProductDataDialogVisible">
           <el-form-item label="产品名称" required>
             <el-input v-model="nowEditProductData.name" />
           </el-form-item>
@@ -209,7 +297,8 @@ const editProductData = async () => {
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="closeEditProductDataDialog">取 消</el-button>
-          <el-button type="primary" @click="editProductData" :loading="editProductDataDialogLoading" >确 定</el-button>
+          <el-button type="primary" @click="editProductData" v-if="isEditProductData" :loading="editProductDataDialogLoading" >保 存</el-button>
+          <el-button type="primary" @click="addNewProductData" v-if="!isEditProductData" :loading="editProductDataDialogLoading" >添 加</el-button>
         </span>
       </template>
     </el-dialog>

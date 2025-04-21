@@ -395,7 +395,7 @@ const closeCheckOrderDetail = () => {
 
 <style scoped>
 .infinite-list-wrapper {
-  height: calc(100vh - 220px);
+  height: calc(100vh - 221px);
   text-align: center;
 }
 

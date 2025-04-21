@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import axios from "axios";
 import store from "../../../store";
 import {Star} from "@element-plus/icons-vue";
@@ -29,7 +29,7 @@ const OrderListLoad = async () => {
         `${import.meta.env.VITE_BACKEND_IP}/api/order/get-myOrderList`,
         {type: 0, status: status},
         {
-          params: {pageNum: currentPage.value, pageSize: 10},
+          params: {pageNum: currentPage.value, pageSize: 20},
           headers: {token: store.state.token}
         }
     )
@@ -57,11 +57,12 @@ const OrderListLoad = async () => {
 }
 //Refresh order list
 const refreshOrderList = async () => {
-  currentPage.value = 1
   OrderList.value = []
+  currentPage.value = 1
   hasMore.value = true
-  error.value = ''
   loading.value = false
+  error.value = ''
+  await nextTick()
   await OrderListLoad()
 }
 //Order status classification
@@ -251,6 +252,7 @@ const checkBusinessCommunicate = (orderNo) => {
 //Processing method after the order is completed
 onMounted(() => {
   EventBus.on('endOrder1',refreshOrderList);
+  OrderListLoad();
 });
 onBeforeUnmount(() => {
   EventBus.off('endOrder1',refreshOrderList);
@@ -288,6 +290,7 @@ const closeCheckOrderDetail = () => {
           class="list"
           :infinite-scroll-disabled="disabled"
           v-loading="businessLoading"
+          infinite-scroll-immediate="false"
       >
         <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
             @click="openCheckOrderDetail(Order)">

@@ -327,9 +327,9 @@ const deleteActivityWarning = (activityId, activityTitle) => {
             {{
             updateActivityInfoLoading ?
                 '(保存中)' :
-                '(最后保存于' + (
+                '(保存于' + (
                     ((new Date() - new Date(lastUpdateTime)) < 60000
-                            ? '1分钟前'
+                            ? '几秒钟前'
                             : ((new Date() - new Date(lastUpdateTime)) < 3600000
                                     ? Math.floor((new Date() - new Date(lastUpdateTime)) / 60000) + '分钟前'
                                     : Math.floor((new Date() - new Date(lastUpdateTime)) / 3600000) + '小时前'

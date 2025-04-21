@@ -279,7 +279,7 @@ const closeCheckOrderDetail = () => {
     <h1>定制服务</h1>
     <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
     <!-- 我的订单无限滚动列表 -->
-    <el-button :loading="loading" type="primary" @click="refreshOrderList">刷新</el-button>
+    <el-button :loading="loading" type="primary" @click="refreshOrderList">{{ loading ? '加载中' : '刷新' }}</el-button>
     <!--  订单状态分类-->
     <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
       <el-segmented v-model="orderStstusValue" :options="orderStstusOptions" size="large"/>
@@ -291,6 +291,7 @@ const closeCheckOrderDetail = () => {
           :infinite-scroll-disabled="disabled"
           v-loading="businessLoading"
           infinite-scroll-immediate="false"
+          infinite-scroll-distance="100"
       >
         <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
             @click="openCheckOrderDetail(Order)">
@@ -394,7 +395,7 @@ const closeCheckOrderDetail = () => {
 
 <style scoped>
 .infinite-list-wrapper {
-  height: 750px;
+  height: calc(100vh - 220px);
   text-align: center;
 }
 
@@ -420,7 +421,7 @@ const closeCheckOrderDetail = () => {
 }
 @media (max-width: 768px) {
   .infinite-list-wrapper {
-    height: 730px;
+    height: calc(100vh - 221px);
     text-align: center;
   }
 

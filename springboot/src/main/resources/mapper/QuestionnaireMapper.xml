@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.QuestionnaireMapper">
+
+    <select id="getQuestionnaireByUserId" resultType="com.yihu.entity.Questionnaire">
+        select *
+        from questionnaire
+        where uesr_id = #{userId}
+          AND delete_flag = 0
+    </select>
+
+    <update id="deleteQuestionnaire">
+        update questionnaire
+        set delete_flag = 1
+        where id = #{id}
+    </update>
+
+    <insert id="create" parameterType="com.yihu.entity.Questionnaire">
+        insert into questionnaire
+        (create_time, decription, fill_count, status, title, uesr_id, delete_flag, activity_id)
+        values (#{createTime}, #{decription}, #{fillCount}, #{status}, #{title}, #{uesrId}, #{deleteFlag},
+                #{activityId})
+    </insert>
+
+    <update id="stopQuestionnaire">
+        update questionnaire
+        set status = 2
+        where id = #{id}
+    </update>
+
+    <update id="startQuestionnaire">
+        update questionnaire
+        set status = 1
+        where id = #{id}
+    </update>
+
+    <select id="getQuestionnaireByStatus" resultType="com.yihu.entity.Questionnaire">
+        select *
+        from questionnaire
+        where status = #{status}
+          AND delete_flag = 0
+          AND uesr_id = #{uesrId}
+    </select>
+
+</mapper>

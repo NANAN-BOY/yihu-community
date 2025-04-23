@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.AnswerMapper">
+
+    <insert id="insertAnswer" parameterType="com.yihu.entity.Answer">
+        insert into answer (fill_time, ip, question_id, question_title, question_type, write_value)
+        values (#{fillTime}, #{ip}, #{questionId}, #{questionTitle}, #{questionType}, #{write_value})
+    </insert>
+
+    <select id="analysis" resultType="com.yihu.entity.Answer">
+        select *
+        from answer
+        where question_id = #{questionId}
+    </select>
+
+
+</mapper>

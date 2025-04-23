@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.QuestionnaireIpMapper">
+
+    <select id="getQuestionnaireIp" resultType="com.yihu.entity.QuestionnaireIp">
+        select *
+        from questionnaire_id
+        where ip = #{ip}
+    </select>
+
+    <insert id="insertQuestionnaireIp" parameterType="com.yihu.entity.QuestionnaireIp">
+        insert into questionnaire_ip (ip, questionnaire_id)
+        values (#{ip}, #{questionnaireId})
+    </insert>
+
+</mapper>

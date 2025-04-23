@@ -67,8 +67,8 @@ public class ActivityServiceImpl implements ActivityService {
 
         ActivityNews activityNews = new ActivityNews();
         activityNews.setActivityId(activityId);
-        activityNews.setNewsPlatform(platform);
-        activityNews.setNewsLink(link);
+        activityNews.setPlatform(platform);
+        activityNews.setLink(link);
         activityNews.setDelFlag("N");
         return activityNewsMapper.insert(activityNews);
     }
@@ -84,6 +84,12 @@ public class ActivityServiceImpl implements ActivityService {
     public void deleteNewsByActivityId(Integer activityId) {
         // 删除活动新闻记录
         activityNewsMapper.deleteByActivityId(activityId);
+    }
+
+    @Override
+    public void physicalDeleteNewsByActivityId(Integer activityId) {
+        // 物理删除删除活动新闻记录
+        activityNewsMapper.physicalDeleteByActivityId(activityId);
     }
 
     @Override

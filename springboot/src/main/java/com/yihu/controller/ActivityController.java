@@ -180,8 +180,8 @@ public class ActivityController {
             // 获取 news 数据并更新
             List<ActivityDTO.NewsItem> newsList = activityDTO.getNews();
             if (newsList != null) {
-                // 先删除旧数据
-                activityService.deleteNewsByActivityId(activityDTO.getActivityId());
+                // 先删除旧数据 物理删除非逻辑删除
+                activityService.physicalDeleteNewsByActivityId(activityDTO.getActivityId());
                 // 遍历newsList 插入新数据
                 if (newsList != null) {
                     // 遍历newsList 插入新数据

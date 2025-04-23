@@ -1,12 +1,14 @@
 <script setup>
 
 import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Search} from "@element-plus/icons-vue";
-import {computed, h, reactive, ref} from "vue";
+import {Delete, Edit, Link, Plus, View} from "@element-plus/icons-vue";
+import {computed, h, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
 import CustomUpload from "./CustomUpload.vue";
 const pageNum = ref(1)
+const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
+if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
 
 
 //Data required for activity list
@@ -71,11 +73,11 @@ const createNewActivity = async () => {
   createNewActivityLoading.value = true;
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/addActivity`, {},
-    {
-      headers:{
-        token:store.state.token
-      }
-    });
+        {
+          headers: {
+            token: store.state.token
+          }
+        });
     console.log(response);
     if (response.data.code === 200 && response.data.data) {
       const id = response.data.data;
@@ -93,38 +95,7 @@ const createNewActivity = async () => {
 }
 //活动信息编辑页面所需信息
 const nowStep = ref('描述')
-const stepOptions = ['描述', '签到', '档案', '新闻稿', '满意度', '管理']
-const activityForm = reactive({
-  activityName: '',
-  notice: '',
-  staffCount: 0,
-  volunteerCount: 0,
-  clientCount: 0,
-  staffFiles: [],
-  volunteerFiles: [],
-  clientFiles: [],
-  processFiles: [],
-  platform: '',
-  articleUrl: '',
-  newsFiles: []
-})
-// 统一管理所有旧数据的对象
-const oldData = {
-  // Step 1 Data
-  activityId_Old: ref(null),
-  activityTitle_Old: ref(null),
-  activityNoticeContent_Old: ref(null),
-
-  // Step 2 Data
-  activityStaffCount_Old: ref(null),
-  activityVolunteerCount_Old: ref(null),
-  activityServiceObjectCount_Old: ref(null),
-
-  // File Data
-  activityFiles_Old: ref([]),
-  activityNews_Old: ref([]),
-};
-//NewData
+const stepOptions = ['描述', '签到', '档案', '新闻稿', '满意度', '附件', '管理']
 //step 1 data
 const activityId = ref(null)
 const activityTitle = ref(null)
@@ -133,30 +104,48 @@ const activityNoticeContent = ref(null)
 const activityStaffCount = ref(null)
 const activityVolunteerCount = ref(null)
 const activityServiceObjectCount = ref(null)
+// News Data
+const activityNews = ref([]);
 //File
 const activityFiles = ref([])
-const activityNews = ref([])
-
 //OtherInfo
 const activityCreateTime = ref(null)
 const activityUpdateTime = ref(null)
+const lastUpdateTime = ref(new Date())
 
-const isChanged = (field) => {
-  return oldData[`${field}_Old`].value !== eval(field).value;
+
+// 新闻稿
+const addNewsItem = () => {
+  activityNews.value.push({
+    platform: "",
+    link: "",
+  });
+  updateActivityInfo('news', activityNews.value)
+};
+const removeNewsItem = (index) => {
+  ElMessageBox.confirm('确定要删除这条新闻吗？', '确认删除', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    // 确认删除
+    activityNews.value.splice(index, 1);
+    updateActivityInfo('news', activityNews.value)
+  }).catch(() => {
+    // 取消删除
+  });
+};
+const openLink = (url) => {
+  if (url) {
+    window.open(url, '_blank')
+  } else {
+    ElMessage.warning('请先输入有效的链接')
+  }
 }
 const openActivityDetail = async (id) => {
   const nowActivity = await getActivityInfo(id)
-  if(nowActivity !== 0){
-    //OldData
-    oldData["activityId_Old"].value = id;
-    oldData["activityTitle_Old"].value = nowActivity.activity.title;
-    oldData["activityNoticeContent_Old"].value = nowActivity.activity.noticeContent;
-    oldData["activityStaffCount_Old"].value = nowActivity.activity.staffCount;
-    oldData["activityVolunteerCount_Old"].value = nowActivity.activity.volunteerCount;
-    oldData["activityServiceObjectCount_Old"].value = nowActivity.activity.serviceObjectCount;
-    oldData["activityFiles_Old"].value = nowActivity.files;
-    oldData["activityNews_Old"].value = nowActivity.news;
-    //NewData
+  if (nowActivity !== 0) {
+    //Data
     activityId.value = id;
     activityTitle.value = nowActivity.activity.title;
     activityNoticeContent.value = nowActivity.activity.noticeContent;
@@ -170,25 +159,16 @@ const openActivityDetail = async (id) => {
     pageNum.value = 2;
   }
 }
-const closeActivityDetail = ()=>{
+const closeActivityDetail = () => {
   pageNum.value = 1;
-  //OldData
-  oldData["activityId_Old"].value = null;
-  oldData["activityTitle_Old"].value = null;
-  oldData["activityNoticeContent_Old"].value = null;
-  oldData["activityStaffCount_Old"].value = null;
-  oldData["activityVolunteerCount_Old"].value = null;
-  oldData["activityServiceObjectCount_Old"].value = null;
-  oldData["activityFiles_Old"].value = null;
-  oldData["activityNews_Old"].value = null;
-  //NewData
+  //Data
   activityId.value = null;
-  activityTitle.value  = null;
-  activityNoticeContent.value  = null;
+  activityTitle.value = null;
+  activityNoticeContent.value = null;
   activityStaffCount.value = null;
-  activityVolunteerCount.value  = null;
-  activityServiceObjectCount.value  = null;
-  activityFiles.value  = null;
+  activityVolunteerCount.value = null;
+  activityServiceObjectCount.value = null;
+  activityFiles.value = null;
   activityNews.value = null;
   activityCreateTime.value = null;
   activityUpdateTime.value = null;
@@ -209,9 +189,8 @@ const getActivityInfo = async (activityId) => {
         token: store.state.token
       }
     });
-    console.log(response);
     if (response.data.code === 200 && response.data.data) {
-          return response.data.data;
+      return response.data.data;
     } else {
       return 0;
     }
@@ -224,35 +203,27 @@ const getActivityInfo = async (activityId) => {
 };
 const updateActivityInfoLoading = ref(false);
 // update activity info
-const updateActivityInfo = async (apiParamName, constParamName, paramValue) => {
+const updateActivityInfo = async (apiParamName, paramValue) => {
   updateActivityInfoLoading.value = true;
   try {
     const requestBody = {
       activityId: activityId.value,
       [apiParamName]: paramValue
     };
-    console.log(requestBody);
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/update`, requestBody
+    await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/update`, requestBody
         , {headers: {token: store.state.token}});
   } catch (error) {
     console.error('API 请求失败:', error);
   }
-  console.log(apiParamName + paramValue);
-  const key = `${constParamName}_Old`; // 动态生成键名，如 "activityId_Old"
-  if (oldData[key]) {
-    oldData[key].value = paramValue; // 更新对应的 ref 值
-    ElMessage.success("保存成功")
-    activityUpdateTime.value=Date.now();
-  } else {
-    console.error(`旧数据字段 ${key} 不存在`);
-  }
+  activityUpdateTime.value = Date.now();
+  lastUpdateTime.value = Date.now();
   updateActivityInfoLoading.value = false;
 };
-const deleteActivityWarning = () => {
+const deleteActivityWarning = (activityId, activityTitle) => {
   ElMessageBox({
     title: '删除确认',
     message: h('div', null, [
-      h('p', null, `确认删除“${!activityTitle.value ? "未命名活动": activityTitle.value}”活动吗？`),
+      h('p', null, `确认删除“${!activityTitle ? "未命名活动" : activityTitle}”活动吗？`),
       h('p', { style: 'color: #ff4d4f; margin-top: 8px;' }, '此操作不可撤销')
     ]),
     showCancelButton: true,
@@ -267,7 +238,7 @@ const deleteActivityWarning = () => {
         axios.delete(`${import.meta.env.VITE_BACKEND_IP}/api/activity/deleteById`,
             {
               headers: {token: store.state.token},
-              params: {activityId: activityId.value}
+              params: {activityId: activityId}
             })
             .then(response => {
               if (response.data.code === 200) {
@@ -295,13 +266,13 @@ const deleteActivityWarning = () => {
     <el-breadcrumb separator="/">
       <el-breadcrumb-item><strong>活动管理</strong></el-breadcrumb-item>
     </el-breadcrumb>
-    <br />
+    <br/>
     <el-button :loading="createNewActivityLoading" type="primary" @click="createNewActivity()">创建新活动</el-button>&nbsp;
-    <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchProjects" />
-    <el-button type="primary" @click="searchProjects">
-      <el-icon><Search /></el-icon>
-    </el-button>
-    <br /><br />
+    <!--    <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchProjects" />-->
+    <!--    <el-button type="primary" @click="">-->
+    <!--      <el-icon><Search /></el-icon>-->
+    <!--    </el-button>-->
+    <br/><br/>
 
     <!-- 活动列表显示无限滚动列表 -->
     <div class="infinite-list-wrapper" style="overflow: auto" v-loading="ActivityInfoLoading">
@@ -309,11 +280,28 @@ const deleteActivityWarning = () => {
           v-infinite-scroll="activityListLoad"
           class="list"
           :infinite-scroll-disabled="disabled"
-          v-loading="businessLoading"
+          v-loading="loading"
       >
         <li v-for="activity in activityList" :key="activity.id" class="list-item"
             @click="openActivityDetail(activity.id)">
           <div>{{ !activity.title ? "未命名活动": activity.title}}</div>
+          <div v-if="!onMobile" class="button-group">
+            <el-button size="mini" type="primary" @click.stop="openActivityDetail(activity.id)">
+              <el-icon>
+                <View/>
+              </el-icon>
+            </el-button>
+            <el-button size="mini" type="primary" @click.stop="openActivityDetail(activity.id)">
+              <el-icon>
+                <Edit/>
+              </el-icon>
+            </el-button>
+            <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(activity.id,activity.title)">
+              <el-icon>
+                <Delete/>
+              </el-icon>
+            </el-button>
+          </div>
         </li>
         <li v-if="loading" v-loading="loading" class="list-item"></li>
       </ul>
@@ -328,29 +316,45 @@ const deleteActivityWarning = () => {
     <el-breadcrumb separator="/">
       <el-breadcrumb-item @click="closeActivityDetail"><a>活动管理</a></el-breadcrumb-item>
       <el-breadcrumb-item><strong>活动编辑</strong></el-breadcrumb-item>
-    </el-breadcrumb><br>
+    </el-breadcrumb>
+    <br>
 
     <!-- 页面标题 -->
     <el-page-header @back="closeActivityDetail" title="返回">
       <template #content>
-        <span class="text-large font-600 mr-3">活动编辑</span>
+        <span class="text-large font-600 mr-3">
+          活动编辑
+            {{
+            updateActivityInfoLoading ?
+                '(保存中)' :
+                '(保存于' + (
+                    ((new Date() - new Date(lastUpdateTime)) < 60000
+                            ? '几秒钟前'
+                            : ((new Date() - new Date(lastUpdateTime)) < 3600000
+                                    ? Math.floor((new Date() - new Date(lastUpdateTime)) / 60000) + '分钟前'
+                                    : Math.floor((new Date() - new Date(lastUpdateTime)) / 3600000) + '小时前'
+                            )
+                    )
+                ) + ')'
+          }}
+</span>
       </template>
-    </el-page-header><br>
+    </el-page-header>
+    <br>
     <div class="flex flex-col items-start gap-4">
-      <el-segmented v-model="nowStep" :options="stepOptions" size="large" />
+      <el-segmented v-model="nowStep" :options="stepOptions" :size="onMobile ?'default':'large'"/>
     </div>
     <!-- 步骤表单 -->
-    <el-form :model="activityForm" label-width="120px">
+    <el-form label-width="120px" @submit.native.prevent="">
       <!-- 第一步 -->
       <div v-if="nowStep === '描述'">
         <el-form-item label="活动名称" prop="activityName">
-          <el-input v-model="activityTitle" placeholder="请输入活动名称" />
-          <el-button
-              v-if="isChanged('activityTitle')"
-              @click="updateActivityInfo('title','activityTitle', activityTitle)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input
+              v-model="activityTitle"
+              placeholder="请输入活动名称"
+              @blur="updateActivityInfo('title', activityTitle)"
+              @keyup.enter.native.prevent="updateActivityInfo('title', activityTitle)"
+          />
         </el-form-item>
         <el-form-item label="活动通知" prop="notice">
           <el-input
@@ -358,13 +362,8 @@ const deleteActivityWarning = () => {
               type="textarea"
               :rows="4"
               placeholder="请输入活动通知内容"
+              @blur="updateActivityInfo('noticeContent', activityNoticeContent)"
           />
-          <el-button
-              v-if="isChanged('activityNoticeContent')"
-              @click="updateActivityInfo('noticeContent','activityNoticeContent', activityNoticeContent)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
         </el-form-item>
       </div>
 
@@ -373,13 +372,10 @@ const deleteActivityWarning = () => {
         <!-- 工作人员 -->
         <h4 class="form-section-title">工作人员签到</h4>
         <el-form-item label="人数">
-          <el-input-number v-model="activityStaffCount" :min="0" />
-          <el-button
-              v-if="isChanged('activityStaffCount')"
-              @click="updateActivityInfo('staffCount','activityStaffCount', activityStaffCount)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input-number v-model="activityStaffCount"
+                           :min="0"
+                           @change="updateActivityInfo('staffCount', activityStaffCount)"
+          />
         </el-form-item>
         <el-form-item label="签到照片">
           <CustomUpload
@@ -394,13 +390,11 @@ const deleteActivityWarning = () => {
         <!-- 志愿者 -->
         <h4 class="form-section-title">志愿者签到</h4>
         <el-form-item label="人数">
-          <el-input-number v-model="activityVolunteerCount" :min="0" />
-          <el-button
-              v-if="isChanged('activityVolunteerCount')"
-              @click="updateActivityInfo('volunteerCount','activityVolunteerCount', activityVolunteerCount)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input-number
+              v-model="activityVolunteerCount"
+              :min="0"
+              @change="updateActivityInfo('volunteerCount', activityVolunteerCount)"
+          />
         </el-form-item>
         <el-form-item label="签到照片">
           <CustomUpload
@@ -416,13 +410,11 @@ const deleteActivityWarning = () => {
         <!-- 服务对象 -->
         <h4 class="form-section-title">服务对象签到</h4>
         <el-form-item label="人数">
-          <el-input-number v-model="activityServiceObjectCount" :min="0" />
-          <el-button
-              v-if="isChanged('activityServiceObjectCount')"
-              @click="updateActivityInfo('serviceObjectCount','activityServiceObjectCount', activityServiceObjectCount)"
-              :loading="updateActivityInfoLoading"
-          >保存修改
-          </el-button>
+          <el-input-number
+              v-model="activityServiceObjectCount"
+              :min="0"
+              @change="updateActivityInfo('serviceObjectCount', activityServiceObjectCount)"
+          />
         </el-form-item>
         <el-form-item label="签到照片">
           <CustomUpload
@@ -450,32 +442,72 @@ const deleteActivityWarning = () => {
       </div>
 
       <!-- 第五步 新闻稿 -->
-      <div v-if="nowStep === '新闻稿'">
-        <el-form-item label="发布平台">
-          <el-input v-model="activityForm.platform" placeholder="请输入平台名称" />
-        </el-form-item>
-        <el-form-item label="文章链接">
-          <el-input
-              v-model="activityForm.articleUrl"
-              type="text"
-              placeholder="请输入文章链接"
-          />
-        </el-form-item>
-        <el-form-item label="新闻图片">
-          <CustomUpload
-              ref="uploadRef"
-              v-model="activityFiles"
-              :fileType="4"
-              :fileTypeName="'图片'"
-              :accept-file-type="'image/*'"
-              :activityId="activityId"
-          />
-        </el-form-item>
+      <div v-if="nowStep === '新闻稿'" class="news-container">
+        <el-form
+            class="news-form"
+            label-position="top"
+            label-width="120px"
+        >
+          <el-card
+              v-for="(item, index) in activityNews"
+              :key="index"
+              class="news-card"
+              shadow="hover"
+          >
+            <template #header>
+              <div class="card-header">
+                <span>新闻稿 #{{ index + 1 }}</span>
+                <el-button
+                    :icon="Delete"
+                    circle
+                    size="small"
+                    type="danger"
+                    @click="removeNewsItem(index)"
+                />
+              </div>
+            </template>
+
+            <el-form-item label="发布平台" prop="platform">
+              <el-input
+                  v-model="item.platform"
+                  clearable
+                  placeholder="如：微信公众号、今日头条等"
+                  @blur="updateActivityInfo('news',activityNews)"
+              />
+            </el-form-item>
+
+            <el-form-item label="文章链接" prop="link">
+              <el-input
+                  v-model="item.link"
+                  clearable
+                  placeholder="请输入完整的文章URL"
+                  @blur="updateActivityInfo('news', activityNews)"
+              >
+                <template #append>
+                  <el-button :icon="Link" @click="openLink(item.link)"/>
+                </template>
+              </el-input>
+            </el-form-item>
+          </el-card>
+
+          <div class="form-actions">
+            <el-button
+                :icon="Plus"
+                type="primary"
+                @click="addNewsItem"
+            >
+              添加新闻稿
+            </el-button>
+          </div>
+        </el-form>
       </div>
 
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
-        <!-- 满意度调查和附件上传 -->
+
+      </div>
+      <div v-if="nowStep === '附件'">
+        <!-- 附件上传 -->
         <CustomUpload
             ref="uploadRef"
             v-model="activityFiles"
@@ -485,26 +517,29 @@ const deleteActivityWarning = () => {
             :activityId="activityId"
         />
       </div>
-
       <div v-if="nowStep === '管理'">
         <br><h4>活动管理</h4>
-        <el-button @click="deleteActivityWarning" type="danger">
+        <el-button type="danger" @click="deleteActivityWarning(activityId,activityTitle)">
           移除活动
         </el-button>
         <br><h4>活动信息</h4>
-        活动创建时间：{{new Date(activityCreateTime).getFullYear()+"年"+
-          new Date(activityCreateTime).getMonth()+"月"+
-          new Date(activityCreateTime).getDate()+"日"+
-          new Date(activityCreateTime).getHours()+":"+
-          new Date(activityCreateTime).getMinutes()+":"+
-          new Date(activityCreateTime).getSeconds()}}
+        活动创建时间：{{
+          new Date(activityCreateTime).getFullYear() + "年" +
+          (new Date(activityCreateTime).getMonth() + 1) + "月" +  // 月份+1
+          new Date(activityCreateTime).getDate() + "日" +
+          String(new Date(activityCreateTime).getHours()).padStart(2, '0') + ":" +  // 补零
+          String(new Date(activityCreateTime).getMinutes()).padStart(2, '0') + ":" +
+          String(new Date(activityCreateTime).getSeconds()).padStart(2, '0')
+        }}
         <br>
-        上次更新时间：{{new Date(activityUpdateTime).getFullYear()+"年"+
-          new Date(activityUpdateTime).getMonth()+"月"+
-          new Date(activityUpdateTime).getDate()+"日"+
-          new Date(activityUpdateTime).getHours()+":"+
-          new Date(activityUpdateTime).getMinutes()+":"+
-          new Date(activityUpdateTime).getSeconds()}}
+        上次更新时间：{{
+          new Date(activityUpdateTime).getFullYear() + "年" +
+          (new Date(activityUpdateTime).getMonth() + 1) + "月" +  // 月份+1
+          new Date(activityUpdateTime).getDate() + "日" +
+          String(new Date(activityUpdateTime).getHours()).padStart(2, '0') + ":" +  // 补零
+          String(new Date(activityUpdateTime).getMinutes()).padStart(2, '0') + ":" +
+          String(new Date(activityUpdateTime).getSeconds()).padStart(2, '0')
+        }}
       </div>
     </el-form>
   </div>
@@ -529,12 +564,18 @@ const deleteActivityWarning = () => {
 }
 
 .infinite-list-wrapper .list-item {
+  margin-bottom: 10px;
   border-radius: 10px;
   padding: 10px;
   display: flex;
   align-items: center;
   background: #f5f5f5;
   color: #000000;
+  justify-content: space-between;
+}
+.button-group {
+  display: flex;
+  gap: 8px;
 }
 /* 第二页样式 */
 .form-section-title {

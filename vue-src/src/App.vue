@@ -29,13 +29,13 @@ const restoreLoginStatus = async () => {
       }
     });
     IsLoading.value= false
-    if (response.data.code != 200) {
+    if (response.data.code !== 200) {
       throw new Error('身份已过期，请重新登录。');
     }
     if (response.status === 'error') {
       throw new Error(response.message);
     }
-    if (response.data.code == '200' && response.data.data) {
+    if (response.data.code === 200 && response.data.data) {
       await store.dispatch('setUser', response.data.data);
     } else {
       throw new Error('身份已过期，请重新登录。');

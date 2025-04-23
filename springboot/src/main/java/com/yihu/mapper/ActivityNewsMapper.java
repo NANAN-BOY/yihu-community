@@ -12,4 +12,6 @@ public interface ActivityNewsMapper {
     void deleteByActivityId(Integer activityId);
 
     List<ActivityNews> findByActivityId(Integer activityId);
+
+    void physicalDeleteByActivityId(Integer activityId);
 }

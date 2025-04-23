@@ -30,6 +30,8 @@ public interface ActivityService {
 
     void deleteNewsByActivityId(Integer activityId);
 
+    void physicalDeleteNewsByActivityId(Integer activityId);
+
     void deleteActivityById(Integer id,Integer userId);
 
     int addActivity(Integer userId);
@@ -55,5 +57,6 @@ public interface ActivityService {
     List<ActivityNews> getNewsByActivityId(Integer id);
 
     void withdrawSubmission(Integer activityId, Integer userId);
+
 
 }

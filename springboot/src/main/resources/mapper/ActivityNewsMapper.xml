@@ -5,17 +5,25 @@
 
 <mapper namespace="com.yihu.mapper.ActivityNewsMapper">
     <insert id="insert" parameterType="com.yihu.entity.ActivityNews">
-        insert into activity_news(activity_id,news_platform,news_link,del_flag)
-        values(#{activityId},#{newsPlatform},#{newsLink},#{delFlag})
+        insert into activity_news(activity_id,platform,link,del_flag)
+        values(#{activityId},#{platform},#{link},#{delFlag})
     </insert>
 
 
-
+    <!--逻辑删除-->
     <delete id="deleteByActivityId" parameterType="java.lang.Integer">
         update activity_news
         SET del_flag = 'Y'
         WHERE activity_id = #{activityId}
     </delete>
+
+    <!--物理删除-->
+    <delete id="physicalDeleteByActivityId" parameterType="java.lang.Integer">
+        DELETE FROM activity_news
+        WHERE activity_id = #{activityId}
+    </delete>
+
+
 
     <select id="findByActivityId" parameterType="java.lang.Integer" resultType="com.yihu.entity.ActivityNews">
         SELECT * FROM activity_news

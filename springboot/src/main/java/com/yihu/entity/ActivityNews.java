@@ -5,8 +5,8 @@ import java.util.Date;
 public class ActivityNews {
     private Integer id;
     private Integer activityId;
-    private String newsPlatform;
-    private String newsLink;
+    private String platform;
+    private String link;
     private String delFlag;
 
     public Integer getId() {
@@ -25,20 +25,20 @@ public class ActivityNews {
         this.activityId = activityId;
     }
 
-    public String getNewsPlatform() {
-        return newsPlatform;
+    public String getPlatform() {
+        return platform;
     }
 
-    public void setNewsPlatform(String newsPlatform) {
-        this.newsPlatform = newsPlatform;
+    public void setPlatform(String platform) {
+        this.platform = platform;
     }
 
-    public String getNewsLink() {
-        return newsLink;
+    public String getLink() {
+        return link;
     }
 
-    public void setNewsLink(String newsLink) {
-        this.newsLink = newsLink;
+    public void setLink(String link) {
+        this.link = link;
     }
 
     public String getDelFlag() {
@@ -55,8 +55,8 @@ public class ActivityNews {
         return "ActivityNews{" +
                 "id=" + id +
                 ", activityId=" + activityId +
-                ", newsPlatform='" + newsPlatform + '\'' +
-                ", newsLink='" + newsLink + '\'' +
+                ", newsPlatform='" + platform + '\'' +
+                ", newsLink='" + link + '\'' +
                 ", delFlag='" + delFlag + '\'' +
                 '}';
     }

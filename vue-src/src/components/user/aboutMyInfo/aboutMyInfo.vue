@@ -1,11 +1,12 @@
 <script setup>
 import {useStore} from 'vuex'
-import {computed, h, ref} from 'vue'
+import {computed, h, onMounted, ref} from 'vue'
 import {ElCascader, ElMessage, ElMessageBox} from 'element-plus'
 import {ElIcon} from 'element-plus';
-import {Edit} from "@element-plus/icons-vue";
+import {Avatar, Edit} from "@element-plus/icons-vue";
 import axios from "axios";
 import {regionData} from "element-china-area-data";
+import router from "../../../router";
 
 function getRegionName(regionCode) {
   const codeToNameMap = {};
@@ -28,8 +29,42 @@ function getRegionName(regionCode) {
   return codeToNameMap[regionCode] || 'Error';
 }
 
+onMounted(() => {
+  getUserInfo()
+})
 const store = useStore()
-const user = computed(() => store.state.user)
+const IsLoading = ref(false)
+const getUserInfo = async () => {
+  IsLoading.value = true
+  try {
+    if (!store.state.token) {
+      return;
+    }
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/user/reLogin`, {
+      headers: {
+        'token': `${store.state.token}`
+      }
+    });
+    IsLoading.value = false
+    if (response.data.code !== 200) {
+      throw new Error('身份已过期，请重新登录。');
+    }
+    if (response.status === 'error') {
+      throw new Error(response.message);
+    }
+    if (response.data.code === 200 && response.data.data)
+      user.value = response.data.data
+    else
+      throw new Error('身份已过期，请重新登录。');
+  } catch (error) {
+    ElMessage.error('身份已过期，请重新登录。');
+    localStorage.removeItem('token');
+    await store.dispatch('setToken', null);
+    await store.dispatch('setUser', null);
+    await router.push('/login');
+  }
+}
+const user = ref(store.state.user)
 const role = computed(() => {
   if (store.state.user.role === 1) {
     return '系统管理员'
@@ -350,10 +385,12 @@ const modifyMyPhone = async () => {
 }
 </script>
 <template>
-  <div v-loading="!user.id" class="user-info-container">
-    <div class="header-section">
-      <el-avatar :size="100" class="user-avatar">
-        <i class="el-icon-user-solid"/>
+  <div v-loading="IsLoading" class="user-info-container">
+    <div v-if="!IsLoading" class="header-section">
+      <el-avatar :size="100" class="user-avatar" @click="ElMessage.warning('功能暂未开放')">
+        <el-icon size="50">
+          <Avatar/>
+        </el-icon>
       </el-avatar>
       <div class="base-info">
         <h2>
@@ -369,7 +406,7 @@ const modifyMyPhone = async () => {
         <p class="role-tag">{{ role }}</p>
       </div>
     </div>
-    <el-form label-width="100px" class="detail-section">
+    <el-form v-if="!IsLoading" class="detail-section" label-width="100px">
       <el-form-item label="关联手机号">
         {{ user.phone ? user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '未绑定手机' }}
         <el-icon
@@ -411,16 +448,24 @@ const modifyMyPhone = async () => {
       </el-form-item>
 
       <el-form-item label="账户余额">
-        <el-input :value="`¥ ${user.balance}`" readonly/>
+        <div style="font-weight: bold;">{{ `¥ ${user.balance}` }}</div>
+        <el-button
+            :disabled="user.status === 'active'"
+            plain
+            style="margin-left: 10px;"
+            type="primary"
+            @click="ElMessage.warning('功能暂未开放')"
+        >提现
+        </el-button>
       </el-form-item>
 
-      <el-divider content-position="left"><h3>时间信息</h3></el-divider>
+      <el-divider content-position="left"><h3>其他</h3></el-divider>
       <el-form-item label="注册时间">
-        <el-input :value="formatDate(user.createAt)" readonly/>
+        <div style="font-weight: bold;">{{ formatDate(user.createAt) }}</div>
       </el-form-item>
 
       <el-form-item label="最后登录">
-        <el-input :value="formatDate(user.lastLoginTime)" readonly/>
+        <div style="font-weight: bold;">{{ formatDate(new Date()) }}</div>
       </el-form-item>
     </el-form>
   </div>

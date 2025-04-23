@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import axios from "axios";
 import store from "../../../store";
 import {Star} from "@element-plus/icons-vue";
@@ -29,7 +29,7 @@ const OrderListLoad = async () => {
         `${import.meta.env.VITE_BACKEND_IP}/api/order/get-myOrderList`,
         {type: 0, status: status},
         {
-          params: {pageNum: currentPage.value, pageSize: 10},
+          params: {pageNum: currentPage.value, pageSize: 20},
           headers: {token: store.state.token}
         }
     )
@@ -57,12 +57,12 @@ const OrderListLoad = async () => {
 }
 //Refresh order list
 const refreshOrderList = async () => {
-  currentPage.value = 1
   OrderList.value = []
+  currentPage.value = 1
   hasMore.value = true
-  error.value = ''
   loading.value = false
-  await OrderListLoad()
+  error.value = ''
+  await nextTick()
   await OrderListLoad()
 }
 //Order status classification
@@ -252,6 +252,7 @@ const checkBusinessCommunicate = (orderNo) => {
 //Processing method after the order is completed
 onMounted(() => {
   EventBus.on('endOrder1',refreshOrderList);
+  OrderListLoad();
 });
 onBeforeUnmount(() => {
   EventBus.off('endOrder1',refreshOrderList);
@@ -278,7 +279,7 @@ const closeCheckOrderDetail = () => {
     <h1>定制服务</h1>
     <el-button type="primary" @click="openBuyBusinessPAreaDialogVisible">创建定制服务</el-button>
     <!-- 我的订单无限滚动列表 -->
-    <el-button :loading="loading" type="primary" @click="refreshOrderList">刷新</el-button>
+    <el-button :loading="loading" type="primary" @click="refreshOrderList">{{ loading ? '加载中' : '刷新' }}</el-button>
     <!--  订单状态分类-->
     <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
       <el-segmented v-model="orderStstusValue" :options="orderStstusOptions" size="large"/>
@@ -289,6 +290,8 @@ const closeCheckOrderDetail = () => {
           class="list"
           :infinite-scroll-disabled="disabled"
           v-loading="businessLoading"
+          infinite-scroll-immediate="false"
+          infinite-scroll-distance="100"
       >
         <li v-for="Order in OrderList" :key="Order.orderNo" class="list-item"
             @click="openCheckOrderDetail(Order)">
@@ -392,7 +395,7 @@ const closeCheckOrderDetail = () => {
 
 <style scoped>
 .infinite-list-wrapper {
-  height: 750px;
+  height: calc(100vh - 221px);
   text-align: center;
 }
 
@@ -418,7 +421,7 @@ const closeCheckOrderDetail = () => {
 }
 @media (max-width: 768px) {
   .infinite-list-wrapper {
-    height: 730px;
+    height: calc(100vh - 221px);
     text-align: center;
   }
 

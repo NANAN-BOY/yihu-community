@@ -120,6 +120,7 @@ const addNewsItem = () => {
     platform: "",
     link: "",
   });
+  ElMessage.success("添加新闻稿成功")
   updateActivityInfo('news', activityNews.value)
 };
 const removeNewsItem = (index) => {
@@ -440,56 +441,11 @@ const deleteActivityWarning = (activityId, activityTitle) => {
           />
         </el-form-item>
       </div>
-
       <!-- 第五步 新闻稿 -->
       <div v-if="nowStep === '新闻稿'" class="news-container">
         <el-form
-            class="news-form"
             label-position="top"
-            label-width="120px"
         >
-          <el-card
-              v-for="(item, index) in activityNews"
-              :key="index"
-              class="news-card"
-              shadow="hover"
-          >
-            <template #header>
-              <div class="card-header">
-                <span>新闻稿 #{{ index + 1 }}</span>
-                <el-button
-                    :icon="Delete"
-                    circle
-                    size="small"
-                    type="danger"
-                    @click="removeNewsItem(index)"
-                />
-              </div>
-            </template>
-
-            <el-form-item label="发布平台" prop="platform">
-              <el-input
-                  v-model="item.platform"
-                  clearable
-                  placeholder="如：微信公众号、今日头条等"
-                  @blur="updateActivityInfo('news',activityNews)"
-              />
-            </el-form-item>
-
-            <el-form-item label="文章链接" prop="link">
-              <el-input
-                  v-model="item.link"
-                  clearable
-                  placeholder="请输入完整的文章URL"
-                  @blur="updateActivityInfo('news', activityNews)"
-              >
-                <template #append>
-                  <el-button :icon="Link" @click="openLink(item.link)"/>
-                </template>
-              </el-input>
-            </el-form-item>
-          </el-card>
-
           <div class="form-actions">
             <el-button
                 :icon="Plus"
@@ -499,9 +455,52 @@ const deleteActivityWarning = (activityId, activityTitle) => {
               添加新闻稿
             </el-button>
           </div>
+          <!-- 添加滚动容器 -->
+          <div class="news-scroll-container">
+            <el-card
+                v-for="(item, index) in activityNews"
+                :key="index"
+                class="news-card"
+                shadow="hover"
+            >
+              <template #header>
+                <div class="card-header">
+                  <span>新闻稿 #{{ index + 1 }}</span>
+                  <el-button
+                      :icon="Delete"
+                      circle
+                      size="small"
+                      type="danger"
+                      @click="removeNewsItem(index)"
+                  />
+                </div>
+              </template>
+
+              <el-form-item label="发布平台" prop="platform">
+                <el-input
+                    v-model="item.platform"
+                    clearable
+                    placeholder="如：微信公众号、今日头条等"
+                    @blur="updateActivityInfo('news',activityNews)"
+                />
+              </el-form-item>
+
+              <el-form-item label="文章链接" prop="link">
+                <el-input
+                    v-model="item.link"
+                    clearable
+                    placeholder="请输入完整的文章URL"
+                    @blur="updateActivityInfo('news', activityNews)"
+                >
+                  <template #append>
+                    <el-button :icon="Link" @click="openLink(item.link)"/>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-card>
+          </div>
         </el-form>
       </div>
-
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
 
@@ -584,4 +583,15 @@ const deleteActivityWarning = (activityId, activityTitle) => {
   font-size: 16px;
 }
 
+/* 新闻稿列表样式 */
+.news-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.news-scroll-container {
+  overflow-y: auto;
+  max-height: calc(100vh - 246px);
+}
 </style>

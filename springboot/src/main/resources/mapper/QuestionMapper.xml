@@ -25,4 +25,10 @@
         where questionId = #{id}
     </delete>
 
+    <select id="findAllByQuestionnaireId" resultType="com.yihu.entity.Question">
+        select *
+        from question
+        where questionnaire_id = #{questionnaireId}
+    </select>
+
 </mapper>

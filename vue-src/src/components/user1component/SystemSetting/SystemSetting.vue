@@ -51,6 +51,26 @@ const closeEditProductDataDialog = () => {
 }
 const editProductDataDialogLoading = ref(false)
 const editProductData = async () => {
+  if (nowEditProductData.value.name === '') {
+    ElMessage.error(`请输入产品名称`)
+    return
+  }
+  if (nowEditProductData.value.price === 0) {
+    ElMessage.error(`请输入产品价格`)
+    return
+  }
+  if (nowEditProductData.value.type === 1) {
+    try {
+      // 确认弹窗
+      await ElMessageBox.confirm('请确认VIP时长是否与描述一致？', '编辑确认', {
+        confirmButtonText: '确认',
+        cancelButtonText: '检查',
+        type: 'warning',
+      });
+    } catch {
+      return;
+    }
+  }
   editProductDataDialogLoading.value = true
   try {
     const response = await axios.put(

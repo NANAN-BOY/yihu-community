@@ -1,9 +1,11 @@
 package com.yihu.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 
-@Data
+@Getter
+@Setter
 public class Question {
     @Id
     private Integer questionId;
@@ -13,4 +15,14 @@ public class Question {
     private Boolean questionNullable;
     private String questionType;
     private String details;
+
+    public Question(Integer questionnaireId, String questionTitle, String questionDescription,
+                    Boolean questionNullable, String questionType, String details) {
+        this.questionnaireId = questionnaireId;
+        this.questionTitle = questionTitle;
+        this.questionDescription = questionDescription;
+        this.questionNullable = questionNullable;
+        this.questionType = questionType;
+        this.details = details;
+    }
 }

@@ -3,6 +3,7 @@ package com.yihu.controller;
 
 import com.yihu.common.Result;
 import com.yihu.entity.Answer;
+import com.yihu.entity.Question;
 import com.yihu.entity.User;
 import com.yihu.service.QuestionnaireService;
 import com.yihu.utils.TokenUtils;
@@ -22,6 +23,46 @@ public class QuestionnaireController {
         this.questionnaireService = questionnaireService;
     }
 
+    @PutMapping("/release")
+    public Result release(@RequestParam Integer activityId) {
+
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+
+        int isSuccess = questionnaireService.release(activityId);
+        if (isSuccess == 1) {
+            return Result.success("问卷发布成功");
+        }
+        return Result.error(501, "问卷发布失败");
+    }
+
+    @PutMapping("/stop")
+    public Result stop(@RequestParam Integer activityId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+
+        int isSuccess = questionnaireService.stop(activityId);
+        if (isSuccess == 1) {
+            return Result.success("已成功关停问卷");
+        }
+        return Result.error(501, "关停失败");
+    }
+
+    @GetMapping("/get-question")
+    public Result getQuestion(@RequestParam Integer activityId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+
+        String question = questionnaireService.getQuestion(activityId);
+        return Result.success(question);
+    }
+
     @GetMapping("/analysis")
     public Result analysis(@RequestParam Integer questionId) {
         User currentUser = TokenUtils.getCurrentUser();
@@ -34,21 +75,5 @@ public class QuestionnaireController {
         return Result.success(answers);
     }
 
-    @PostMapping("/create")
-    public Result create(@RequestParam Integer activityId,
-                         @RequestParam String title,
-                         @RequestParam String description) {
-        User currentUser = TokenUtils.getCurrentUser();
-        if (currentUser == null) {
-            return Result.error(401, "请登录");
-        }
-
-        Boolean isSuccess = questionnaireService.create(activityId, currentUser.getId(), title, description);
-        if (isSuccess) {
-            return Result.success();
-        } else {
-            return Result.error(500, "创建失败");
-        }
-    }
 
 }

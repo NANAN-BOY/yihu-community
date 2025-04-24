@@ -18,7 +18,7 @@
         where id = #{id}
     </update>
 
-    <insert id="create" parameterType="com.yihu.entity.Questionnaire">
+    <insert id="create" parameterType="com.yihu.entity.Questionnaire" keyProperty="id" useGeneratedKeys="true">
         insert into questionnaire
         (create_time, decription, fill_count, status, title, uesr_id, delete_flag, activity_id)
         values (#{createTime}, #{decription}, #{fillCount}, #{status}, #{title}, #{uesrId}, #{deleteFlag},
@@ -27,14 +27,14 @@
 
     <update id="stopQuestionnaire">
         update questionnaire
-        set status = 2
-        where id = #{id}
+        set status = 2 AND end_time = #{endTime}
+        where activity_id = #{activityId}
     </update>
 
     <update id="startQuestionnaire">
         update questionnaire
-        set status = 1
-        where id = #{id}
+        set status = 1 AND start_time = #{startTime}
+        where activity_id = #{activityId}
     </update>
 
     <select id="getQuestionnaireByStatus" resultType="com.yihu.entity.Questionnaire">
@@ -43,6 +43,13 @@
         where status = #{status}
           AND delete_flag = 0
           AND uesr_id = #{uesrId}
+    </select>
+
+    <select id="getQuestionnaireByActivityId" resultType="com.yihu.entity.Questionnaire">
+        select questionnaire_id
+        from questionnaire
+        where activity_id = #{activityId}
+          AND delete_flag = 0
     </select>
 
 </mapper>

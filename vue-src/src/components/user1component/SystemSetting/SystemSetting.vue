@@ -6,8 +6,7 @@ import PercentageInput from "./PercentageInput.vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 
 const pageNum = ref(1)
-const ProductData = ref([
-])
+const ProductData = ref([])
 const ProductDataLoading= ref(false)
 const ProductDataError= ref('')
 const getProductDataList = async () => {
@@ -96,6 +95,26 @@ const closeAddNewProductData = async () => {
   ProductDataDialogVisible.value = false
 }
 const addNewProductData = async () => {
+  if (nowEditProductData.value.name === '') {
+    ElMessage.error(`请输入产品名称`)
+    return
+  }
+  if (nowEditProductData.value.price === 0) {
+    ElMessage.error(`请输入产品价格`)
+    return
+  }
+  if (nowEditProductData.value.type === 1) {
+    try {
+      // 确认弹窗
+      await ElMessageBox.confirm('请确认VIP时长是否与描述一致？', '添加确认', {
+        confirmButtonText: '确认添加',
+        cancelButtonText: '检查',
+        type: 'warning',
+      });
+    } catch {
+      return;
+    }
+  }
   editProductDataDialogLoading.value = true
   try {
     const response = await axios.post(
@@ -289,7 +308,7 @@ const deleteProductData = (product) => {
           >
             <el-input-number
                 v-model="nowEditProductData.vipTime"
-                :min="0"
+                :min="1"
             />
           </el-form-item>
         </el-form>

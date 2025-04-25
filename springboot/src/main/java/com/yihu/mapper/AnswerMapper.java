@@ -9,4 +9,5 @@ public interface AnswerMapper {
 
     List<Answer> analysis(@Param("questionId") Integer questionId);
 
+    void insertAnswer(Answer answer);
 }

@@ -6,8 +6,8 @@
 <mapper namespace="com.yihu.mapper.AnswerMapper">
 
     <insert id="insertAnswer" parameterType="com.yihu.entity.Answer">
-        insert into answer (fill_time, ip, question_id, question_title, question_type, write_value)
-        values (#{fillTime}, #{ip}, #{questionId}, #{questionTitle}, #{questionType}, #{write_value})
+        insert into answer (fill_time, question_id, question_title, question_type, write_value)
+        values (#{fillTime}, #{questionId}, #{questionTitle}, #{questionType}, #{write_value})
     </insert>
 
     <select id="analysis" resultType="com.yihu.entity.Answer">

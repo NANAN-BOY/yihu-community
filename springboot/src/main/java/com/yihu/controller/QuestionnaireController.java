@@ -1,13 +1,17 @@
 package com.yihu.controller;
 
 
+import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
+import com.yihu.dto.AnswerDTO;
 import com.yihu.entity.Answer;
 import com.yihu.entity.Question;
 import com.yihu.entity.User;
 import com.yihu.service.QuestionnaireService;
 import com.yihu.utils.TokenUtils;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -85,6 +89,39 @@ public class QuestionnaireController {
         List<Answer> answers = questionnaireService.getAnswer(questionId);
         return Result.success(answers);
     }
+
+    @AuthAccess
+    @PostMapping("/submit")
+    public Result submit(@RequestBody List<AnswerDTO> answers,
+                         @RequestParam Integer activityId,
+                         @RequestParam String ip) {
+        // 基础参数校验
+        if (CollectionUtils.isEmpty(answers)) {
+            return Result.error(400, "答案列表不能为空");
+        }
+        if (activityId == null || activityId <= 0) {
+            return Result.error(400, "活动ID无效");
+        }
+        if (StringUtils.isBlank(ip)) {
+            return Result.error(400, "IP地址不能为空");
+        }
+
+        // 调用服务层提交逻辑
+        Integer resultCode = questionnaireService.submit(answers, activityId, ip);
+
+        return switch (resultCode) {
+            case 1 -> Result.success("问卷提交成功");
+            case -1 -> Result.error(409, "已重复提交，每个IP仅限提交一次");
+            case -2 -> Result.error(404, "无效的活动ID，未找到对应问卷");
+            case -3 -> Result.error(404, "目标问卷不存在");
+            case -4 -> Result.error(403, "问卷已关闭，当前不可提交");
+            case -5 -> Result.error(400, "包含不支持的题目类型，无法处理");
+            case -6 -> Result.error(400, "答案数据格式错误（JSON解析失败）");
+            case -99 -> Result.error(500, "系统异常，请稍后重试");
+            default -> Result.error(500, "未知错误，请联系管理员");
+        };
+    }
+
 
 
 }

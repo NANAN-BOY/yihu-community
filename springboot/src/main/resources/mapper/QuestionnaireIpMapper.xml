@@ -5,10 +5,11 @@
 
 <mapper namespace="com.yihu.mapper.QuestionnaireIpMapper">
 
-    <select id="getQuestionnaireIp" resultType="com.yihu.entity.QuestionnaireIp">
-        select *
-        from questionnaire_id
-        where ip = #{ip}
+    <select id="isSubmit" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM questionnaire_id
+        WHERE ip = #{ip}
+          AND questionnaire_id = #{questionnaireId}
     </select>
 
     <insert id="insertQuestionnaireIp" parameterType="com.yihu.entity.QuestionnaireIp">

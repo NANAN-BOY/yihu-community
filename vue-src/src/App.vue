@@ -23,6 +23,7 @@ const checkDeviceSaveId = () => {
   if(!localStorage.getItem('deviceId')){
     localStorage.setItem('deviceId', generateSnowflakeId())
   }
+
 };
 
 const restoreLoginStatus = async () => {

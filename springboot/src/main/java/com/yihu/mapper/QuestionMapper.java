@@ -9,5 +9,7 @@ public interface QuestionMapper {
 
     void createQuestion(Question question);
 
-    List<Question> findAllByQuestionnaireId(@Param("questionnaireId") Integer questionnaireId);
+    List<Question> getQuestionList(@Param("questionnaireId") Integer questionnaireId);
+
+    Question findQuestionByQuestionId(@Param("questionId") Integer questionId);
 }

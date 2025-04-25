@@ -70,8 +70,19 @@ public class QuestionnaireController {
             return Result.error(401, "请登录");
         }
 
-        List<Answer> answers = questionnaireService.analysis(questionId);
+        String answers = questionnaireService.analysis(questionId);
 
+        return Result.success(answers);
+    }
+
+    @GetMapping("/get-answer")
+    public Result getAnswer(@RequestParam Integer questionId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+
+        List<Answer> answers = questionnaireService.getAnswer(questionId);
         return Result.success(answers);
     }
 

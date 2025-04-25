@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface QuestionnaireService {
 
-    List<Answer> analysis(Integer questionId);
+    String analysis(Integer questionId);
 
     Boolean create(Integer activityId, Integer userId);
 
@@ -15,4 +15,6 @@ public interface QuestionnaireService {
     Integer stop(Integer activityId);
 
     String getQuestion(Integer activityId);
+
+    List<Answer> getAnswer(Integer questionId);
 }

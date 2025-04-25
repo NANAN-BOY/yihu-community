@@ -8,4 +8,5 @@ import java.util.List;
 public interface AnswerMapper {
 
     List<Answer> analysis(@Param("questionId") Integer questionId);
+
 }

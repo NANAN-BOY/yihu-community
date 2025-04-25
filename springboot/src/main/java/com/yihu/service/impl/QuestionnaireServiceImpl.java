@@ -1,12 +1,11 @@
 package com.yihu.service.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import com.yihu.dto.AnswerDTO;
 import com.yihu.entity.*;
 import com.yihu.mapper.*;
 import com.yihu.service.QuestionnaireService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@Log4j2
 public class QuestionnaireServiceImpl implements QuestionnaireService {
 
     private final AnswerMapper answerMapper;
@@ -206,6 +206,101 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     @Override
     public List<Answer> getAnswer(Integer questionId) {
         return answerMapper.analysis(questionId);
+    }
+
+    @Override
+    @Transactional
+    public Integer submit(List<AnswerDTO> answers, Integer activityId, String ip) {
+        // 获取问卷ID
+        Integer questionnaireId = questionnaireMapper.findQuestionnaireIdByActivityId(activityId);
+        if (questionnaireId == null) {
+            log.warn("无效活动ID，未找到对应问卷，activityId={}", activityId);
+            return -2; // 活动ID无效
+        }
+
+        // 校验IP是否已提交过
+        Integer submittedCount = questionnaireIpMapper.isSubmit(questionnaireId, ip);
+        if (submittedCount != null && submittedCount > 0) {
+            log.info("重复提交，问卷ID={}, IP={}", questionnaireId, ip);
+            return -1; // 已重复提交
+        }
+
+        // 校验问卷状态
+        Questionnaire questionnaire = questionnaireMapper.selectByPrimaryKey(questionnaireId);
+        if (questionnaire == null) {
+            log.warn("问卷不存在，问卷ID={}", questionnaireId);
+            return -3; // 问卷不存在
+        }
+        if ("closed".equals(questionnaire.getStatus())) {
+            log.info("问卷已关闭，无法提交，问卷ID={}", questionnaireId);
+            return -4; // 问卷已关闭
+        }
+
+        String answerListJson = null;
+        try {
+            // 将AnswerDTO列表转换为JSON字符串
+            answerListJson = new Gson().toJson(answers);
+
+            // 解析JSON并组装Answer实体
+            JsonArray answerListArray = new Gson().fromJson(answerListJson, JsonArray.class);
+            for (JsonElement oneAnswer : answerListArray) {
+                JsonObject answerObj = oneAnswer.getAsJsonObject();
+
+                // 创建Answer实体
+                Answer answer = new Answer();
+                answer.setQuestionId(answerObj.get("questionId").getAsInt());
+                answer.setQuestionTitle(answerObj.get("questionTitle").getAsString());
+                answer.setQuestionType(answerObj.get("questionType").getAsString());
+                answer.setFillTime(new Date());
+
+                // 根据题目类型设置答案值
+                String questionType = answer.getQuestionType();
+                switch (questionType) {
+                    case "single_check":
+                        answer.setWriteValue(answerObj.get("answerSingleCheck").getAsString());
+                        break;
+                    case "multi_check":
+                        answer.setWriteValue(answerObj.get("answerMultiCheck").toString());
+                        break;
+                    case "single_line_text":
+                    case "multi_line_text":
+                        answer.setWriteValue(answerObj.get("answerText").getAsString());
+                        break;
+                    case "number":
+                        answer.setWriteValue(answerObj.get("answerNumber").toString());
+                        break;
+                    case "grade":
+                        answer.setWriteValue(answerObj.get("answerGrade").toString());
+                        break;
+                    case "date":
+                        answer.setWriteValue(answerObj.get("answerDate").toString());
+                        break;
+                    default:
+                        log.error("未知题目类型，问卷ID={}, 类型={}", questionnaireId, questionType);
+                        return -5; // 不支持的题目类型
+                }
+                // 插入答案记录
+                answerMapper.insertAnswer(answer);
+            }
+
+            // 记录提交IP
+            questionnaireIpMapper.insertQuestionnaireIp(new QuestionnaireIp(questionnaireId, ip));
+
+            // 更新问卷填写人数
+            int updateRows = questionnaireMapper.incrementFillCount(questionnaireId);
+            if (updateRows != 1) {
+                log.error("填写人数更新失败，问卷ID={}", questionnaireId);
+                throw new RuntimeException("填写人数更新失败");
+            }
+
+            return 1; // 提交成功
+        } catch (JsonSyntaxException e) {
+            log.error("答案JSON格式错误，内容={}", answerListJson, e);
+            return -6; // JSON解析失败
+        } catch (Exception e) {
+            log.error("提交答案异常，问卷ID={}, IP={}", questionnaireId, ip, e);
+            return -99; // 未知错误
+        }
     }
 
     private void processDetails(JsonObject oneRes, JsonObject temp) {

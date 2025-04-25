@@ -12,4 +12,8 @@ public interface QuestionnaireMapper {
     Integer stopQuestionnaire(@Param("activityId") Integer activityId);
 
     Integer findQuestionnaireIdByActivityId(@Param("activityId") Integer activityId);
+
+    Questionnaire selectByPrimaryKey(@Param("questionnaireId") Integer questionnaireId);
+
+    int incrementFillCount(@Param("questionnaireId") Integer questionnaireId);
 }

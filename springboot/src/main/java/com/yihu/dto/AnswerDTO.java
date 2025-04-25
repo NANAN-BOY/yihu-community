@@ -1,14 +1,13 @@
-package com.yihu.entity;
+package com.yihu.dto;
 
-import lombok.Data;
-import org.springframework.data.annotation.Id;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
 
-@Data
-public class Answer {
-    @Id
-    private Integer answerId;
+@Getter
+@Setter
+public class AnswerDTO {
     private Integer questionId;
     private String questionTitle;
     private String questionType;

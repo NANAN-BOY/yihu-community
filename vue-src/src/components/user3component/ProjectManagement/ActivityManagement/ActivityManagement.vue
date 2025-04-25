@@ -114,15 +114,82 @@ const activityUpdateTime = ref(null)
 const lastUpdateTime = ref(new Date())
 
 
-// 新闻稿
-const addNewsItem = () => {
-  activityNews.value.push({
-    platform: "",
-    link: "",
+const addNewsItem = async() => {
+  const platform = ref('');
+  const link = ref('');
+
+  await ElMessageBox({
+    title: '添加新闻稿',
+    message: h('div', {class: 'news-input-container'}, [
+      h('div', {class: 'input-group'}, [
+        h('label', {class: 'input-label'}, '新闻平台:'),
+        h('input', {
+          class: 'custom-el-input',
+          placeholder: '例如：百度新闻',
+          value: platform.value,
+          onInput: (e) => platform.value = e.target.value,
+          style: `
+          width: 100%;
+          padding: 8px 15px;
+          font-size: 14px;
+          border: 1px solid #dcdfe6;
+          border-radius: 4px;
+          box-sizing: border-box;
+          outline: none;
+          `
+        })
+      ]),
+      h('div', {class: 'input-group', style: 'margin-top: 15px'}, [
+        h('label', {class: 'input-label'}, '新闻链接:'),
+        h('input', {
+          class: 'custom-el-input',
+          placeholder: '例如：https://news.baidu.com',
+          value: link.value,
+          onInput: (e) => link.value = e.target.value,
+          style: `
+          width: 100%;
+          padding: 8px 15px;
+          font-size: 14px;
+          border: 1px solid #dcdfe6;
+          border-radius: 4px;
+          box-sizing: border-box;
+          outline: none;
+          `
+        })
+      ])
+    ]),
+    showCancelButton: true,
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        if (!platform.value.trim()) {
+          ElMessage.error('请输入新闻平台');
+          return;
+        }
+        if (!link.value.trim()) {
+          ElMessage.error('请输入新闻链接');
+          return;
+        }
+        if (!link.value.startsWith('http://') && !link.value.startsWith('https://')) {
+          ElMessage.error('链接格式不正确，请以http://或https://开头');
+          return;
+        }
+
+        // 假设 activityNews 和 updateActivityInfo 已经在外部定义
+        activityNews.value.push({
+          platform: platform.value.trim(),
+          link: link.value.trim()
+        });
+
+        ElMessage.success("添加新闻稿成功");
+        updateActivityInfo('news', activityNews.value);
+      }
+      done();
+    }
   });
-  ElMessage.success("添加新闻稿成功")
-  updateActivityInfo('news', activityNews.value)
 };
+
 const removeNewsItem = (index) => {
   ElMessageBox.confirm('确定要删除这条新闻吗？', '确认删除', {
     confirmButtonText: '确定',
@@ -338,7 +405,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
                     )
                 ) + ')'
           }}
-</span>
+        </span>
       </template>
     </el-page-header>
     <br>
@@ -446,17 +513,24 @@ const deleteActivityWarning = (activityId, activityTitle) => {
         <el-form
             label-position="top"
         >
-          <div class="form-actions">
-            <el-button
-                :icon="Plus"
-                type="primary"
-                @click="addNewsItem"
-            >
-              添加新闻稿
-            </el-button>
-          </div>
           <!-- 添加滚动容器 -->
           <div class="news-scroll-container">
+            <el-card
+                class="news-card"
+                shadow="hover"
+            >
+                <div class="card-header">
+                  <span>图片新闻稿</span>
+                  <CustomUpload
+                      ref="uploadRef"
+                      v-model="activityFiles"
+                      :fileType="5"
+                      :fileTypeName="'图片'"
+                      :accept-file-type="'image/*'"
+                      :activityId="activityId"
+                  />
+                </div>
+            </el-card>
             <el-card
                 v-for="(item, index) in activityNews"
                 :key="index"
@@ -465,7 +539,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
             >
               <template #header>
                 <div class="card-header">
-                  <span>新闻稿 #{{ index + 1 }}</span>
+                  <span>链接新闻稿 #{{ index + 1 }}</span>
                   <el-button
                       :icon="Delete"
                       circle
@@ -498,6 +572,27 @@ const deleteActivityWarning = (activityId, activityTitle) => {
                 </el-input>
               </el-form-item>
             </el-card>
+            <div class="form-actions">
+              <el-card
+                  class="news-card"
+                  shadow="hover"
+              >
+                <template #header>
+                  <div class="card-header">
+                    <span>链接新闻稿 新建</span>
+                  </div>
+                </template>
+                <div class="card-header">
+                  <el-button
+                      :icon="Plus"
+                      type="primary"
+                      @click="addNewsItem"
+                  >
+                    添加链接新闻稿
+                  </el-button>
+                </div>
+              </el-card>
+            </div>
           </div>
         </el-form>
       </div>
@@ -510,7 +605,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
         <CustomUpload
             ref="uploadRef"
             v-model="activityFiles"
-            :fileType="5"
+            :fileType="6"
             :fileTypeName="'压缩包'"
             :accept-file-type="'application/zip,application/x-zip,application/x-zip-compressed'"
             :activityId="activityId"

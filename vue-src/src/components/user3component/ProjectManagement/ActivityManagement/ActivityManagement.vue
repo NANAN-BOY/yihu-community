@@ -6,6 +6,7 @@ import {computed, h, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
 import CustomUpload from "./CustomUpload.vue";
+import SatisfactionLevel from "./SatisfactionLevel.vue";
 const pageNum = ref(1)
 const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
 if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
@@ -598,7 +599,9 @@ const deleteActivityWarning = (activityId, activityTitle) => {
       </div>
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
-
+        <SatisfactionLevel
+            :activityId="activityId"
+        />
       </div>
       <div v-if="nowStep === '附件'">
         <!-- 附件上传 -->

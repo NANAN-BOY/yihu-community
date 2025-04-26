@@ -16,7 +16,16 @@ import axios from 'axios';
 import store from './store';
 import {ElMessage} from "element-plus";
 import router from "./router";
+import {generateSnowflakeId} from "./utils/generateSnowflakeId"
 const IsLoading = ref(false);
+
+const checkDeviceSaveId = () => {
+  if(!localStorage.getItem('deviceId')){
+    localStorage.setItem('deviceId', generateSnowflakeId())
+  }
+
+};
+
 const restoreLoginStatus = async () => {
   try {
     if (!store.state.token) {
@@ -49,9 +58,9 @@ const restoreLoginStatus = async () => {
   }
 };
 
-
 // 在组件加载时调用
 onMounted(() => {
+  checkDeviceSaveId()
   restoreLoginStatus(); // 恢复登录状态
 });
 </script>

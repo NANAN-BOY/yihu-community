@@ -11,5 +11,10 @@
         ORDER BY temp_id
     </select>
 
+    <insert id="insert" parameterType="com.yihu.entity.Temp">
+        insert into temp (question_title, question_description, question_nullable, question_type, details)
+        values (#{questionTitle}, #{questionDescription}, #{questionNullable}, #{questionType}, #{details})
+    </insert>
+
 
 </mapper>

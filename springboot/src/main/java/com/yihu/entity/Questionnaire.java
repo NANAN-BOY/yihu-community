@@ -16,13 +16,13 @@ public class Questionnaire {
     private Date endTime;
     private Integer status;
     private Integer fillCount;
-    private Integer delete_flag;
+    private Integer deleteFlag;
 
     public Questionnaire(Date createTime, Integer status,
-                         Integer fillCount, Integer delete_flag) {
+                         Integer fillCount, Integer deleteFlag) {
         this.createTime = createTime;
         this.status = status;
         this.fillCount = fillCount;
-        this.delete_flag = delete_flag;
+        this.deleteFlag = deleteFlag;
     }
 }

@@ -1,8 +1,9 @@
 package com.yihu.service;
 
 import com.yihu.dto.AnswerDTO;
+import com.yihu.dto.TempDTO;
 import com.yihu.entity.Answer;
-import com.yihu.entity.Question;
+import com.yihu.entity.Temp;
 
 import java.util.List;
 
@@ -22,5 +23,7 @@ public interface QuestionnaireService {
 
     Integer submit(List<AnswerDTO> answers, Integer questionnaireId, String ip);
 
-    Integer update(List<Question> questions);
+    Integer addQuestionToTemp(TempDTO tempDTO);
+
+    List<Temp> getTemp();
 }

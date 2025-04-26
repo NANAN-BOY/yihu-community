@@ -7,4 +7,6 @@ import java.util.List;
 public interface TempMapper {
 
     List<Temp> selectTemp();
+
+    Integer insert(Temp temp);
 }

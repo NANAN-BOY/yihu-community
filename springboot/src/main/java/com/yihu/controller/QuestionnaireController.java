@@ -4,8 +4,9 @@ package com.yihu.controller;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
 import com.yihu.dto.AnswerDTO;
+import com.yihu.dto.TempDTO;
 import com.yihu.entity.Answer;
-import com.yihu.entity.Question;
+import com.yihu.entity.Temp;
 import com.yihu.entity.User;
 import com.yihu.service.QuestionnaireService;
 import com.yihu.utils.TokenUtils;
@@ -122,21 +123,33 @@ public class QuestionnaireController {
         };
     }
 
-    @PutMapping("/update")
-    public Result update(@RequestBody List<Question> questions) {
+    @PostMapping("/add-question")
+    public Result addQuestionToTemp(@RequestBody TempDTO tempDTO) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
             return Result.error(401, "请登录");
         }
-        if (currentUser.getRole() != 1) {
-            return Result.error(403, "无权限操作");
-        }
-        int isSuccess = questionnaireService.update(questions);
+        int isSuccess = questionnaireService.addQuestionToTemp(tempDTO);
         if (isSuccess == 1) {
-            return Result.success("模板更新成功");
+            return Result.success("添加成功");
         }
-        return Result.error(501, "模板更新失败");
+        return Result.error(501, "添加失败");
     }
 
+    @GetMapping("/get-temp")
+    public Result getTemp() {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+        List<Temp> temp = questionnaireService.getTemp();
+        return Result.success(temp);
+    }
+
+    @AuthAccess
+    @PostMapping("/create")
+    public Result create() {
+        return Result.success(questionnaireService.create());
+    }
 
 }

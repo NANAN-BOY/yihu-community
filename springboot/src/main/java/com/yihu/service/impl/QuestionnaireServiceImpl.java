@@ -2,6 +2,7 @@ package com.yihu.service.impl;
 
 import com.google.gson.*;
 import com.yihu.dto.AnswerDTO;
+import com.yihu.dto.TempDTO;
 import com.yihu.entity.*;
 import com.yihu.mapper.*;
 import com.yihu.service.QuestionnaireService;
@@ -119,8 +120,9 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                 0,
                 0,
                 0);
-
-        if (questionnaireMapper.create(questionnaire) > 0) {
+        int isSuccess = questionnaireMapper.create(questionnaire);
+        System.out.println(123456);
+        if (isSuccess > 0) {
             for (Temp temp : tempMapper.selectTemp()) {
                 Question question = new Question(questionnaire.getQuestionnaireId(),
                         temp.getQuestionTitle(),
@@ -172,26 +174,30 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     @Override
     public String getQuestion(Integer questionnaireId) {
         Gson gson = new Gson();
-        Integer QuestionIdDigit = 1000; // 问卷id的位数
         JsonArray resList = new JsonArray();
 
         List<Question> questionList = questionMapper.getQuestionList(questionnaireId);
-        for (Question oneQuestion : questionList) {
 
+        for (int i = 0; i < questionList.size(); i++) {
+            Question oneQuestion = questionList.get(i);
             JsonObject oneRes = gson.fromJson(gson.toJson(oneQuestion), JsonObject.class);
+
             oneRes.addProperty("isBoxSelected", false);
+            oneRes.addProperty("questionIndex", i);
             oneRes.addProperty("questionTitle", oneQuestion.getQuestionTitle());
             oneRes.addProperty("questionDescription", oneQuestion.getQuestionDescription());
-            oneRes.addProperty("questionIndex", oneQuestion.getQuestionId() % QuestionIdDigit);
             oneRes.addProperty("questionNullable", oneQuestion.getQuestionNullable());
             oneRes.addProperty("questionType", oneQuestion.getQuestionType());
 
-            JsonObject temp = gson.fromJson(oneQuestion.getDetails(), JsonObject.class);
-
-            processDetails(oneRes, temp);
+            String details = oneQuestion.getDetails();
+            if (details != null && !details.isEmpty()) {
+                JsonObject temp = gson.fromJson(details, JsonObject.class);
+                processDetails(oneRes, temp);
+            }
 
             resList.add(oneRes);
         }
+
         JsonObject res = new JsonObject();
         res.add("questionList", resList);
         return gson.toJson(res);
@@ -296,9 +302,26 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     @Override
-    public Integer update(List<Question> questions) {
-        return 0;
+    public Integer addQuestionToTemp(TempDTO tempDTO) {
+        Temp temp = new Temp();
+        temp.setDetails(tempDTO.getDetails());
+        temp.setQuestionTitle(tempDTO.getQuestionTitle());
+        temp.setQuestionType(tempDTO.getQuestionType());
+        temp.setQuestionNullable(tempDTO.getQuestionNullable());
+        temp.setQuestionDescription(tempDTO.getQuestionDescription());
+
+        Integer isSuccess = tempMapper.insert(temp);
+        if (isSuccess == 1) {
+            return 1;
+        }
+        return -1;
     }
+
+    @Override
+    public List<Temp> getTemp() {
+        return tempMapper.selectTemp();
+    }
+
 
     private void processDetails(JsonObject oneRes, JsonObject temp) {
         if (temp != null) {
@@ -312,5 +335,6 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             oneRes.addProperty("textDescription", temp.get("textDescription").getAsString());
         }
     }
+
 
 }

@@ -600,7 +600,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
         <SatisfactionLevel
-            :activityId="activityId"
+            :questionnaire_id="0"
         />
       </div>
       <div v-if="nowStep === '附件'">

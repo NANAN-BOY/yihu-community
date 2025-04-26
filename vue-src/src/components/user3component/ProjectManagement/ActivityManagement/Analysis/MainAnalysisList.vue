@@ -22,7 +22,7 @@
         </div>
       </el-card>
       <AnalysisCard
-          v-for="(item,index) in questionList"
+          v-for="(item,index) in props.questionList"
           :key="index"
           :question-id="item.questionId"
           :question-index="index+1"
@@ -34,24 +34,30 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue'
-import {useRoute} from 'vue-router'
-import axios from 'axios'
 import AnalysisCard from "./AnalysisCard.vue"
-import {ElMessage} from "element-plus";
 
-const route = useRoute()
-
-const questionnaire = ref({
-  title: '',
-  description: '描述',
-  status: '已完成',
-  createTime: null,
-  endTime: null,
-  fillCount: 299,
+const props = defineProps({
+  questionnaire_id: {
+    type: Number,
+    required: true
+  },
+  questionList: {
+    type: Array,
+    required: true
+  },
+  questionnaire: {
+    default: () => ({
+      title: '',
+      description: '描述',
+      status: '已完成',
+      createTime: null,
+      endTime: null,
+      fillCount: 299,
+    }),
+    type: Object,
+    required: true
+  }
 })
-
-const questionList = ref([])
 
 const translateLabel = {
   'collecting': '收集中',
@@ -59,32 +65,6 @@ const translateLabel = {
   'closed': '已关闭'
 }
 
-const fetchData = () => {
-  axios.get("/api/getQuestionList", {
-    params: {
-      questionnaireId: route.params.id,
-    }
-  }).then((res) => {
-    questionList.value = res.data['questionList']
-    ElMessage({message: "问卷已读取", duration: 1000})
-  }).catch(() => {
-    ElMessage({message: "error！问卷读取失败！", duration: 1000})
-  })
-
-  axios.get("/api/getQuestionnaireOutline", {
-    params: {
-      questionnaireId: route.params.id
-    }
-  }).then((res) => {
-    questionnaire.value = res.data['questionnaire']
-  }).catch(() => {
-    ElMessage({message: "error！问卷概况读取失败！", duration: 1000})
-  })
-}
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style scoped>

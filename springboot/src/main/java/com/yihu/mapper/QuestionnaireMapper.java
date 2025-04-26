@@ -7,11 +7,9 @@ public interface QuestionnaireMapper {
 
     Integer create(Questionnaire questionnaire);
 
-    Integer startQuestionnaire(@Param("activityId") Integer activityId);
+    Integer startQuestionnaire(@Param("questionnaireId") Integer questionnaireId);
 
-    Integer stopQuestionnaire(@Param("activityId") Integer activityId);
-
-    Integer findQuestionnaireIdByActivityId(@Param("activityId") Integer activityId);
+    Integer stopQuestionnaire(@Param("questionnaireId") Integer questionnaireId);
 
     Questionnaire selectByPrimaryKey(@Param("questionnaireId") Integer questionnaireId);
 

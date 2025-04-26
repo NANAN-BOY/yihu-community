@@ -28,14 +28,14 @@ public class QuestionnaireController {
     }
 
     @PutMapping("/release")
-    public Result release(@RequestParam Integer activityId) {
+    public Result release(@RequestParam Integer questionnaireId) {
 
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
             return Result.error(401, "请登录");
         }
 
-        int isSuccess = questionnaireService.release(activityId);
+        int isSuccess = questionnaireService.release(questionnaireId);
         if (isSuccess == 1) {
             return Result.success("问卷发布成功");
         }
@@ -43,13 +43,13 @@ public class QuestionnaireController {
     }
 
     @PutMapping("/stop")
-    public Result stop(@RequestParam Integer activityId) {
+    public Result stop(@RequestParam Integer questionnaireId) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
             return Result.error(401, "请登录");
         }
 
-        int isSuccess = questionnaireService.stop(activityId);
+        int isSuccess = questionnaireService.stop(questionnaireId);
         if (isSuccess == 1) {
             return Result.success("已成功关停问卷");
         }
@@ -57,13 +57,13 @@ public class QuestionnaireController {
     }
 
     @GetMapping("/get-question")
-    public Result getQuestion(@RequestParam Integer activityId) {
+    public Result getQuestion(@RequestParam Integer questionnaireId) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
             return Result.error(401, "请登录");
         }
 
-        String question = questionnaireService.getQuestion(activityId);
+        String question = questionnaireService.getQuestion(questionnaireId);
         return Result.success(question);
     }
 
@@ -93,21 +93,21 @@ public class QuestionnaireController {
     @AuthAccess
     @PostMapping("/submit")
     public Result submit(@RequestBody List<AnswerDTO> answers,
-                         @RequestParam Integer activityId,
+                         @RequestParam Integer questionnaireId,
                          @RequestParam String ip) {
         // 基础参数校验
         if (CollectionUtils.isEmpty(answers)) {
             return Result.error(400, "答案列表不能为空");
         }
-        if (activityId == null || activityId <= 0) {
-            return Result.error(400, "活动ID无效");
+        if (questionnaireId == null || questionnaireId <= 0) {
+            return Result.error(400, "问卷ID无效");
         }
         if (StringUtils.isBlank(ip)) {
             return Result.error(400, "IP地址不能为空");
         }
 
         // 调用服务层提交逻辑
-        Integer resultCode = questionnaireService.submit(answers, activityId, ip);
+        Integer resultCode = questionnaireService.submit(answers, questionnaireId, ip);
 
         return switch (resultCode) {
             case 1 -> Result.success("问卷提交成功");
@@ -122,6 +122,21 @@ public class QuestionnaireController {
         };
     }
 
+    @PutMapping("/update")
+    public Result update(@RequestBody List<Question> questions) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "无权限操作");
+        }
+        int isSuccess = questionnaireService.update(questions);
+        if (isSuccess == 1) {
+            return Result.success("模板更新成功");
+        }
+        return Result.error(501, "模板更新失败");
+    }
 
 
 }

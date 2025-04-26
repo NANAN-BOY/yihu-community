@@ -114,15 +114,10 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
     @Override
     @Transactional
-    public Boolean create(Integer activityId, Integer userId) {
-
-        Questionnaire questionnaire = new Questionnaire(userId,
-                activityId,
-                new Date(),
+    public Integer create() {
+        Questionnaire questionnaire = new Questionnaire(new Date(),
                 0,
-                null,
                 0,
-                null,
                 0);
 
         if (questionnaireMapper.create(questionnaire) > 0) {
@@ -135,9 +130,9 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                         temp.getDetails());
                 questionMapper.createQuestion(question);
             }
-            return true;
+            return questionnaire.getQuestionnaireId();//返回主键
         }
-        return false;
+        return -1;//插入失败
     }
 
     @Override
@@ -175,12 +170,11 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
      * textDescription: '',
      */
     @Override
-    public String getQuestion(Integer activityId) {
+    public String getQuestion(Integer questionnaireId) {
         Gson gson = new Gson();
         Integer QuestionIdDigit = 1000; // 问卷id的位数
         JsonArray resList = new JsonArray();
 
-        Integer questionnaireId = questionnaireMapper.findQuestionnaireIdByActivityId(activityId);
         List<Question> questionList = questionMapper.getQuestionList(questionnaireId);
         for (Question oneQuestion : questionList) {
 
@@ -210,11 +204,9 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
     @Override
     @Transactional
-    public Integer submit(List<AnswerDTO> answers, Integer activityId, String ip) {
-        // 获取问卷ID
-        Integer questionnaireId = questionnaireMapper.findQuestionnaireIdByActivityId(activityId);
+    public Integer submit(List<AnswerDTO> answers, Integer questionnaireId, String ip) {
         if (questionnaireId == null) {
-            log.warn("无效活动ID，未找到对应问卷，activityId={}", activityId);
+            log.warn("无效问卷ID，未找到对应问卷");
             return -2; // 活动ID无效
         }
 
@@ -231,7 +223,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             log.warn("问卷不存在，问卷ID={}", questionnaireId);
             return -3; // 问卷不存在
         }
-        if ("closed".equals(questionnaire.getStatus())) {
+        if (questionnaire.getStatus() == 2) {
             log.info("问卷已关闭，无法提交，问卷ID={}", questionnaireId);
             return -4; // 问卷已关闭
         }
@@ -301,6 +293,11 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             log.error("提交答案异常，问卷ID={}, IP={}", questionnaireId, ip, e);
             return -99; // 未知错误
         }
+    }
+
+    @Override
+    public Integer update(List<Question> questions) {
+        return 0;
     }
 
     private void processDetails(JsonObject oneRes, JsonObject temp) {

@@ -5,52 +5,30 @@
 
 <mapper namespace="com.yihu.mapper.QuestionnaireMapper">
 
-    <select id="getQuestionnaireByUserId" resultType="com.yihu.entity.Questionnaire">
-        select *
-        from questionnaire
-        where uesr_id = #{userId}
-          AND delete_flag = 0
-    </select>
-
     <update id="deleteQuestionnaire">
         update questionnaire
         set delete_flag = 1
-        where id = #{id}
+        where questionnaire_id = #{questionnaireId}
     </update>
 
-    <insert id="create" parameterType="com.yihu.entity.Questionnaire" keyProperty="id" useGeneratedKeys="true">
+    <insert id="create" parameterType="com.yihu.entity.Questionnaire" keyProperty="questionnaireId"
+            useGeneratedKeys="true">
         insert into questionnaire
-        (create_time, decription, fill_count, status, title, uesr_id, delete_flag, activity_id)
-        values (#{createTime}, #{decription}, #{fillCount}, #{status}, #{title}, #{uesrId}, #{deleteFlag},
-                #{activityId})
+            (create_time, fill_count, status, delete_flag)
+        values (#{createTime}, #{fillCount}, #{status}, #{deleteFlag})
     </insert>
 
     <update id="stopQuestionnaire">
         update questionnaire
         set status = 2 AND end_time = #{endTime}
-        where activity_id = #{activityId}
+        where questionnaire_id = #{questionnaireId}
     </update>
 
     <update id="startQuestionnaire">
         update questionnaire
         set status = 1 AND start_time = #{startTime}
-        where activity_id = #{activityId}
+        where questionnaire_id = #{questionnaireId}
     </update>
-
-    <select id="getQuestionnaireByStatus" resultType="com.yihu.entity.Questionnaire">
-        select *
-        from questionnaire
-        where status = #{status}
-          AND delete_flag = 0
-          AND uesr_id = #{uesrId}
-    </select>
-
-    <select id="getQuestionnaireByActivityId" resultType="com.yihu.entity.Questionnaire">
-        select questionnaire_id
-        from questionnaire
-        where activity_id = #{activityId}
-          AND delete_flag = 0
-    </select>
 
     <select id="selectByPrimaryKey">
         select *

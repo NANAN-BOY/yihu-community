@@ -2,6 +2,7 @@ package com.yihu.service;
 
 import com.yihu.dto.AnswerDTO;
 import com.yihu.entity.Answer;
+import com.yihu.entity.Question;
 
 import java.util.List;
 
@@ -9,15 +10,17 @@ public interface QuestionnaireService {
 
     String analysis(Integer questionId);
 
-    Boolean create(Integer activityId, Integer userId);
+    Integer create();
 
-    Integer release(Integer activityId);
+    Integer release(Integer questionnaireId);
 
-    Integer stop(Integer activityId);
+    Integer stop(Integer questionnaireId);
 
-    String getQuestion(Integer activityId);
+    String getQuestion(Integer questionnaireId);
 
     List<Answer> getAnswer(Integer questionId);
 
-    Integer submit(List<AnswerDTO> answers, Integer activityId, String ip);
+    Integer submit(List<AnswerDTO> answers, Integer questionnaireId, String ip);
+
+    Integer update(List<Question> questions);
 }

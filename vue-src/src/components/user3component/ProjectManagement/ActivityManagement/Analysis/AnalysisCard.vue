@@ -108,7 +108,7 @@ const barHeight = ref('250px')
 const fetchData = async () => {
   try {
     if (props.questionType === 'single_check' || props.questionType === 'multi_check' || props.questionType === 'number' || props.questionType === 'grade') {
-      const res = await axios.get("/api/getQuestionValueList", {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionValueList`, {
         params: {
           questionId: props.questionId
         }
@@ -127,7 +127,7 @@ const fetchData = async () => {
       drawBar()
       drawPie()
     } else {
-      const res = await axios.get("/api/getWriteValue", {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getWriteValue`, {
         params: {
           questionId: props.questionId
         }

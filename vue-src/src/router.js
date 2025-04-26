@@ -34,6 +34,12 @@ const routes = [
     name: 'expertInvitedRegister',
     component: () => import(/* webpackChunkName: "expert" */ './views/expertInvitedRegister.vue'),
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/fillIn/:id',
+    name: 'fillIn',
+    component: () => import(/* webpackChunkName: "expert" */ './views/FillIn.vue'),
+    meta: { requiresAuth: false }
   }
 ];
 

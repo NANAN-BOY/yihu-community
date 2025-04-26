@@ -33,3 +33,4 @@ pnpm-debug.log*
 ./数据库/YiHuSystem.cdb
 ./数据库/YiHuSystem.pdb
 /vue-src/dist/
+/files/

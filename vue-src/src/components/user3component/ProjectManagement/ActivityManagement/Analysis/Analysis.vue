@@ -51,33 +51,33 @@ const analysisResult = async () => {
   setTimeout(() => {
     analysisLoading.value = false;
   }, 6000);
-  // try {
-  //   const [questionListRes, questionnaireRes] = await Promise.all([
-  //     axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionList`, {
-  //       params: {
-  //         questionnaireId: props.questionnaire_id,
-  //       },
-  //       headers: {
-  //         token: store.state.token
-  //       }
-  //     }),
-  //     axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionnaireOutline`, {
-  //       params: {
-  //         questionnaireId: props.questionnaire_id,
-  //       },
-  //       headers: {
-  //         token: store.state.token
-  //       }
-  //     })
-  //   ]);
-  //
-  //   questionList.value = questionListRes.data['questionList'];
-  //   questionnaire.value = questionnaireRes.data['questionnaire'];
-  // } catch (error) {
-  //   ElMessage({ message: "数据加载失败，请重试", duration: 1000 });
-  // } finally {
-  //   analysisLoading.value = false;
-  // }
+  try {
+    const [questionListRes, questionnaireRes] = await Promise.all([
+      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionList`, {
+        params: {
+          questionnaireId: props.questionnaire_id,
+        },
+        headers: {
+          token: store.state.token
+        }
+      }),
+      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionnaireOutline`, {
+        params: {
+          questionnaireId: props.questionnaire_id,
+        },
+        headers: {
+          token: store.state.token
+        }
+      })
+    ]);
+
+    questionList.value = questionListRes.data['questionList'];
+    questionnaire.value = questionnaireRes.data['questionnaire'];
+  } catch (error) {
+    ElMessage({message: "数据加载失败，请重试", duration: 1000});
+  } finally {
+    analysisLoading.value = false;
+  }
 };
 
 </script>

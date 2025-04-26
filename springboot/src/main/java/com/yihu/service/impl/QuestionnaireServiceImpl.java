@@ -172,35 +172,50 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
      * textDescription: '',
      */
     @Override
+    @Transactional
     public String getQuestion(Integer questionnaireId) {
-        Gson gson = new Gson();
-        JsonArray resList = new JsonArray();
+        try {
+            Gson gson = new Gson();
+            JsonArray resList = new JsonArray();
 
-        List<Question> questionList = questionMapper.getQuestionList(questionnaireId);
-
-        for (int i = 0; i < questionList.size(); i++) {
-            Question oneQuestion = questionList.get(i);
-            JsonObject oneRes = gson.fromJson(gson.toJson(oneQuestion), JsonObject.class);
-
-            oneRes.addProperty("isBoxSelected", false);
-            oneRes.addProperty("questionIndex", i);
-            oneRes.addProperty("questionTitle", oneQuestion.getQuestionTitle());
-            oneRes.addProperty("questionDescription", oneQuestion.getQuestionDescription());
-            oneRes.addProperty("questionNullable", oneQuestion.getQuestionNullable());
-            oneRes.addProperty("questionType", oneQuestion.getQuestionType());
-
-            String details = oneQuestion.getDetails();
-            if (details != null && !details.isEmpty()) {
-                JsonObject temp = gson.fromJson(details, JsonObject.class);
-                processDetails(oneRes, temp);
+            List<Question> questionList = questionMapper.getQuestionList(questionnaireId);
+            if (questionList == null) {
+                System.out.println("questionList 为 null");
+                return gson.toJson(new JsonObject());
             }
 
-            resList.add(oneRes);
-        }
+            for (int i = 0; i < questionList.size(); i++) {
+                Question oneQuestion = questionList.get(i);
+                JsonObject oneRes = gson.fromJson(gson.toJson(oneQuestion), JsonObject.class);
 
-        JsonObject res = new JsonObject();
-        res.add("questionList", resList);
-        return gson.toJson(res);
+                oneRes.addProperty("isBoxSelected", false);
+                oneRes.addProperty("questionIndex", i);
+                oneRes.addProperty("questionTitle", oneQuestion.getQuestionTitle());
+                oneRes.addProperty("questionDescription", oneQuestion.getQuestionDescription());
+                oneRes.addProperty("questionNullable", oneQuestion.getQuestionNullable());
+                oneRes.addProperty("questionType", oneQuestion.getQuestionType());
+
+                String details = oneQuestion.getDetails();
+                if (details != null && !details.isEmpty()) {
+                    try {
+                        JsonObject temp = gson.fromJson(details, JsonObject.class);
+                        processDetails(oneRes, temp);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        oneRes.addProperty("detailsError", "JSON 解析失败：" + e.getMessage());
+                    }
+                }
+
+                resList.add(oneRes);
+            }
+
+            JsonObject res = new JsonObject();
+            res.add("questionList", resList);
+            return gson.toJson(res);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override

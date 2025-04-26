@@ -9,7 +9,7 @@
         select *
         from question
         where questionnaire_id = #{questionnaireId}
-        order by questionId
+        order by question_id
     </select>
 
     <insert id="createQuestion" parameterType="com.yihu.entity.Question">

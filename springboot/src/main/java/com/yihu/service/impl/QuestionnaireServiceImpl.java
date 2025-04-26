@@ -121,7 +121,6 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                 0,
                 0);
         int isSuccess = questionnaireMapper.create(questionnaire);
-        System.out.println(123456);
         if (isSuccess > 0) {
             for (Temp temp : tempMapper.selectTemp()) {
                 Question question = new Question(questionnaire.getQuestionnaireId(),
@@ -294,13 +293,16 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                 }
                 // 插入答案记录
                 answerMapper.insertAnswer(answer);
+                System.out.printf("111");
             }
 
             // 记录提交IP
             questionnaireIpMapper.insertQuestionnaireIp(new QuestionnaireIp(questionnaireId, ip));
+            System.out.println("222");
 
             // 更新问卷填写人数
             int updateRows = questionnaireMapper.incrementFillCount(questionnaireId);
+            System.out.println("333");
             if (updateRows != 1) {
                 log.error("填写人数更新失败，问卷ID={}", questionnaireId);
                 throw new RuntimeException("填写人数更新失败");

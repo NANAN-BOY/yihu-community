@@ -1,6 +1,5 @@
 package com.yihu.common;
 
-import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alipay.easysdk.factory.Factory;
 import com.alipay.easysdk.kernel.Config;
@@ -10,8 +9,6 @@ import com.alipay.easysdk.payment.facetoface.models.AlipayTradePrecreateResponse
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
 
 @Slf4j
 @AllArgsConstructor
@@ -39,7 +36,7 @@ public class PaymentService {
                         .getJSONObject("alipay_trade_precreate_response")
                         .getString("qr_code");
 
-                QrCodeUtil.generate(qrUrl, 300, 300, new File("E://pay.jpg"));
+                //QrCodeUtil.generate(qrUrl, 300, 300, new File("E://pay.jpg"));
 
                 return response.getHttpBody();
             } else {

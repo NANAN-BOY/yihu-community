@@ -57,13 +57,9 @@ public class QuestionnaireController {
         return Result.error(501, "关停失败");
     }
 
+    @AuthAccess
     @GetMapping("/get-question")
     public Result getQuestion(@RequestParam Integer questionnaireId) {
-        User currentUser = TokenUtils.getCurrentUser();
-        if (currentUser == null) {
-            return Result.error(401, "请登录");
-        }
-
         String question = questionnaireService.getQuestion(questionnaireId);
         return Result.success(question);
     }

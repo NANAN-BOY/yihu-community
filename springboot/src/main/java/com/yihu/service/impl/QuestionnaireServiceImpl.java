@@ -269,23 +269,59 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                 String questionType = answer.getQuestionType();
                 switch (questionType) {
                     case "single_check":
-                        answer.setWriteValue(answerObj.get("answerSingleCheck").getAsString());
+                        JsonElement singleCheck = answerObj.get("answerSingleCheck");
+                        if (singleCheck != null) {
+                            answer.setWriteValue(singleCheck.getAsString());
+                        } else {
+                            log.warn("answerSingleCheck value is null for questionId: {}", answer.getQuestionId());
+                            answer.setWriteValue("");
+                        }
                         break;
                     case "multi_check":
-                        answer.setWriteValue(answerObj.get("answerMultiCheck").toString());
+                        JsonElement multiCheck = answerObj.get("answerMultiCheck");
+                        if (multiCheck != null) {
+                            answer.setWriteValue(multiCheck.toString());
+                        } else {
+                            log.warn("answerMultiCheck value is null for questionId: {}", answer.getQuestionId());
+                            answer.setWriteValue("");
+                        }
                         break;
                     case "single_line_text":
                     case "multi_line_text":
-                        answer.setWriteValue(answerObj.get("answerText").getAsString());
+                        JsonElement answerText = answerObj.get("answerText");
+                        if (answerText != null) {
+                            answer.setWriteValue(answerText.getAsString());
+                        } else {
+                            log.warn("answerText value is null for questionId: {}", answer.getQuestionId());
+                            answer.setWriteValue("");
+                        }
                         break;
                     case "number":
-                        answer.setWriteValue(answerObj.get("answerNumber").toString());
+                        JsonElement answerNumber = answerObj.get("answerNumber");
+                        if (answerNumber != null) {
+                            answer.setWriteValue(answerNumber.toString());
+                        } else {
+                            log.warn("answerNumber value is null for questionId: {}", answer.getQuestionId());
+                            answer.setWriteValue("");
+                        }
                         break;
                     case "grade":
-                        answer.setWriteValue(answerObj.get("answerGrade").toString());
+                        JsonElement answerGrade = answerObj.get("answerGrade");
+                        if (answerGrade != null) {
+                            answer.setWriteValue(answerGrade.toString());
+                        } else {
+                            log.warn("answerGrade value is null for questionId: {}", answer.getQuestionId());
+                            answer.setWriteValue("");
+                        }
                         break;
                     case "date":
-                        answer.setWriteValue(answerObj.get("answerDate").toString());
+                        JsonElement answerDate = answerObj.get("answerDate");
+                        if (answerDate != null) {
+                            answer.setWriteValue(answerDate.toString());
+                        } else {
+                            log.warn("answerDate value is null for questionId: {}", answer.getQuestionId());
+                            answer.setWriteValue("");
+                        }
                         break;
                     default:
                         log.error("未知题目类型，问卷ID={}, 类型={}", questionnaireId, questionType);

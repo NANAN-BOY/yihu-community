@@ -14,4 +14,6 @@ public class Answer {
     private String questionType;
     private String writeValue;
     private Date fillTime;
+
+
 }

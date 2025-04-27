@@ -7,7 +7,7 @@
 
     <select id="isSubmit" resultType="java.lang.Integer">
         SELECT COUNT(*)
-        FROM questionnaire_id
+        FROM questionnaire_ip
         WHERE ip = #{ip}
           AND questionnaire_id = #{questionnaireId}
     </select>

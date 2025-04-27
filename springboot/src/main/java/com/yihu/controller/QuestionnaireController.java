@@ -182,4 +182,11 @@ public class QuestionnaireController {
         return Result.success(questionnaireService.create());
     }
 
+//    @AuthAccess
+//    @DeleteMapping("/delete")
+//    public Result delete(@RequestParam Integer questionnaireId) {
+//
+//        return Result.success(questionnaireService.delete(questionnaireId));
+//    }
+
 }

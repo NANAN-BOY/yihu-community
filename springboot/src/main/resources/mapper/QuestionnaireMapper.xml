@@ -7,7 +7,9 @@
 
     <update id="deleteQuestionnaire">
         update questionnaire
-        set delete_flag = 1
+        set delete_flag = 1,
+            status      = 2,
+            end_time    = NOW()
         where questionnaire_id = #{questionnaireId}
     </update>
 
@@ -20,13 +22,15 @@
 
     <update id="stopQuestionnaire">
         update questionnaire
-        set status = 2 AND end_time = #{endTime}
+        set status   = 2,
+            end_time = #{endTime}
         where questionnaire_id = #{questionnaireId}
     </update>
 
     <update id="startQuestionnaire">
         update questionnaire
-        set status = 1 AND start_time = #{startTime}
+        set status     = 1,
+            start_time = #{startTime}
         where questionnaire_id = #{questionnaireId}
     </update>
 

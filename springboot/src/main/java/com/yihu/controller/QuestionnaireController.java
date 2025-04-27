@@ -89,13 +89,10 @@ public class QuestionnaireController {
 
     @AuthAccess
     @PostMapping("/submit")
-    public Result submit(@RequestBody List<AnswerDTO> answers,
+    public Result submit(@RequestBody String answers,
                          @RequestParam Integer questionnaireId,
                          @RequestParam String ip) {
-        // 基础参数校验
-        if (CollectionUtils.isEmpty(answers)) {
-            return Result.error(400, "答案列表不能为空");
-        }
+
         if (questionnaireId == null || questionnaireId <= 0) {
             return Result.error(400, "问卷ID无效");
         }

@@ -1,7 +1,6 @@
 package com.yihu.service.impl;
 
 import com.google.gson.*;
-import com.yihu.dto.AnswerDTO;
 import com.yihu.dto.TempDTO;
 import com.yihu.entity.*;
 import com.yihu.mapper.*;
@@ -224,7 +223,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
     @Override
     @Transactional
-    public Integer submit(List<AnswerDTO> answers, Integer questionnaireId, String ip) {
+    public Integer submit(String answers, Integer questionnaireId, String ip) {
         if (questionnaireId == null) {
             log.warn("无效问卷ID，未找到对应问卷");
             return -2; // 活动ID无效
@@ -248,13 +247,9 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             return -4; // 问卷已关闭
         }
 
-        String answerListJson = null;
         try {
-            // 将AnswerDTO列表转换为JSON字符串
-            answerListJson = new Gson().toJson(answers);
-
             // 解析JSON并组装Answer实体
-            JsonArray answerListArray = new Gson().fromJson(answerListJson, JsonArray.class);
+            JsonArray answerListArray = new Gson().fromJson(answers, JsonArray.class);
             for (JsonElement oneAnswer : answerListArray) {
                 JsonObject answerObj = oneAnswer.getAsJsonObject();
 
@@ -346,7 +341,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
             return 1; // 提交成功
         } catch (JsonSyntaxException e) {
-            log.error("答案JSON格式错误，内容={}", answerListJson, e);
+            log.error("答案JSON格式错误，内容={}", answers, e);
             return -6; // JSON解析失败
         } catch (Exception e) {
             log.error("提交答案异常，问卷ID={}, IP={}", questionnaireId, ip, e);

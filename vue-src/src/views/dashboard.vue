@@ -259,7 +259,8 @@ const currentComponent = ref(null);
 const menus = [
   {role: 1, index: '1-1', icon: Document, title: '专家库管理'},
   {role: 1, index: '1-2', icon: Avatar, title: '系统管理'},
-  {role: 1, index: '1-3', icon: Document, title: '关于我的信息'},
+  {role: 1, index: '1-3', icon: Tickets, title: '满意度调查模板管理'},
+  {role: 1, index: '1-4', icon: Document, title: '关于我的信息'},
 
   {role: 2, index: '2-1', icon: Document, title: '项目管理'},
   {role: 2, index: '2-2', icon: Avatar, title: '专家库管理'},
@@ -297,8 +298,12 @@ const handleSelect = (index) => {
       currentComponent.value = SystemSetting;
       break;
     case '1-3':
+      currentComponent.value = ActivityQuestionnaireSetting;
+      break;
+    case '1-4':
       currentComponent.value = aboutMyInfo;
       break;
+
     case '2-1':
       currentComponent.value = user2ProjectManagement;
       break;
@@ -524,6 +529,8 @@ const closePayInfoDialogVisible = () => {
 }
 import QRCode from 'qrcode.vue';
 import SystemSetting from "../components/user1component/SystemSetting/SystemSetting.vue";
+import ActivityQuestionnaireSetting
+  from "../components/user1component/ActivityQuestionnaire/ActivityQuestionnaireSetting.vue";
 const PayInfo =ref(null);
 const BuyYiHuLoading = ref(false);
 const BuyYiHu_Vip = (type) => {

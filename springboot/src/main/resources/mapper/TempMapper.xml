@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yihu.mapper.TempMapper">
+
+    <select id="selectTemp" resultType="com.yihu.entity.Temp">
+        select *
+        from temp
+        ORDER BY temp_id
+    </select>
+
+    <insert id="insert" parameterType="com.yihu.entity.Temp">
+        insert into temp (question_title, question_description, question_nullable, question_type, details)
+        values (#{questionTitle}, #{questionDescription}, #{questionNullable}, #{questionType}, #{details})
+    </insert>
+
+    <delete id="deleteTemp">
+        delete
+        from temp
+        where temp_id = #{tempId}
+    </delete>
+
+    <update id="updateTemp" parameterType="com.yihu.entity.Temp">
+        update temp
+        set
+        <if test="questionTitle != null">
+            question_title = #{questionTitle},
+        </if>
+        <if test="questionDescription != null">
+            question_description = #{questionDescription},
+        </if>
+        <if test="questionNullable != null">
+            question_nullable = #{questionNullable},
+        </if>
+        <if test="questionType != null">
+            question_type = #{questionType},
+        </if>
+        <if test="details != null">
+            details = #{details}
+        </if>
+        where temp_id = #{tempId}
+    </update>
+
+
+</mapper>

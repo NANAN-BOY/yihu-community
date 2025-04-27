@@ -72,7 +72,9 @@ public class QuestionnaireController {
         }
 
         String answers = questionnaireService.analysis(questionId);
-
+        if (answers == null) {
+            return Result.error(404, "未找到该问题");
+        }
         return Result.success(answers);
     }
 
@@ -122,6 +124,9 @@ public class QuestionnaireController {
         if (currentUser == null) {
             return Result.error(401, "请登录");
         }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "无权限");
+        }
         int isSuccess = questionnaireService.addQuestionToTemp(tempDTO);
         if (isSuccess == 1) {
             return Result.success("添加成功");
@@ -137,6 +142,38 @@ public class QuestionnaireController {
         }
         List<Temp> temp = questionnaireService.getTemp();
         return Result.success(temp);
+    }
+
+    @DeleteMapping("/delete-question")
+    public Result deleteQuestionToTemp(@RequestParam Integer tempId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "无权限");
+        }
+        int isSuccess = questionnaireService.deleteQuestionToTemp(tempId);
+        if (isSuccess == 1) {
+            return Result.success("删除成功");
+        }
+        return Result.error(501, "删除失败");
+    }
+
+    @PutMapping("/update-question")
+    public Result updateQuestionToTemp(@RequestBody TempDTO tempDTO) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+        if (currentUser.getRole() != 1) {
+            return Result.error(403, "无权限");
+        }
+        int isSuccess = questionnaireService.updateQuestionToTemp(tempDTO);
+        if (isSuccess == 1) {
+            return Result.success("修改成功");
+        }
+        return Result.error(501, "修改失败");
     }
 
     @AuthAccess

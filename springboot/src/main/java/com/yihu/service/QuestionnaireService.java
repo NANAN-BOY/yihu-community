@@ -25,4 +25,10 @@ public interface QuestionnaireService {
     Integer addQuestionToTemp(TempDTO tempDTO);
 
     List<Temp> getTemp();
+
+    Integer deleteQuestionToTemp(Integer tempId);
+
+    Integer updateQuestionToTemp(TempDTO tempDTO);
+
+    void delete(Integer questionnaireId);
 }

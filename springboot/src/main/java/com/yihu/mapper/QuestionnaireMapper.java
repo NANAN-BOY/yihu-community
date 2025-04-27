@@ -14,4 +14,6 @@ public interface QuestionnaireMapper {
     Questionnaire selectByPrimaryKey(@Param("questionnaireId") Integer questionnaireId);
 
     int incrementFillCount(@Param("questionnaireId") Integer questionnaireId);
+
+    void deleteQuestionnaire(@Param("questionnaireId") Integer questionnaireId);
 }

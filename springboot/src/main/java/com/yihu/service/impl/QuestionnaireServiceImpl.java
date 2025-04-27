@@ -370,6 +370,32 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         return tempMapper.selectTemp();
     }
 
+    @Override
+    public Integer deleteQuestionToTemp(Integer tempId) {
+        return tempMapper.deleteTemp(tempId);
+    }
+
+    @Override
+    public Integer updateQuestionToTemp(TempDTO tempDTO) {
+        Temp temp = new Temp();
+        temp.setDetails(tempDTO.getDetails());
+        temp.setQuestionTitle(tempDTO.getQuestionTitle());
+        temp.setQuestionType(tempDTO.getQuestionType());
+        temp.setQuestionNullable(tempDTO.getQuestionNullable());
+        temp.setQuestionDescription(tempDTO.getQuestionDescription());
+
+        Integer isSuccess = tempMapper.updateTemp(temp);
+        if (isSuccess == 1) {
+            return 1;
+        }
+        return -1;
+    }
+
+    @Override
+    public void delete(Integer questionnaireId) {
+        questionnaireMapper.deleteQuestionnaire(questionnaireId);
+    }
+
 
     private void processDetails(JsonObject oneRes, JsonObject temp) {
         if (temp != null) {

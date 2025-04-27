@@ -3,6 +3,7 @@ package com.yihu.controller;
 
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
+import com.yihu.dto.AnswerDTO;
 import com.yihu.dto.TempDTO;
 import com.yihu.entity.Answer;
 import com.yihu.entity.Temp;
@@ -88,33 +89,33 @@ public class QuestionnaireController {
 
     @AuthAccess
     @PostMapping("/submit")
-    public Result submit(@RequestBody String answers,
+    public Result submit(@RequestBody List<AnswerDTO> answers,
                          @RequestParam Integer questionnaireId,
                          @RequestParam String ip) {
         // 基础参数校验
         if (CollectionUtils.isEmpty(answers)) {
-            return Result.error(400, "答案列表不能为空！");
+            return Result.error(400, "答案列表不能为空");
         }
         if (questionnaireId == null || questionnaireId <= 0) {
-            return Result.error(400, "找不到问卷！");//问卷ID无效
+            return Result.error(400, "问卷ID无效");
         }
         if (StringUtils.isBlank(ip)) {
-            return Result.error(400, "系统异常，请刷新页面！");//IP地址不能为空
+            return Result.error(400, "IP地址不能为空");
         }
 
         // 调用服务层提交逻辑
         Integer resultCode = questionnaireService.submit(answers, questionnaireId, ip);
 
         return switch (resultCode) {
-            case 1 -> Result.success("问卷提交成功！");
-            case -1 -> Result.error(409, "您已经提交过，请勿重复提交！");//重复提交，请勿重复提交
-            case -2 -> Result.error(404, "找不到问卷！");//无效的活动ID，未找到对应问卷
-            case -3 -> Result.error(404, "找不到问卷！");
-            case -4 -> Result.error(403, "问卷已关闭！");
-            case -5 -> Result.error(400, "数据异常！");//包含不支持的题目类型，无法处理
-            case -6 -> Result.error(400, "数据异常！");//答案数据格式错误（JSON解析失败）
-            case -99 -> Result.error(500, "系统异常，请稍后重试!");
-            default -> Result.error(500, "未知错误，请联系管理员!");
+            case 1 -> Result.success("问卷提交成功");
+            case -1 -> Result.error(409, "已重复提交，每个IP仅限提交一次");
+            case -2 -> Result.error(404, "无效的活动ID，未找到对应问卷");
+            case -3 -> Result.error(404, "目标问卷不存在");
+            case -4 -> Result.error(403, "问卷已关闭，当前不可提交");
+            case -5 -> Result.error(400, "包含不支持的题目类型，无法处理");
+            case -6 -> Result.error(400, "答案数据格式错误（JSON解析失败）");
+            case -99 -> Result.error(500, "系统异常，请稍后重试");
+            default -> Result.error(500, "未知错误，请联系管理员");
         };
     }
 

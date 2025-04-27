@@ -237,13 +237,17 @@ const submitAnswer = async () => {
           ip: ip.value
         }
       })
+      if (req.data.code === 200) {
+        ElMessage({message: req.data.msg, duration: 1000})
+      } else {
+        ElMessage({message: req.data.msg, duration: 1000})
+      }
       console.log(req)
       submitVisible.value = false
       alreadySubmit.value = true
       cannotSubmit.value = true
-      ElMessage({message: "问卷已提交", duration: 1000})
-    } catch {
-      ElMessage({message: "error！提交失败！", duration: 1000})
+    } catch (e) {
+      ElMessage({message: "提交失败，请重试！", duration: 1000})
     }
   }
 }

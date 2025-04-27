@@ -148,15 +148,11 @@ const questionnaire = ref({
 })
 const submitVisible = ref(false)
 const resetVisible = ref(false)
-const ip = ref(null)
+const ip = ref(localStorage.getItem('deviceId'))
 const alreadySubmit = ref(null)
 const cannotSubmit = ref(null)
 
 const fetchData = async () => {
-  if (localStorage.getItem('deviceId')) {
-    ip.value = localStorage.getItem('deviceId');
-  }
-
   try {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-question`, {
       params: {
@@ -235,10 +231,13 @@ const submitAnswer = async () => {
   console.log(answerList.value)
   if (checkValidate()) {
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/fillin/submitAnswer?questionnaireId=` + route.params.id, {
-        answerList: answerList.value,
-        ip: ip.value
+      const req = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/submit`, answerList.value, {
+        params: {
+          questionnaireId: route.params.id,
+          ip: ip.value
+        }
       })
+      console.log(req)
       submitVisible.value = false
       alreadySubmit.value = true
       cannotSubmit.value = true

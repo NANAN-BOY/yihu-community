@@ -13,4 +13,12 @@ public class AnswerDTO {
     private String questionType;
     private String writeValue;
     private Date fillTime;
+
+    public AnswerDTO(Integer questionId, String questionTitle, String questionType, String writeValue, Date fillTime) {
+        this.questionId = questionId;
+        this.questionTitle = questionTitle;
+        this.questionType = questionType;
+        this.writeValue = writeValue;
+        this.fillTime = fillTime;
+    }
 }

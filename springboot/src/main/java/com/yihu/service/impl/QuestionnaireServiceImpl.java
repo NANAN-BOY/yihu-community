@@ -116,7 +116,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     @Transactional
     public Integer create() {
         Questionnaire questionnaire = new Questionnaire(new Date(),
-                0,
+                1,
                 0,
                 0);
         int isSuccess = questionnaireMapper.create(questionnaire);

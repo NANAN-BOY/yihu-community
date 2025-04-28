@@ -350,6 +350,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     @Override
+    @Transactional
     public Integer addQuestionToTemp(TempDTO tempDTO) {
         Temp temp = new Temp();
         temp.setDetails(tempDTO.getDetails());
@@ -358,9 +359,14 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         temp.setQuestionNullable(tempDTO.getQuestionNullable());
         temp.setQuestionDescription(tempDTO.getQuestionDescription());
 
-        Integer isSuccess = tempMapper.insert(temp);
-        if (isSuccess == 1) {
-            return 1;
+        try {
+            Integer isSuccess = tempMapper.insert(temp);
+            if (isSuccess == 1) {
+                return 1;
+            }
+            return -1;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return -1;
     }

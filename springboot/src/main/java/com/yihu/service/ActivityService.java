@@ -1,6 +1,7 @@
 package com.yihu.service;
 
 import com.github.pagehelper.PageInfo;
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
@@ -34,7 +35,7 @@ public interface ActivityService {
 
     void deleteActivityById(Integer id,Integer userId);
 
-    int addActivity(Integer userId);
+    int addActivity(Integer projectId,Integer questionnaireId,Integer userId);
 
     void deleteFile(Integer fileId);
 
@@ -42,11 +43,9 @@ public interface ActivityService {
 
     ActivityFiles getFileById(Integer id);
 
-    PageInfo<Activity> queryByCreateId(Integer createId, String title,int pageNum, int pageSize);
+    PageInfo<Activity> getActivityByProjectId(Integer projectId, String title,int pageNum, int pageSize);
 
     PageInfo<Activity> queryAllSubmited(String title, int pageNum, int pageSize);
-
-    void submitActivity(ActivityDTO activityDTO, Integer id);
 
     ActivityFiles getById(int newId);
 
@@ -56,7 +55,10 @@ public interface ActivityService {
 
     List<ActivityNews> getNewsByActivityId(Integer id);
 
-    void withdrawSubmission(Integer activityId, Integer userId);
+    void updateStatus(Integer activityId,Integer status,Integer userId);
 
 
+    List<Activity> getActivityIdByProjectId(Integer projectId);
+
+    PageInfo<ActivityAuditDTO> getActivityAuditList(ActivityAuditDTO activityAuditDTO, int pageNum, int pageSize);
 }

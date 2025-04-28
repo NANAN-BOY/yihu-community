@@ -3,6 +3,7 @@ package com.yihu.controller;
 import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.dto.ActivityQueryDTO;
 import com.yihu.entity.Activity;
@@ -10,6 +11,7 @@ import com.yihu.entity.ActivityFiles;
 import com.yihu.entity.ActivityNews;
 import com.yihu.entity.User;
 import com.yihu.service.ActivityService;
+import com.yihu.service.QuestionnaireService;
 import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +36,21 @@ import java.util.List;
 public class ActivityController {
 
     private final ActivityService activityService;
+    private final QuestionnaireService questionnaireService;
 
     @Autowired
-    public ActivityController(ActivityService activityService) {
+    public ActivityController(ActivityService activityService, QuestionnaireService questionnaireService) {
         this.activityService = activityService;
+        this.questionnaireService = questionnaireService;
     }
 
 
     @PostMapping("/addActivity")
-    public Result addActivity(){
+    public Result addActivity(@RequestParam Integer projectId){
         User currentUser = TokenUtils.getCurrentUser();
-        int activityId = activityService.addActivity(currentUser.getId());
+        // 创建问卷
+        int questionId = questionnaireService.create();
+        int activityId = activityService.addActivity(projectId,questionId,currentUser.getId());
         if(activityId != 0){
             return Result.success(activityId);
         }
@@ -221,7 +227,7 @@ public class ActivityController {
     }
 
 
-    @GetMapping("/queryByCreateId") // 查询用户活动列表
+    /*@GetMapping("/queryByCreateId") // 查询用户活动列表
     public Result queryByCreateId(@RequestParam(required = false) String title,
                         @RequestParam(defaultValue = "1") int pageNum,
                         @RequestParam(defaultValue = "10") int pageSize) {
@@ -231,12 +237,12 @@ public class ActivityController {
                 return Result.error("用户未登录");
             }
             if (currentUser.getRole() == 1){
-                // 管理员查询 查询所有已经提交的
+                // 管理员查询 查询所有已经提交的 并且项目没有提交的
                 PageInfo<Activity> activityList = activityService.queryAllSubmited(title,pageNum,pageSize);
                 return Result.success(activityList);
             }else{
                 // 用户查询 查询当前用户未删除的
-                PageInfo<Activity> activityList = activityService.queryByCreateId(currentUser.getId(),title,pageNum,pageSize);
+                PageInfo<Activity> activityList = activityService.getActivityByProjectId(currentUser.getId(),title,pageNum,pageSize);
                 System.out.println(activityList);
                 return Result.success(activityList);
             }
@@ -245,18 +251,68 @@ public class ActivityController {
             log.error("查询用户活动列表失败", e);
             return Result.error("查询失败");
         }
+    }*/
+    @GetMapping("/getActivityAuditList")
+    public Result getActivityAuditList(@ModelAttribute ActivityAuditDTO activityAuditDTO,
+                                       @RequestParam(defaultValue = "1") int pageNum,
+                                       @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            PageInfo<ActivityAuditDTO> activityAuditList = activityService.getActivityAuditList(activityAuditDTO,pageNum,pageSize);
+            return Result.success(activityAuditList);
+        }
+        catch (Exception e) {
+            log.error("查询失败", e);
+            return Result.error("查询失败");
+        }
+    }
+
+    @GetMapping("/getActivityByProjectId")
+    public Result getActivityByProjectId(@RequestParam Integer projectId,
+                                         @RequestParam(required = false) String title,
+                                         @RequestParam(defaultValue = "1") int pageNum,
+                                         @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            PageInfo<Activity> activityList = activityService.getActivityByProjectId(projectId,title,pageNum,pageSize);
+            return Result.success(activityList);
+        } catch (Exception e) {
+            log.error("查询失败", e);
+            return Result.error("查询失败");
+        }
     }
 
     @PostMapping("/submitActivity")
     public Result submitActivity(@RequestBody ActivityDTO activityDTO) {
         try {
             User currentUser = TokenUtils.getCurrentUser();
-            activityService.submitActivity(activityDTO,currentUser.getId());
+            activityService.updateStatus(activityDTO.getActivityId(),1,currentUser.getId());
             return Result.success("保存并提交成功");
         } catch (Exception e){
             return Result.error("保存并提交失败");
         }
+    }
 
+    @PostMapping("/withdrawSubmission")  //管理员撤回提交申请
+    public Result withdrawSubmission(@RequestParam Integer activityId) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            activityService.updateStatus(activityId,2, currentUser.getId());
+            return Result.success("撤回提交成功");
+        } catch (Exception e) {
+            log.error("撤回提交失败", e);
+            return Result.error("撤回提交失败");
+        }
+    }
+
+    @PostMapping("/approved")  //管理员撤回提交申请
+    public Result approved(@RequestParam Integer activityId) {
+        try {
+            User currentUser = TokenUtils.getCurrentUser();
+            activityService.updateStatus(activityId,3,currentUser.getId());
+            return Result.success("审核通过成功");
+        } catch (Exception e) {
+            log.error("审核通过失败", e);
+            return Result.error("审核通过失败");
+        }
     }
 
     @GetMapping("/getActivityById")
@@ -284,17 +340,7 @@ public class ActivityController {
         }
     }
 
-    @PostMapping("/withdrawSubmission")  //管理员撤回提交申请
-    public Result withdrawSubmission(@RequestParam Integer activityId) {
-        try {
-            User currentUser = TokenUtils.getCurrentUser();
-            activityService.withdrawSubmission(activityId, currentUser.getId());
-            return Result.success("撤回提交成功");
-        } catch (Exception e) {
-            log.error("撤回提交失败", e);
-            return Result.error("撤回提交失败");
-        }
-    }
+
 
 
 

@@ -36,43 +36,6 @@
         </div>
       </el-card>
 
-        <el-dialog
-            v-model="deleteVisible"
-            append-to-body
-            center
-            title="确认删除？"
-            width="30%"
-        >
-          <template #footer>
-            <el-button @click="deleteVisible = false">取 消</el-button>
-            <el-button type="danger" @click="deleteQuestionnaire">确认删除</el-button>
-          </template>
-        </el-dialog>
-
-        <el-dialog
-            v-model="releaseVisible"
-            append-to-body
-            center
-            title="发布成功"
-            width="30%"
-        >
-          <div>
-            问卷链接为：
-            <el-link
-                :data-clipboard-text="`${servername}/fillin/${route.params.id}`"
-                class="copy-link"
-                data-clipboard-action="copy"
-                target="_blank"
-                type="primary"
-                @click="copy"
-            >
-              {{ questionnaire.questionnaireTitle }}-点击复制
-            </el-link>
-          </div>
-          <template #footer>
-            <el-button type="primary" @click="releaseEnd">关 闭</el-button>
-          </template>
-        </el-dialog>
     </div>
   </div>
   <el-col :lg="4" :md="6" :sm="8" :xl="4" class="create-page-select-bar-wrapper hidden-xs-only">
@@ -99,7 +62,6 @@ import SelectBar from "./SelectBar.vue";
 const route = useRoute();
 const router = useRouter();
 
-const servername = location.origin;
 
 const questionList = ref([]);
 const questionnaire = reactive({
@@ -153,9 +115,12 @@ const saveOneQuestion = async (data) => {
   const index = data.questionIndex;
   const oneQuestion = {...data, isBoxSelected: true};
   questionList.value.splice(index, 1, oneQuestion);
-
+  console.log(oneQuestion);
   try {
-    await axios.post(`/api/saveOneQuestion?questionnaireId=${route.params.id}`, {question: oneQuestion});
+    const res = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`, {question: oneQuestion}, {
+      headers: {token: store.state.token}
+    });
+    console.log(res);
     ElMessage({message: '问卷已保存', duration: 1000});
   } catch (e) {
     ElMessage({message: 'error！问卷未保存！', duration: 1000});
@@ -183,29 +148,6 @@ const addNewQuestion = (type) => {
     date: new Date(),
     textDescription: '',
   });
-};
-
-const saveQuestionnaireTitle = async () => {
-  questionnaire.isBoxSelected = false;
-  try {
-    await axios.post('/api/saveQuestionnaireOutline', {questionnaire});
-    ElMessage({message: '问卷已保存', duration: 1000});
-  } catch (e) {
-    ElMessage({message: 'error！问卷未保存！', duration: 1000});
-  }
-};
-
-const resetQuestionnaireTitle = () => {
-  Object.assign(questionnaire, {
-    isBoxSelected: false,
-    questionnaireDescription: '请输入描述',
-    questionnaireTitle: '请输入标题',
-    questionnaireId: route.params.id,
-  });
-};
-
-const editTitle = () => {
-  questionnaire.isBoxSelected = true;
 };
 
 const saveQuestionnaire = async () => {
@@ -240,16 +182,6 @@ const frontOptions = (index) => {
     value: i,
     children: (item.questionOptions || []).map(opt => ({value: opt, label: opt})),
   }));
-};
-
-const releaseQuestionnaire = async () => {
-  try {
-    await axios.post(`/api/releaseQuestionnaire?questionnaireId=${route.params.id}`);
-    ElMessage({message: '问卷已发布', duration: 1000});
-  } catch (e) {
-    ElMessage({message: 'error！问卷未发布！', duration: 1000});
-  }
-  releaseVisible.value = true;
 };
 
 const releaseEnd = () => {

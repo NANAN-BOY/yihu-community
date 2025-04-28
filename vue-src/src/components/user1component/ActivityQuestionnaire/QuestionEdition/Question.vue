@@ -173,10 +173,16 @@ const props = defineProps({
   questionNullable: Boolean,
   questionType: String,
   questionDescription: String,
-  questionOptions: Array,
+  questionOptions: {
+    type: Array,
+    default: () => []  // 添加默认空数组
+  },
   frontChoose: Boolean,
   frontOptions: Array,
-  frontOptionsInitValue: Array,
+  frontOptionsInitValue: {
+    type: Array,
+    default: () => []  // 添加默认空数组
+  },
   numberType: String,
   defaultNumber: Number,
   gradeMax: Number,
@@ -207,14 +213,14 @@ const questionTitleValue = ref(props.questionTitle)
 const questionNullableValue = ref(props.questionNullable)
 const questionDescriptionValue = ref(props.questionDescription)
 const typeValue = ref(props.questionType)
-const optionsValue = ref([...props.questionOptions])
+const optionsValue = ref([...(props.questionOptions || [])])
 const numberTypeValue = ref(props.numberType)
 const defaultNumberValue = ref(props.defaultNumber)
 const gradeMaxValue = ref(props.gradeMax)
 const dateValue = ref(props.date)
 const textDescriptionValue = ref(props.textDescription)
 const frontChooseValue = ref(props.frontChoose)
-const frontOptionsValue = ref([...props.frontOptionsInitValue])
+const frontOptionsValue = ref([...(props.frontOptionsInitValue || [])])
 
 const clickUnSelected = () => emit('clickUnSelected')
 const saveOneQuestion = () => {
@@ -298,9 +304,6 @@ const questionData = computed(() => ({
   cursor: pointer;
 }
 
-.box-is-not-selected-wrapper:hover .box-is-not-selected {
-  filter: blur(8px);
-}
 
 .edit-icon {
   display: none;

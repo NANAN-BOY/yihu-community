@@ -1,46 +1,10 @@
 <template>
   <div>
-    <div class="main-question-list">
-      <div style="padding: 0; display: inline">
-        <el-card style="position: relative">
-          <div class="box-is-not-selected-wrapper" @click="editTitle">
-            <div v-if="!questionnaire.isBoxSelected">
-              <div class="box-is-not-selected">
-                <h1>{{ questionnaire.questionnaireTitle }}</h1>
-                <h3>{{ questionnaire.questionnaireDescription }}</h3>
-              </div>
-              <div class="edit-icon"><i class="el-icon-edit-outline"></i></div>
-            </div>
-            <div v-else>
-              <el-form>
-                <el-form-item>
-                  <el-input
-                      v-model="questionnaire.questionnaireTitle"
-                      placeholder="请输入问卷标题"
-                      style="max-width: 50%"
-                      type="text"
-                  ></el-input>
-                </el-form-item>
-                <el-form-item>
-                  <el-input
-                      v-model="questionnaire.questionnaireDescription"
-                      placeholder="请输入问卷描述"
-                      style="max-width: 70%"
-                      type="textarea"
-                  ></el-input>
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="saveQuestionnaireTitle">保存</el-button>
-                  <el-button @click="resetQuestionnaireTitle">重置</el-button>
-                </el-form-item>
-              </el-form>
-            </div>
-          </div>
-        </el-card>
-      </div>
-
-      <div style="height: 10px"></div>
-
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item><strong>满意度调查模板管理</strong></el-breadcrumb-item>
+    </el-breadcrumb>
+    <br>
+    <div v-loading=questionnaireLoading class="main-question-list">
       <Question
           v-for="(item, index) in questionList"
           :key="index"
@@ -72,7 +36,6 @@
         </div>
       </el-card>
 
-      <el-card>
         <el-dialog
             v-model="deleteVisible"
             append-to-body
@@ -110,13 +73,16 @@
             <el-button type="primary" @click="releaseEnd">关 闭</el-button>
           </template>
         </el-dialog>
-
-        <el-button type="danger" @click="deleteVisible = true">删 除</el-button>
-        <el-button @click="saveQuestionnaire">保 存</el-button>
-        <el-button type="primary" @click="releaseQuestionnaire">发 布</el-button>
-      </el-card>
     </div>
   </div>
+  <el-col :lg="4" :md="6" :sm="8" :xl="4" class="create-page-select-bar-wrapper hidden-xs-only">
+    <div class="placeholder"></div>
+    <SelectBar
+        v-if="!questionnaireLoading"
+        class="create-page-select-bar"
+        @addNewQuestion="addNewQuestion"
+    />
+  </el-col>
 </template>
 
 <script setup>
@@ -127,6 +93,7 @@ import Clipboard from 'clipboard';
 import {ElMessage} from 'element-plus';
 import axios from 'axios';
 import store from "../../../../store";
+import SelectBar from "./SelectBar.vue";
 
 
 const route = useRoute();
@@ -144,21 +111,29 @@ const questionnaire = reactive({
 const deleteVisible = ref(false);
 const releaseVisible = ref(false);
 
+const questionnaireLoading = ref(false);
+// MainQuestionList.vue 中修改 fetchData 方法
 const fetchData = async () => {
+  questionnaireLoading.value = true;
   try {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-temp`, {
-      headers: {
-        token: store.state.token,
-      },
+      headers: {token: store.state.token},
     });
-    console.log(res);
     if (res.data.code === 200) {
-      questionList.value = res.data.data
-      ElMessage({message: '问卷已读取', duration: 1000});
-    } else
-      throw new Error();
+      // 补全可能缺失的字段
+      questionList.value = res.data.data.map(item => ({
+        questionOptions: [],  // 确保 questionOptions 存在
+        frontOptions: [],     // 确保 frontOptions 存在
+        frontChoose: false,  // 确保 frontChoose 存在
+        numberType: 'integer',  // 确保 numberType 存在
+        // 其他字段...
+        ...item  // 后端数据覆盖默认值
+      }));
+    } else throw new Error();
   } catch (e) {
-    ElMessage({message: 'error！问卷读取失败！', duration: 1000});
+    ElMessage({message: '问卷读取失败', duration: 1000});
+  } finally {
+    questionnaireLoading.value = false;
   }
 };
 
@@ -258,7 +233,7 @@ const frontOptions = (index) => {
   return questionList.value.slice(0, index).map((item, i) => ({
     label: item.questionTitle,
     value: i,
-    children: item.questionOptions.map(opt => ({value: opt, label: opt})),
+    children: (item.questionOptions || []).map(opt => ({value: opt, label: opt})),
   }));
 };
 
@@ -294,9 +269,12 @@ onMounted(fetchData);
 
 <style scoped>
 .main-question-list {
-  height: 100%;
+  max-height: calc(100vh - 132px); /* 设置最大高度，避免撑满全屏，可根据实际情况调整 */
+  overflow-y: auto; /* 开启内部垂直滚动 */
   background-color: white;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .add-question-inner {

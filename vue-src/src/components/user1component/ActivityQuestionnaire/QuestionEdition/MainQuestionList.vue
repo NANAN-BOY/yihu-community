@@ -120,17 +120,22 @@ const fetchData = async () => {
       headers: {token: store.state.token},
     });
     if (res.data.code === 200) {
-      // 补全可能缺失的字段
-      questionList.value = res.data.data.map(item => ({
-        questionOptions: [],  // 确保 questionOptions 存在
-        frontOptions: [],     // 确保 frontOptions 存在
-        frontChoose: false,  // 确保 frontChoose 存在
-        numberType: 'integer',  // 确保 numberType 存在
-        // 其他字段...
-        ...item  // 后端数据覆盖默认值
-      }));
+      //提取转换格式Json
+      const tempList = res.data.data;
+      questionList.value = tempList.map(item => {
+        // 1. 解析 details 字符串
+        const detailObj = JSON.parse(item.details);
+        // 2. 把 detailObj.date 转成 Date 对象
+        detailObj.date = new Date(detailObj.date);
+        // 3. 返回一个新的对象，保留原 item 其余字段，并用解析后的 detailObj
+        return {
+          ...item,
+          ...detailObj
+        };
+      });
     } else throw new Error();
   } catch (e) {
+    console.error(e);
     ElMessage({message: '问卷读取失败', duration: 1000});
   } finally {
     questionnaireLoading.value = false;

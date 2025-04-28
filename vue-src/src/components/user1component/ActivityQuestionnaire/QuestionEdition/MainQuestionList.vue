@@ -81,6 +81,7 @@ const fetchData = async () => {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-temp`, {
       headers: {token: store.state.token},
     });
+    console.log(res.data);
     if (res.data.code === 200) {
       //提取转换格式Json
       const tempList = res.data.data;
@@ -112,21 +113,45 @@ const resetQuestion = () => {
 };
 
 const saveOneQuestion = async (data) => {
+  console.log(data);
   const index = data.questionIndex;
-  const oneQuestion = {...data, isBoxSelected: true};
-  questionList.value.splice(index, 1, oneQuestion);
+
+  // 构建details对象
+  const details = {
+    questionOptions: data.questionOptions || [],
+    frontOptions: data.frontOptions || [],
+    frontChoose: data.frontChoose || false,
+    numberType: data.numberType || 'integer',
+    defaultNumber: data.defaultNumber || 0,
+    gradeMax: data.gradeMax || 5,
+    date: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
+    textDescription: data.textDescription || ''
+  };
+
+  // 构造符合后端DTO的对象
+  const oneQuestion = {
+    questionTitle: data.questionTitle,
+    questionDescription: data.questionDescription,
+    questionNullable: data.questionNullable,
+    questionType: data.questionType,
+    details: JSON.stringify(details),
+    isBoxSelected: true // 前端状态字段，不发送到后端
+  };
+
+  questionList.value.splice(index, 1, {...data, ...oneQuestion});
   console.log(oneQuestion);
   try {
-    const res = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`, {question: oneQuestion}, {
-      headers: {token: store.state.token}
-    });
-    console.log(res);
+    const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`,
+        oneQuestion, // 直接发送处理后的对象
+        {headers: {token: store.state.token}}
+    );
+    console.log(res.data);
     ElMessage({message: '问卷已保存', duration: 1000});
   } catch (e) {
-    ElMessage({message: 'error！问卷未保存！', duration: 1000});
+    ElMessage({message: '保存失败，请重试！', duration: 1000});
   }
 };
-
 const deleteOneBox = (index) => {
   questionList.value.splice(index, 1);
 };

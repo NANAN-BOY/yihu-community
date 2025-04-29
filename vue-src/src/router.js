@@ -50,17 +50,10 @@ const router = createRouter({
 
 // 优化后的路由守卫（增加加载状态管理）
 router.beforeEach(async (to, from, next) => {
-  // 显示全局加载动画
-  store.commit('SET_LOADING', true);
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
   try {
-    // // 每次路由跳转前检查用户状态（可优化为应用启动时加载）
-    // if (!store.getters.isAuthenticated) {
-    //   await store.dispatch('getUserInfo');
-    // }
-
     if (requiresAuth && !store.getters.isAuthenticated) {
       next({ name: 'login' });
     } else {
@@ -69,9 +62,6 @@ router.beforeEach(async (to, from, next) => {
   } catch (error) {
     console.error('路由守卫错误:', error);
     next({ name: 'login' });
-  } finally {
-    // 确保隐藏加载动画
-    store.commit('SET_LOADING', false);
   }
 });
 

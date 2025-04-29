@@ -93,9 +93,9 @@ public class ProjectServiceImpl implements ProjectService {
     public PageInfo<Project> queryByCreateId(Integer createId, Project project,int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         Project  newproject = new Project();
-
         newproject.setCreateById(createId);
         newproject.setName(project.getName());
+        newproject.setStatus(project.getStatus());
         return new PageInfo<>(projectMapper.queryByCreateId(newproject));
     }
 

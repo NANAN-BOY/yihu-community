@@ -38,10 +38,18 @@
         SELECT *
         FROM project
         WHERE create_by_id = #{createById} AND del_flag = 'N'
+        <choose>
+            <when test="status != null and status == 3">
+                AND status = #{status}
+            </when>
+            <when test="status != null and status != 3">
+                AND status != 3
+            </when>
+        </choose>
         <if test="name != null and name != ''">
             AND name LIKE CONCAT('%', #{name}, '%')
         </if>
-        ORDDER BY update_time DESC
+        ORDER BY update_time DESC
     </select>
 
     <update id="updateStatus" parameterType="com.yihu.entity.Project">
@@ -65,7 +73,7 @@
         <if test="name != null and name != ''">
             AND name LIKE CONCAT('%', #{name}, '%')
         </if>
-        ORDDER BY update_time DESC
+        ORDER BY update_time DESC
     </select>
 
 

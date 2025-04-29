@@ -108,16 +108,14 @@
             <el-form-item v-for="(item, index) in optionsValue" :key="index">
               选项{{ index + 1 }}：
               <el-input v-model="optionsValue[index]" style="max-width: 200px"/>
-              <el-button class="add-option-button" round size="medium" @click="addOption">
-                <el-icon>
-                  <Plus/>
-                </el-icon>
-              </el-button>
               <el-button class="delete-option-button" round size="medium" @click="deleteOption(index)">
                 <el-icon>
                   <Delete/>
                 </el-icon>
               </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="addOption">添加选项</el-button>
             </el-form-item>
           </template>
 

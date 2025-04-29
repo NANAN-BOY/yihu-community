@@ -147,7 +147,6 @@
 
           <el-form-item>
             <el-button type="primary" @click="saveOneQuestion">保存</el-button>
-            <el-button @click="resetQuestion">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -228,28 +227,12 @@ const saveOneQuestion = () => {
   emit('saveOneQuestion', questionData.value)
   emit('clickSelected')
 }
-const resetQuestion = () => {
-  emit('resetQuestion')
-  questionTitleValue.value = '请输入标题'
-  questionNullableValue.value = false
-  questionDescriptionValue.value = '请输入描述'
-  typeValue.value = 'not_selected'
-  optionsValue.value = []
-  frontOptionsValue.value = [[]]
-  frontChooseValue.value = false
-  numberTypeValue.value = 'integer'
-  defaultNumberValue.value = 0
-  gradeMaxValue.value = 5
-  dateValue.value = new Date()
-  textDescriptionValue.value = ''
-}
 const clickDelete = () => emit('clickDelete')
 
 const addOption = () => optionsValue.value.push('')
 const deleteOption = (index) => optionsValue.value.splice(index, 1)
 
 const addFrontOption = () => frontOptionsValue.value.push([])
-const deleteFrontOption = (index) => frontOptionsValue.value.splice(index, 1)
 
 const questionData = computed(() => ({
   tempId: props.tempId,

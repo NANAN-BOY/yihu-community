@@ -9,6 +9,7 @@
           v-for="(item, index) in questionList"
           :key="index"
           :date="item.date"
+          :temp-id="item.tempId"
           :default-number="item.defaultNumber"
           :front-choose="item.frontChoose"
           :front-options="frontOptions(index)"
@@ -96,6 +97,7 @@ const fetchData = async () => {
           ...detailObj
         };
       });
+      console.log(questionList.value);
     } else throw new Error();
   } catch (e) {
     console.error(e);
@@ -130,6 +132,7 @@ const saveOneQuestion = async (data) => {
 
   // 构造符合后端DTO的对象
   const oneQuestion = {
+    tempId: data.tempId,
     questionTitle: data.questionTitle,
     questionDescription: data.questionDescription,
     questionNullable: data.questionNullable,
@@ -140,17 +143,33 @@ const saveOneQuestion = async (data) => {
 
   questionList.value.splice(index, 1, {...data, ...oneQuestion});
   console.log(oneQuestion);
-  try {
-    const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`,
-        oneQuestion, // 直接发送处理后的对象
-        {headers: {token: store.state.token}}
-    );
-    console.log(res.data);
-    ElMessage({message: '问卷已保存', duration: 1000});
-  } catch (e) {
-    ElMessage({message: '保存失败，请重试！', duration: 1000});
+  if(!oneQuestion.tempId){
+    try {
+      const res = await axios.post(
+          `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`,
+          oneQuestion, // 直接发送处理后的对象
+          {headers: {token: store.state.token}}
+      );
+      console.log(res.data);
+      ElMessage({message: '问卷已保存', duration: 1000});
+    } catch (e) {
+      ElMessage({message: '保存失败，请重试！', duration: 1000});
+    }
   }
+  else {
+    try {
+      const res = await axios.put(
+          `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/update-question`,
+          oneQuestion, // 直接发送处理后的对象
+          {headers: {token: store.state.token}}
+      );
+      console.log(res.data);
+      ElMessage({message: '问卷已保存', duration: 1000});
+    } catch (e) {
+      ElMessage({message: '保存失败，请重试！', duration: 1000});
+    }
+  }
+
 };
 const deleteOneBox = (index) => {
   questionList.value.splice(index, 1);

@@ -6,10 +6,10 @@
 <mapper namespace="com.yihu.mapper.ActivityMapper">
     <insert id="create" parameterType="com.yihu.entity.Activity" useGeneratedKeys="true" keyProperty="id">
         insert into activity(
-        status, del_flag, create_time, create_by_id, update_time, update_by_id
+        project_id,questionnaire_id,status, del_flag, create_time, create_by_id, update_time, update_by_id
         )
         values(
-        #{status}, #{delFlag}, #{createTime}, #{createById}, #{updateTime}, #{updateById}
+        #{projectId},#{questionnaireId},#{status}, #{delFlag}, #{createTime}, #{createById}, #{updateTime}, #{updateById}
         )
     </insert>
 
@@ -38,22 +38,15 @@
     </update>
 
 
-    <select id="queryByCreateId" parameterType="com.yihu.entity.Activity">
+    <select id="queryByProjectId" parameterType="com.yihu.entity.Activity">
         SELECT *
         FROM activity
-        WHERE create_by_id = #{createById} AND del_flag = 'N'
+        WHERE project_id = #{projectId} AND del_flag = 'N'
         <if test="title != null and title != ''">
             AND title LIKE CONCAT('%', #{title}, '%')
         </if>
+        ORDER BY create_time DESC
     </select>
-
-    <update id="submit" parameterType="com.yihu.entity.Activity">
-        update activity
-        set status = #{status},
-        update_time = #{updateTime},
-        update_by_id = #{updateById}
-        where id = #{id}
-    </update>
 
     <select id="findById" resultType="com.yihu.entity.Activity">
         SELECT *
@@ -61,21 +54,49 @@
         WHERE id = #{id} AND del_flag = 'N'
     </select>
 
-    <update id="withdrawSubmission" parameterType="com.yihu.entity.Activity">
+    <update id="updateStatus" parameterType="com.yihu.entity.Activity">
         update activity
-        set status = 0,
+        set status = #{status},
         update_time = #{updateTime},
         update_by_id = #{updateById}
         where id = #{id}
     </update>
 
-    <select id="queryAllSubmited" parameterType="com.yihu.entity.Activity">
-        SELECT *
-        FROM activity
-        WHERE status = 1 AND del_flag = 'N'
-        <if test="title != null and title != ''">
-            AND title LIKE CONCAT('%', #{title}, '%')
-        </if>
+
+    <select id="findByActivityId" parameterType="java.lang.Integer" resultType="com.yihu.entity.Activity">
+        SELECT * FROM activity
+        WHERE project_id = #{projectId} AND del_flag = 'N'
+    </select>
+
+    <select id="findByProjectId" resultType="com.yihu.entity.Activity">
+        SELECT * FROM activity
+        WHERE project_id = #{projectId} AND del_flag = 'N'
+    </select>
+
+    <select id="getActivityAuditList" resultType="com.yihu.dto.ActivityAuditDTO">
+        SELECT
+        a.id,
+        a.project_id,
+        a.title,
+        a.status,
+        a.create_time,
+        a.update_time,
+        p.name AS project_name,
+        u.name AS create_by_name
+        FROM
+        activity a
+        LEFT JOIN project p ON a.project_id = p.id
+        LEFT JOIN user u ON a.create_by_id = u.id
+        <where>
+            a.status = #{status} AND a.del_flag = 'N'
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="projectName != null and projectName != ''">
+                AND p.name LIKE CONCAT('%', #{projectName}, '%')
+            </if>
+        </where>
+        ORDER BY a.update_time DESC
     </select>
 
 

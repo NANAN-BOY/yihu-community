@@ -3,6 +3,7 @@ package com.yihu.mapper;
 
 
 import com.github.pagehelper.PageInfo;
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.File;
@@ -17,7 +18,7 @@ public interface ActivityMapper {
 
     void update(Activity activity);
 
-    List<Activity> queryByCreateId(Activity activity);
+    List<Activity> queryByProjectId(Activity activity);
 
     List<Activity> queryAllSubmited(Activity activity);
 
@@ -25,7 +26,10 @@ public interface ActivityMapper {
 
     Activity findById(Integer id);
 
-    void withdrawSubmission(Activity activity);
+    void updateStatus(Activity activity);
 
 
+    List<Activity> findByProjectId(Integer projectId);
+
+    List<? extends ActivityAuditDTO> getActivityAuditList(ActivityAuditDTO activityAuditDTO);
 }

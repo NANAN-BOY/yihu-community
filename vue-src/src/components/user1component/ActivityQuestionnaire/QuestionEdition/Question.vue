@@ -188,6 +188,7 @@ const props = defineProps({
   gradeMax: Number,
   date: Date,
   textDescription: String,
+  tempId: Number,
 })
 
 const emit = defineEmits(['clickUnSelected', 'clickSelected', 'saveOneQuestion', 'resetQuestion', 'clickDelete'])
@@ -251,6 +252,7 @@ const addFrontOption = () => frontOptionsValue.value.push([])
 const deleteFrontOption = (index) => frontOptionsValue.value.splice(index, 1)
 
 const questionData = computed(() => ({
+  tempId: props.tempId,
   questionIndex: props.questionIndex,
   questionOptions: optionsValue.value,
   questionDescription: questionDescriptionValue.value,

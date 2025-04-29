@@ -3,6 +3,7 @@ package com.yihu.service.impl;
 import cn.hutool.core.io.FileUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
@@ -116,8 +117,10 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public int addActivity(Integer userId) {
+    public int addActivity(Integer projectId,Integer questionnaireId,Integer userId) {
         Activity activity = new Activity();
+        activity.setProjectId(projectId);
+        activity.setQuestionnaireId(questionnaireId);
         activity.setStatus(0);
         activity.setDelFlag("N");
         activity.setCreateTime(new Timestamp(System.currentTimeMillis()));
@@ -175,13 +178,13 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public PageInfo<Activity> queryByCreateId(Integer createId, String title,int pageNum, int pageSize) {
+    public PageInfo<Activity> getActivityByProjectId(Integer projectId, String title,int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         Activity activity = new Activity();
 
-        activity.setCreateById(createId);
+        activity.setProjectId(projectId);
         activity.setTitle(title);
-        return new PageInfo<>(activityMapper.queryByCreateId(activity));
+        return new PageInfo<>(activityMapper.queryByProjectId(activity));
     }
 
     @Override
@@ -192,15 +195,6 @@ public class ActivityServiceImpl implements ActivityService {
         return new PageInfo<>(activityMapper.queryAllSubmited(activity));
     }
 
-    @Override
-    public void submitActivity(ActivityDTO activityDTO, Integer id) {
-        Activity activity = new Activity();
-        activity.setStatus(1);
-        activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
-        activity.setUpdateById(id);
-        activity.setId(activityDTO.getActivityId());
-        activityMapper.submit(activity);
-    }
 
     @Override
     public ActivityFiles getById(int newId) {
@@ -223,13 +217,26 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void withdrawSubmission(Integer activityId, Integer userId) {
+    public void updateStatus(Integer activityId,Integer status, Integer userId) {
         Activity activity = new Activity();
         activity.setId(activityId);
+        activity.setStatus(status);
         activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         activity.setUpdateById(userId);
 
-        activityMapper.withdrawSubmission(activity);
+        activityMapper.updateStatus(activity);
+    }
+
+    @Override
+    public List<Activity> getActivityIdByProjectId(Integer projectId) {
+        return activityMapper.findByProjectId(projectId);
+    }
+
+    @Override
+    public PageInfo<ActivityAuditDTO> getActivityAuditList(ActivityAuditDTO activityAuditDTO, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        return new PageInfo<>(activityMapper.getActivityAuditList(activityAuditDTO));
+
     }
 
 

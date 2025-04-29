@@ -382,13 +382,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     @Override
-    public Integer updateQuestionToTemp(TempDTO tempDTO) {
-        Temp temp = new Temp();
-        temp.setDetails(tempDTO.getDetails());
-        temp.setQuestionTitle(tempDTO.getQuestionTitle());
-        temp.setQuestionType(tempDTO.getQuestionType());
-        temp.setQuestionNullable(tempDTO.getQuestionNullable());
-        temp.setQuestionDescription(tempDTO.getQuestionDescription());
+    public Integer updateQuestionToTemp(Temp temp) {
 
         Integer isSuccess = tempMapper.updateTemp(temp);
         if (isSuccess == 1) {

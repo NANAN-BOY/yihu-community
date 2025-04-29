@@ -235,7 +235,7 @@ import user2SocialOrganizationManagement
 //User3Component
 import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
 import ActivityManagement from '../components/user3component/ProjectManagement/ActivityManagement/ActivityManagement.vue'
-
+import ProjectManagement from '../components/user3component/ProjectManagement/ProjectManagement.vue'
 //User4Component
 import ReceiveOrder from '../components/user4component/ReceiveOrder/ReceiveOrder.vue';
 import MyReceiveOrder from "../components/user4component/MyReceiveOrder/MyReceiveOrder.vue";
@@ -273,7 +273,7 @@ const menus = [
   {role: 2, index: '2-4', icon: UserFilled, title: '社会组织管理'},
   {role: 2, index: '2-5', icon: Document, title: '关于我的信息'},
 
-  {role: 3, index: '3-1', icon: Document, title: '活动管理'},
+  {role: 3, index: '3-1', icon: Document, title: '项目管理'},
   {role: 3, index: '3-2', icon: StarFilled, title: '专家定制'},
   {role: 3, index: '3-3', icon: Document, title: '关于我的信息'},
 
@@ -323,7 +323,7 @@ const handleSelect = (index) => {
       currentComponent.value = aboutMyInfo;
       break;
     case '3-1':
-      currentComponent.value = ActivityManagement;
+      currentComponent.value = ProjectManagement;
       break;
     case '3-2':
       currentComponent.value = ExpertCustomization;

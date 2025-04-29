@@ -73,14 +73,14 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="是否前置：">
-            <el-tooltip content="是否启用级联选择（在用户选择了前置某些选项时出现）" effect="light" placement="top">
-              <el-select v-model="frontChooseValue" placeholder="本题在用户选择了前置某些选项时出现">
-                <el-option :value="true" label="是"/>
-                <el-option :value="false" label="否"/>
-              </el-select>
-            </el-tooltip>
-          </el-form-item>
+<!--          <el-form-item label="是否前置：">-->
+<!--            <el-tooltip content="是否启用级联选择（在用户选择了前置某些选项时出现）" effect="light" placement="top">-->
+<!--              <el-select v-model="frontChooseValue" placeholder="本题在用户选择了前置某些选项时出现">-->
+<!--                <el-option :value="true" label="是"/>-->
+<!--                <el-option :value="false" label="否"/>-->
+<!--              </el-select>-->
+<!--            </el-tooltip>-->
+<!--          </el-form-item>-->
 
           <template v-if="frontChooseValue">
             <el-form-item v-for="(item, index) in frontOptionsValue" :key="index"

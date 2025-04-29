@@ -418,8 +418,10 @@ const modifyMyPhone = async () => {
         </el-icon>
       </el-form-item>
 
-      <el-form-item label="简介">
-        {{ user.description || '暂无简介' }}
+      <el-form-item label="简介" class="form-item-description">
+        <div class="description-text">
+          {{ user.description || '暂无简介' }}
+        </div>
         <el-icon
             :size="21"
             color="blue"
@@ -428,6 +430,7 @@ const modifyMyPhone = async () => {
           <Edit/>
         </el-icon>
       </el-form-item>
+
       <el-form-item label="地区">
         {{ getRegionName(user.location) || '未设置地区' }}
         <el-icon
@@ -551,6 +554,14 @@ const modifyMyPhone = async () => {
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
+.form-item-description .description-text {
+  /* 保留连续空格，并对换行符生效 */
+  white-space: pre-wrap;
+  /* 遇到长字符串时也能折行 */
+  overflow-wrap: break-word;
+  word-break: break-all;
+}
+
 
 .el-divider h3 {
   margin: 0;

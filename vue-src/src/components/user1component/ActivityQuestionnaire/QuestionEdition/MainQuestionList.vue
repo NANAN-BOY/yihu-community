@@ -32,7 +32,7 @@
           v-loading=item.isSaveLoading
       />
 
-      <el-card :body-style="{ padding: '10px' }" class="add-question" shadow="hover">
+      <el-card :body-style="{ padding: '10px' }" class="add-question" shadow="hover" v-loading=addNewQuestionLoading>
         <div class="add-question-inner" @click="addNewQuestion('not_selected')">
           <i class="el-icon-plus"></i> 添加问题
         </div>
@@ -43,7 +43,7 @@
   <el-col :lg="4" :md="6" :sm="8" :xl="4" class="create-page-select-bar-wrapper hidden-xs-only">
     <div class="placeholder"></div>
     <SelectBar
-        v-if="!questionnaireLoading"
+        v-if="!questionnaireLoading || addNewQuestionLoading"
         class="create-page-select-bar"
         @addNewQuestion="addNewQuestion"
     />
@@ -94,9 +94,6 @@ const fetchData = async () => {
 
 const selectOneBox = (index) => {
   questionList.value[index].isBoxSelected = true;
-};
-
-const resetQuestion = () => {
 };
 
 const saveOneQuestion = async (data) => {
@@ -190,8 +187,10 @@ const deleteOneBox = async (index,item) => {
   }
 };
 
-const addNewQuestion = (type) => {
-  questionList.value.push({
+const addNewQuestionLoading = ref(false);
+const addNewQuestion = async (type) => {
+  addNewQuestionLoading.value = true;
+  const newQuestion = ({
     questionIndex: questionList.value.length,
     isBoxSelected: true,
     questionTitle: '',
@@ -207,6 +206,44 @@ const addNewQuestion = (type) => {
     date: new Date(),
     textDescription: '',
   });
+  // 构建details对象
+  const details = {
+    questionOptions: newQuestion.questionOptions || [],
+    frontOptions: newQuestion.frontOptions || [],
+    frontChoose: newQuestion.frontChoose || false,
+    numberType: newQuestion.numberType || 'integer',
+    defaultNumber: newQuestion.defaultNumber || 0,
+    gradeMax: newQuestion.gradeMax || 5,
+    date: newQuestion.date ? new Date(newQuestion.date).toISOString() : new Date().toISOString(),
+    textDescription: newQuestion.textDescription || ''
+  };
+
+  // 构造符合后端DTO的对象
+  const oneQuestion = {
+    tempId: newQuestion.tempId,
+    questionTitle: newQuestion.questionTitle,
+    questionDescription: newQuestion.questionDescription,
+    questionNullable: newQuestion.questionNullable,
+    questionType: newQuestion.questionType,
+    details: JSON.stringify(details),
+    isBoxSelected: true // 前端状态字段，不发送到后端
+  };
+  try {
+    const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`,
+        oneQuestion, // 直接发送处理后的对象
+        {headers: {token: store.state.token}}
+    );
+    if (res.data.code === 200) {
+      oneQuestion.tempId = res.data.data;
+      questionList.value.push(oneQuestion)
+      ElMessage.success({message: '新建成功', duration: 1000})
+    } else throw new Error();
+  } catch (e) {
+    ElMessage({message: '新建失败，请重试！', duration: 1000});
+  } finally {
+    addNewQuestionLoading.value = false;
+  }
 };
 
 const frontOptions = (index) => {

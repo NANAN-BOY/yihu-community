@@ -73,14 +73,14 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="是否前置：">
-            <el-tooltip content="是否启用级联选择（在用户选择了前置某些选项时出现）" effect="light" placement="top">
-              <el-select v-model="frontChooseValue" placeholder="本题在用户选择了前置某些选项时出现">
-                <el-option :value="true" label="是"/>
-                <el-option :value="false" label="否"/>
-              </el-select>
-            </el-tooltip>
-          </el-form-item>
+<!--          <el-form-item label="是否前置：">-->
+<!--            <el-tooltip content="是否启用级联选择（在用户选择了前置某些选项时出现）" effect="light" placement="top">-->
+<!--              <el-select v-model="frontChooseValue" placeholder="本题在用户选择了前置某些选项时出现">-->
+<!--                <el-option :value="true" label="是"/>-->
+<!--                <el-option :value="false" label="否"/>-->
+<!--              </el-select>-->
+<!--            </el-tooltip>-->
+<!--          </el-form-item>-->
 
           <template v-if="frontChooseValue">
             <el-form-item v-for="(item, index) in frontOptionsValue" :key="index"
@@ -108,16 +108,14 @@
             <el-form-item v-for="(item, index) in optionsValue" :key="index">
               选项{{ index + 1 }}：
               <el-input v-model="optionsValue[index]" style="max-width: 200px"/>
-              <el-button class="add-option-button" round size="medium" @click="addOption">
-                <el-icon>
-                  <Plus/>
-                </el-icon>
-              </el-button>
               <el-button class="delete-option-button" round size="medium" @click="deleteOption(index)">
                 <el-icon>
                   <Delete/>
                 </el-icon>
               </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="addOption">添加选项</el-button>
             </el-form-item>
           </template>
 
@@ -147,7 +145,6 @@
 
           <el-form-item>
             <el-button type="primary" @click="saveOneQuestion">保存</el-button>
-            <el-button @click="resetQuestion">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -228,28 +225,12 @@ const saveOneQuestion = () => {
   emit('saveOneQuestion', questionData.value)
   emit('clickSelected')
 }
-const resetQuestion = () => {
-  emit('resetQuestion')
-  questionTitleValue.value = '请输入标题'
-  questionNullableValue.value = false
-  questionDescriptionValue.value = '请输入描述'
-  typeValue.value = 'not_selected'
-  optionsValue.value = []
-  frontOptionsValue.value = [[]]
-  frontChooseValue.value = false
-  numberTypeValue.value = 'integer'
-  defaultNumberValue.value = 0
-  gradeMaxValue.value = 5
-  dateValue.value = new Date()
-  textDescriptionValue.value = ''
-}
 const clickDelete = () => emit('clickDelete')
 
 const addOption = () => optionsValue.value.push('')
 const deleteOption = (index) => optionsValue.value.splice(index, 1)
 
 const addFrontOption = () => frontOptionsValue.value.push([])
-const deleteFrontOption = (index) => frontOptionsValue.value.splice(index, 1)
 
 const questionData = computed(() => ({
   tempId: props.tempId,

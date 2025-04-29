@@ -254,6 +254,25 @@ const drawerVisible = ref(false);
 const sidebarWidth = ref('250px');
 const isMobile = ref(false);
 const currentComponent = ref(null);
+//初始化用户展示页面
+onMounted(() =>{
+  switch (store.state.user.role) {
+    case 1:
+      currentComponent.value = user1ExpertLibraryManagement;
+      break;
+    case 2:
+      currentComponent.value = user2ProjectManagement;
+      break;
+    case 3:
+      currentComponent.value = ProjectManagement;
+      break;
+    case 4:
+      currentComponent.value = ReceiveOrder;
+      break;
+    default:
+      return null;
+  }
+})
 
 // MENUConfig
 const menus = [

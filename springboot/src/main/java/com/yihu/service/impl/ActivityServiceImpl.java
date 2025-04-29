@@ -239,6 +239,11 @@ public class ActivityServiceImpl implements ActivityService {
 
     }
 
+    @Override
+    public Activity getActivityByQuestionnaireId(Integer questionnaireId) {
+        return activityMapper.getActivityByQuestionnaireId(questionnaireId);
+    }
+
 
     /**
      * 保存文件到存储目录

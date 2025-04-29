@@ -61,4 +61,6 @@ public interface ActivityService {
     List<Activity> getActivityIdByProjectId(Integer projectId);
 
     PageInfo<ActivityAuditDTO> getActivityAuditList(ActivityAuditDTO activityAuditDTO, int pageNum, int pageSize);
+
+    Activity getActivityByQuestionnaireId(Integer questionnaireId);
 }

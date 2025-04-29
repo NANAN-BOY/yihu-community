@@ -340,6 +340,19 @@ public class ActivityController {
         }
     }
 
+    @GetMapping("/getActivityByQuestionnaireId")
+    public Result getActivityByQuestionnaireId(@RequestParam Integer questionnaireId) {
+        try {
+            // 查询活动基本信息
+            Activity activity = activityService.getActivityByQuestionnaireId(questionnaireId);
+            return Result.success(activity.getTitle());
+        } catch (Exception e) {
+            log.error("获取活动详情失败", e);
+            return Result.error("获取活动详情失败");
+        }
+    }
+
+
 
 
 

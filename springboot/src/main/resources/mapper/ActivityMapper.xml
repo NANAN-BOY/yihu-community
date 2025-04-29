@@ -99,5 +99,10 @@
         ORDER BY a.update_time DESC
     </select>
 
+    <select id="getActivityByQuestionnaireId" parameterType="java.lang.Integer" resultType="com.yihu.entity.Activity">
+        SELECT * FROM activity
+        WHERE questionnaire_id = #{questionnaireId}  AND del_flag = 'N'
+    </select>
+
 
 </mapper>

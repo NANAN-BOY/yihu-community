@@ -32,4 +32,6 @@ public interface ActivityMapper {
     List<Activity> findByProjectId(Integer projectId);
 
     List<? extends ActivityAuditDTO> getActivityAuditList(ActivityAuditDTO activityAuditDTO);
+
+    Activity getActivityByQuestionnaireId(Integer questionnaireId);
 }

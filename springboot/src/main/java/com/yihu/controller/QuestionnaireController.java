@@ -128,10 +128,10 @@ public class QuestionnaireController {
             return Result.error(403, "无权限");
         }
         int isSuccess = questionnaireService.addQuestionToTemp(tempDTO);
-        if (isSuccess == 1) {
-            return Result.success("添加成功");
+        if (isSuccess == -1) {
+            return Result.error(501, "添加失败");
         }
-        return Result.error(501, "添加失败");
+        return Result.success(isSuccess);
     }
 
     @GetMapping("/get-temp")
@@ -161,7 +161,7 @@ public class QuestionnaireController {
     }
 
     @PutMapping("/update-question")
-    public Result updateQuestionToTemp(@RequestBody TempDTO tempDTO) {
+    public Result updateQuestionToTemp(@RequestBody Temp temp) {
         User currentUser = TokenUtils.getCurrentUser();
         if (currentUser == null) {
             return Result.error(401, "请登录");
@@ -169,7 +169,7 @@ public class QuestionnaireController {
         if (currentUser.getRole() != 1) {
             return Result.error(403, "无权限");
         }
-        int isSuccess = questionnaireService.updateQuestionToTemp(tempDTO);
+        int isSuccess = questionnaireService.updateQuestionToTemp(temp);
         if (isSuccess == 1) {
             return Result.success("修改成功");
         }

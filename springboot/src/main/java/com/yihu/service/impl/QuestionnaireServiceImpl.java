@@ -362,7 +362,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         try {
             Integer isSuccess = tempMapper.insert(temp);
             if (isSuccess == 1) {
-                return 1;
+                return temp.getTempId();
             }
             return -1;
         } catch (Exception e) {
@@ -382,13 +382,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     @Override
-    public Integer updateQuestionToTemp(TempDTO tempDTO) {
-        Temp temp = new Temp();
-        temp.setDetails(tempDTO.getDetails());
-        temp.setQuestionTitle(tempDTO.getQuestionTitle());
-        temp.setQuestionType(tempDTO.getQuestionType());
-        temp.setQuestionNullable(tempDTO.getQuestionNullable());
-        temp.setQuestionDescription(tempDTO.getQuestionDescription());
+    public Integer updateQuestionToTemp(Temp temp) {
 
         Integer isSuccess = tempMapper.updateTemp(temp);
         if (isSuccess == 1) {

@@ -28,7 +28,7 @@ public interface QuestionnaireService {
 
     Integer deleteQuestionToTemp(Integer tempId);
 
-    Integer updateQuestionToTemp(TempDTO tempDTO);
+    Integer updateQuestionToTemp(Temp temp);
 
     void delete(Integer questionnaireId);
 }

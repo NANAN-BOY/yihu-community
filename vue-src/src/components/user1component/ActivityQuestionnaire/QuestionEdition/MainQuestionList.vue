@@ -7,8 +7,9 @@
     <div v-loading=questionnaireLoading class="main-question-list">
       <Question
           v-for="(item, index) in questionList"
-          :key="index"
+          :key="item.tempId"
           :date="item.date"
+          :temp-id="item.tempId"
           :default-number="item.defaultNumber"
           :front-choose="item.frontChoose"
           :front-options="frontOptions(index)"
@@ -23,11 +24,12 @@
           :question-title="item.questionTitle"
           :question-type="item.questionType"
           :text-description="item.textDescription"
-          @clickDelete="deleteOneBox(index)"
+          @clickDelete="() => deleteOneBox(index, item)"
           @clickSelected="selectOneBox(index)"
           @clickUnSelected="selectOneBox(index)"
           @resetQuestion="resetQuestion(index)"
           @saveOneQuestion="saveOneQuestion"
+          v-loading=item.isSaveLoading
       />
 
       <el-card :body-style="{ padding: '10px' }" class="add-question" shadow="hover">
@@ -58,21 +60,7 @@ import axios from 'axios';
 import store from "../../../../store";
 import SelectBar from "./SelectBar.vue";
 
-
-const route = useRoute();
-const router = useRouter();
-
-
 const questionList = ref([]);
-const questionnaire = reactive({
-  isBoxSelected: false,
-  questionnaireDescription: '请输入描述',
-  questionnaireTitle: '请输入标题',
-  questionnaireId: route.params.id,
-});
-const deleteVisible = ref(false);
-const releaseVisible = ref(false);
-
 const questionnaireLoading = ref(false);
 // MainQuestionList.vue 中修改 fetchData 方法
 const fetchData = async () => {
@@ -81,7 +69,6 @@ const fetchData = async () => {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-temp`, {
       headers: {token: store.state.token},
     });
-    console.log(res.data);
     if (res.data.code === 200) {
       //提取转换格式Json
       const tempList = res.data.data;
@@ -106,15 +93,15 @@ const fetchData = async () => {
 };
 
 const selectOneBox = (index) => {
-  questionList.value[index].isBoxSelected = !questionList.value[index].isBoxSelected;
+  questionList.value[index].isBoxSelected = true;
 };
 
 const resetQuestion = () => {
 };
 
 const saveOneQuestion = async (data) => {
-  console.log(data);
   const index = data.questionIndex;
+  questionList.value[index].isSaveLoading = true
 
   // 构建details对象
   const details = {
@@ -130,6 +117,7 @@ const saveOneQuestion = async (data) => {
 
   // 构造符合后端DTO的对象
   const oneQuestion = {
+    tempId: data.tempId,
     questionTitle: data.questionTitle,
     questionDescription: data.questionDescription,
     questionNullable: data.questionNullable,
@@ -137,23 +125,69 @@ const saveOneQuestion = async (data) => {
     details: JSON.stringify(details),
     isBoxSelected: true // 前端状态字段，不发送到后端
   };
-
-  questionList.value.splice(index, 1, {...data, ...oneQuestion});
-  console.log(oneQuestion);
-  try {
-    const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`,
-        oneQuestion, // 直接发送处理后的对象
-        {headers: {token: store.state.token}}
-    );
-    console.log(res.data);
-    ElMessage({message: '问卷已保存', duration: 1000});
-  } catch (e) {
-    ElMessage({message: '保存失败，请重试！', duration: 1000});
+  //新建
+  if(!oneQuestion.tempId){
+    try {
+      const res = await axios.post(
+          `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/add-question`,
+          oneQuestion, // 直接发送处理后的对象
+          {headers: {token: store.state.token}}
+      );
+      if(res.data.code === 200){
+        oneQuestion.tempId = res.data.data;
+        questionList.value.splice(index, 1, {...data, ...oneQuestion});
+        questionList.value[index].isBoxSelected = false
+        ElMessage({message: '问卷已保存', duration: 1000})
+      }
+      else throw new Error();
+    } catch (e) {
+      ElMessage({message: '保存失败，请重试！', duration: 1000});
+    } finally {
+      questionList.value[index].isSaveLoading = false
+    }
   }
+  //修改
+  else {
+    try {
+      const res = await axios.put(
+          `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/update-question`,
+          oneQuestion, // 直接发送处理后的对象
+          {headers: {token: store.state.token}}
+      );
+      if(res.data.code === 200){
+        questionList.value.splice(index, 1, {...data, ...oneQuestion});
+        questionList.value[index].isBoxSelected = false
+        ElMessage({message: '问卷已保存', duration: 1000})
+      }
+      else throw new Error();
+    } catch (e) {
+      ElMessage({message: '保存失败，请重试！', duration: 1000});
+    } finally {
+      questionList.value[index].isSaveLoading = false
+    }
+  }
+
 };
-const deleteOneBox = (index) => {
-  questionList.value.splice(index, 1);
+const deleteOneBox = async (index,item) => {
+  questionList.value[index].isSaveLoading = true
+  console.log(index)
+  try {
+    const res = await axios.delete(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/delete-question`, {
+      headers: {token: store.state.token},
+      params: {
+        tempId: item.tempId
+      }
+    });
+    console.log(res.data);
+    if (res.data.code === 200) {
+      ElMessage.success('删除成功！');
+      console.log(index);
+      questionList.value.splice(index, 1);
+    } else throw new Error();
+  } catch (e) {
+    questionList.value[index].isSaveLoading = false;
+    ElMessage.error('删除失败，请重试！');
+  }
 };
 
 const addNewQuestion = (type) => {
@@ -175,55 +209,12 @@ const addNewQuestion = (type) => {
   });
 };
 
-const saveQuestionnaire = async () => {
-  try {
-    await axios.post('/api/saveQuestionnaire', {
-      questionnaire,
-      questionList: questionList.value,
-    });
-    ElMessage({message: '问卷已保存', duration: 1000});
-    router.back();
-  } catch (e) {
-    ElMessage({message: 'error！问卷未保存！', duration: 1000});
-  }
-};
-
-const deleteQuestionnaire = async () => {
-  deleteVisible.value = false;
-  try {
-    await axios.get('/api/deleteQuestionnaire', {
-      params: {questionnaireId: questionnaire.questionnaireId},
-    });
-    ElMessage({message: '问卷已删除', duration: 1000});
-    router.back();
-  } catch (e) {
-    console.error(e);
-  }
-};
-
 const frontOptions = (index) => {
   return questionList.value.slice(0, index).map((item, i) => ({
     label: item.questionTitle,
     value: i,
     children: (item.questionOptions || []).map(opt => ({value: opt, label: opt})),
   }));
-};
-
-const releaseEnd = () => {
-  releaseVisible.value = false;
-  router.back();
-};
-
-const copy = () => {
-  const clipboard = new Clipboard('.copy-link');
-  clipboard.on('success', () => {
-    ElMessage({message: '复制成功', duration: 1000});
-    clipboard.destroy();
-  });
-  clipboard.on('error', () => {
-    ElMessage({message: '该浏览器不支持自动复制', duration: 1000});
-    clipboard.destroy();
-  });
 };
 
 onMounted(fetchData);

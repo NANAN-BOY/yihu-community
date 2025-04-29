@@ -94,7 +94,7 @@
                   <Plus/>
                 </el-icon>
               </el-button>
-              <el-button class="delete-option-button" round size="medium" @click="deleteFrontOption(index)">
+              <el-button class="delete-option-button" round size="medium" @click="$emit('clickDelete')">
                 <el-icon>
                   <Delete/>
                 </el-icon>
@@ -188,6 +188,7 @@ const props = defineProps({
   gradeMax: Number,
   date: Date,
   textDescription: String,
+  tempId: Number,
 })
 
 const emit = defineEmits(['clickUnSelected', 'clickSelected', 'saveOneQuestion', 'resetQuestion', 'clickDelete'])
@@ -251,6 +252,7 @@ const addFrontOption = () => frontOptionsValue.value.push([])
 const deleteFrontOption = (index) => frontOptionsValue.value.splice(index, 1)
 
 const questionData = computed(() => ({
+  tempId: props.tempId,
   questionIndex: props.questionIndex,
   questionOptions: optionsValue.value,
   questionDescription: questionDescriptionValue.value,

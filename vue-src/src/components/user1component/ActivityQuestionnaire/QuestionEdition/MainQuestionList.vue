@@ -7,7 +7,7 @@
     <div v-loading=questionnaireLoading class="main-question-list">
       <Question
           v-for="(item, index) in questionList"
-          :key="index"
+          :key="item.tempId"
           :date="item.date"
           :temp-id="item.tempId"
           :default-number="item.defaultNumber"
@@ -24,7 +24,7 @@
           :question-title="item.questionTitle"
           :question-type="item.questionType"
           :text-description="item.textDescription"
-          @clickDelete="deleteOneBox(index)"
+          @clickDelete="() => deleteOneBox(index, item)"
           @clickSelected="selectOneBox(index)"
           @clickUnSelected="selectOneBox(index)"
           @resetQuestion="resetQuestion(index)"
@@ -60,8 +60,6 @@ import axios from 'axios';
 import store from "../../../../store";
 import SelectBar from "./SelectBar.vue";
 
-const route = useRoute();
-
 const questionList = ref([]);
 const questionnaireLoading = ref(false);
 // MainQuestionList.vue 中修改 fetchData 方法
@@ -71,7 +69,6 @@ const fetchData = async () => {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-temp`, {
       headers: {token: store.state.token},
     });
-    console.log(res.data);
     if (res.data.code === 200) {
       //提取转换格式Json
       const tempList = res.data.data;
@@ -136,7 +133,6 @@ const saveOneQuestion = async (data) => {
           oneQuestion, // 直接发送处理后的对象
           {headers: {token: store.state.token}}
       );
-      console.log(res.data);
       if(res.data.code === 200){
         oneQuestion.tempId = res.data.data;
         questionList.value.splice(index, 1, {...data, ...oneQuestion});
@@ -172,21 +168,25 @@ const saveOneQuestion = async (data) => {
   }
 
 };
-const deleteOneBox = async (index) => {
-  questionList.value.splice(index, 1);
+const deleteOneBox = async (index,item) => {
+  questionList.value[index].isSaveLoading = true
+  console.log(index)
   try {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-temp`, {
+    const res = await axios.delete(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/delete-question`, {
       headers: {token: store.state.token},
+      params: {
+        tempId: item.tempId
+      }
     });
     console.log(res.data);
     if (res.data.code === 200) {
+      ElMessage.success('删除成功！');
+      console.log(index);
       questionList.value.splice(index, 1);
     } else throw new Error();
   } catch (e) {
-    console.error(e);
-    ElMessage({message: '问卷读取失败', duration: 1000});
-  } finally {
-    questionnaireLoading.value = false;
+    questionList.value[index].isSaveLoading = false;
+    ElMessage.error('删除失败，请重试！');
   }
 };
 

@@ -94,7 +94,7 @@
                   <Plus/>
                 </el-icon>
               </el-button>
-              <el-button class="delete-option-button" round size="medium" @click="deleteFrontOption(index)">
+              <el-button class="delete-option-button" round size="medium" @click="$emit('clickDelete')">
                 <el-icon>
                   <Delete/>
                 </el-icon>

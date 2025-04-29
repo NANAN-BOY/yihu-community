@@ -22,10 +22,10 @@ export const generateSnowflakeId = (() => {
 
         lastTimestamp = timestamp;
 
-        // 组合为BigInt并转为字符串
+        // 组合为BigInt并转为字符串（兼容旧环境）
         return (
-            (BigInt(timestamp) << 22n) |
-            (BigInt(machineId) << 12n) |
+            (BigInt(timestamp) << BigInt(22)) |
+            (BigInt(machineId) << BigInt(12)) |
             BigInt(sequence)
         ).toString();
     };

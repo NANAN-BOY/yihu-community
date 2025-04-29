@@ -362,7 +362,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         try {
             Integer isSuccess = tempMapper.insert(temp);
             if (isSuccess == 1) {
-                return 1;
+                return temp.getTempId();
             }
             return -1;
         } catch (Exception e) {

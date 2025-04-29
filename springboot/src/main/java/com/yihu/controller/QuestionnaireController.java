@@ -128,10 +128,10 @@ public class QuestionnaireController {
             return Result.error(403, "无权限");
         }
         int isSuccess = questionnaireService.addQuestionToTemp(tempDTO);
-        if (isSuccess == 1) {
-            return Result.success("添加成功");
+        if (isSuccess == -1) {
+            return Result.error(501, "添加失败");
         }
-        return Result.error(501, "添加失败");
+        return Result.success(isSuccess);
     }
 
     @GetMapping("/get-temp")

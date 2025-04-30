@@ -340,6 +340,7 @@ public class ActivityController {
         }
     }
 
+    @AuthAccess
     @GetMapping("/getActivityByQuestionnaireId")
     public Result getActivityByQuestionnaireId(@RequestParam Integer questionnaireId) {
         try {

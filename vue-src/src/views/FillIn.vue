@@ -1,11 +1,11 @@
 <template>
-  <el-row>
+  <el-row v-loading="isLoading" element-loading-text="问卷读取中，请等待。">
     <el-col :lg="{span:16,offset:4}" :md="{span:18,offset:3}" :sm="24" :xl="{span:14,offset:5}"
             class="main-answer-list">
       <el-card class="box-card" shadow="always">
-        <div v-if="questionnaire.isBoxSelected===false">
-          <h1>{{ questionnaire.questionnaireTitle }}</h1>
-          <h3>{{ questionnaire.questionnaireDescription }}</h3>
+        <div>
+          <h1>{{ activityName }} 满意度调查</h1>
+          <h3>感谢您参与 {{ activityName }}，请花几分钟时间完成本次问卷，帮助我们提升体验。</h3>
         </div>
       </el-card>
       <el-form :disabled="cannotSubmit">
@@ -140,43 +140,37 @@ import {ElMessage} from 'element-plus'
 const route = useRoute()
 const questionList = ref([])
 const answerList = ref([])
-const questionnaire = ref({
-  isBoxSelected: false,
-  questionnaireDescription: "Description",
-  questionnaireTitle: "Title",
-  questionnaireId: route.params.id,
-})
+const activityName = ref('未命名活动')
 const submitVisible = ref(false)
 const resetVisible = ref(false)
 const ip = ref(localStorage.getItem('deviceId'))
 const alreadySubmit = ref(null)
 const cannotSubmit = ref(null)
-
+const isLoading = ref(false)
 const fetchData = async () => {
+  isLoading.value = true
   try {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-question`, {
-      params: {
-        questionnaireId: route.params.id,
-      }
-    })
+    const [questionRes, activityRes] = await Promise.all([
+      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-question`, {
+        params: { questionnaireId: route.params.id }
+      }),
+      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/activity/getActivityByQuestionnaireId`, {
+        params: { questionnaireId: route.params.id }
+      })
+    ])
 
     // 1. 解析第一层 data 字段
-    const responseData = JSON.parse(res.data.data)
+    const responseData = JSON.parse(questionRes.data.data)
 
     // 2. 获取 questionList 并处理嵌套 JSON
     const tempList = responseData.questionList.map(item => {
-      // 解析 details 字段的 JSON 字符串
       const details = JSON.parse(item.details)
-
-      // 合并对象属性（保留原始字段）
       return {
         ...item,
         details: {
           ...details,
-          // 转换日期字段（如果存在）
           date: details.date ? new Date(details.date) : null
         },
-        // 转换主对象中的日期字段（如果存在）
         date: item.date ? new Date(item.date) : null
       }
     })
@@ -190,42 +184,23 @@ const fetchData = async () => {
       answerSingleCheck: '',
       answerMultiCheck: [],
       answerText: '',
-      answerNumber: t.details.defaultNumber || 0,  // 从解析后的 details 获取
+      answerNumber: t.details.defaultNumber || 0,
       answerGrade: 0,
-      answerDate: t.details.date || new Date()     // 从解析后的 details 获取
+      answerDate: t.details.date || new Date()
     }))
 
     questionList.value = tempList
     answerList.value = ansList
-
-    ElMessage({message: "问卷已读取", duration: 1000})
+    activityName.value = activityRes.data.data
+    ElMessage({ message: "问卷已读取", duration: 1000 })
   } catch (e) {
-    console.error("解析错误:", e)
-    ElMessage({message: "问卷读取失败！", duration: 1000})
+    console.error("解析或请求错误:", e)
+    ElMessage({ message: "数据读取失败！", duration: 1000 })
+  } finally {
+    isLoading.value = false
   }
-  //
-  // try {
-  //   const res = await axios.get("/api/fillin/getQuestionnaireOutline", {
-  //     params: {
-  //       questionnaireId: route.params.id
-  //     }
-  //   })
-  //   console.log(res)
-  //   const temp = {
-  //     isBoxSelected: false,
-  //     questionnaireDescription: res.data['questionnaire']['description'],
-  //     questionnaireTitle: res.data['questionnaire']['title'],
-  //     questionnaireId: res.data['questionnaire']['questionnaireId'],
-  //   }
-  //   if (res.data['questionnaire']['status'] === 'closed') {
-  //     ElMessage.error({message: "error！问卷已关闭！", duration: 0})
-  //     cannotSubmit.value = true
-  //   }
-  //   questionnaire.value = temp
-  // } catch {
-  //   ElMessage({message: "error!问卷概况读取失败！", duration: 1000})
-  // }
 }
+
 
 const submitAnswer = async () => {
   console.log(answerList.value)

@@ -15,6 +15,10 @@ const props = defineProps({
   projectId:{
     type: Number,
     required: true
+  },
+  projectName:{
+    type: String,
+    required: true
   }
 });
 
@@ -349,13 +353,13 @@ const deleteActivityWarning = (activityId, activityTitle) => {
 <template>
   <div v-if="pageNum===1">
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">活动管理</strong></el-breadcrumb-item>
-      <el-breadcrumb-item><strong>项目活动列表</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">项目管理</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong>{{ projectName }}</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br>
     <el-page-header @back="$emit('closeActivityManagement')" title="返回">
       <template #content>
-        <span class="text-large font-600 mr-3"> 项目活动列表 </span>
+        <span class="text-large font-600 mr-3"> {{ projectName }} </span>
       </template>
     </el-page-header>
     <br>
@@ -406,8 +410,8 @@ const deleteActivityWarning = (activityId, activityTitle) => {
   <div v-if="pageNum===2">
     <!-- 面包屑导航 -->
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">活动管理</strong></el-breadcrumb-item>
-      <el-breadcrumb-item><strong @click="closeActivityDetail">项目活动列表</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">项目管理</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="closeActivityDetail">{{ projectName }}</strong></el-breadcrumb-item>
       <el-breadcrumb-item><strong>活动编辑</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br>

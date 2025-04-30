@@ -1,7 +1,7 @@
 <script setup>
 import {ref, onMounted, computed, watch, nextTick} from "vue";
 import {ElButton, ElEmpty, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Delete, Edit, Search, View} from "@element-plus/icons-vue";
+import {Delete, Edit, More, Search, View} from "@element-plus/icons-vue";
 import store from "../../../store";
 import axios from "axios";
 import ActivityManagement from "./ActivityManagement/ActivityManagement.vue";
@@ -99,8 +99,8 @@ const projectStatusConvert = async (status) => {
       return null
   }
 }
-const createProject = () => {
-  ElMessageBox.prompt(
+const createProject = async () => {
+  await ElMessageBox.prompt(
       '请输入项目名称',
       '创建新项目',
       {
@@ -126,17 +126,16 @@ const createProject = () => {
                   headers: {
                     token: store.state.token,
                   },
-            })
+                })
                 .then((response) => {
                   console.log(response)
-                  if (response.data.code === 200){
+                  if (response.data.code === 200) {
                     instance.confirmButtonLoading = false
                     instance.confirmButtonText = '创建'
                     ElMessage.success('项目创建成功')
                     refreshProjectList()
                     done()
-                  }
-                  else if (response.data.code === 400){
+                  } else if (response.data.code === 400) {
                     instance.confirmButtonLoading = false
                     instance.confirmButtonText = '创建'
                     ElMessage.error('创建失败，请重试')
@@ -157,15 +156,89 @@ const createProject = () => {
       }
   )
 }
+const editProjectName = async (projectId,projectOldName) => {
+  closeMoreSelect()
+  await ElMessageBox.prompt(
+      '请输入项目名称',
+      '修改项目名称',
+      {
+        inputValue: projectOldName,
+        confirmButtonText: '提交',
+        cancelButtonText: '取消',
+        inputPattern: /.+/,
+        inputErrorMessage: '项目名称不能为空',
+        showCancelButton: true,
+        // 在这里拦截关闭：只有在 done() 被调用后才会真正关闭弹窗
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            // 开启按钮 loading，并修改文案
+            instance.confirmButtonLoading = true
+            instance.confirmButtonText = '提交中...'
+            // 取到用户输入
+            const projectName = (instance.inputValue || '').trim()
+            // 调用后端接口
+            axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/project/update`, {
+                  id: projectId,
+                  name: projectName,
+                },
+                {
+                  headers: {
+                    token: store.state.token,
+                  },
+                })
+                .then((response) => {
+                  console.log(response)
+                  if (response.data.code === 200) {
+                    instance.confirmButtonLoading = false
+                    instance.confirmButtonText = '创建'
+                    ElMessage.success('修改成功')
+                    refreshProjectList()
+                    done()
+                  } else if (response.data.code === 400) {
+                    instance.confirmButtonLoading = false
+                    instance.confirmButtonText = '创建'
+                    ElMessage.error('修改失败，请重试')
+                    done()
+                  }
+                })
+                .catch((err) => {
+                  console.error(err)
+                  // 接口失败，先重置按钮
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '创建'
+                  ElMessage.error('修改失败，请重试')
+                })
+          } else {
+            done()
+          }
+        }
+      }
+  )
+}
 //活动管理所需数据
 const nowProjectId = ref(null)
-const openActivityManagement = async (projectId) => {
+const nowProjectName = ref(null)
+const openActivityManagement = async (projectId,  projectName) => {
   nowProjectId.value = projectId
+  nowProjectName.value = projectName
   pageNum.value = 'ActivityManagement'
+  closeMoreSelect()
 }
 const closeActivityManagement = () => {
   pageNum.value = 'ProjectList'
+  nowProjectId.value = null
   refreshProjectList()
+}
+//手机端更多选项所需数据
+const nowSelectProject = ref(null)
+const moreSelectVisible = ref(false)
+const openMoreSelect = (project) => {
+  nowSelectProject.value = project
+  moreSelectVisible.value = true
+}
+const closeMoreSelect = () => {
+  moreSelectVisible.value = false
+  nowSelectProject.value = null
 }
 </script>
 
@@ -196,7 +269,7 @@ const closeActivityManagement = () => {
           infinite-scroll-distance="100"
       >
         <li v-for="project in projectList" :key="project.id" class="list-item"
-            @click="openActivityManagement(project.id)">
+            @click="openActivityManagement(project.id,project.name)">
           <div>
             <el-tag v-if="project.status === 0" type="info">未提交</el-tag>
             <el-tag v-if="project.status === 1" type="primary">待审核</el-tag>
@@ -205,12 +278,12 @@ const closeActivityManagement = () => {
             {{ !project.name ? "未命名项目": project.name}}
           </div>
           <div v-if="!onMobile" class="button-group">
-            <el-button size="mini" type="primary" @click.stop="openActivityManagement(project.id)">
+            <el-button  size="mini" type="primary" @click.stop="openActivityManagement(project.id,project.name)">
               <el-icon>
                 <View/>
               </el-icon>
             </el-button>
-            <el-button size="mini" type="primary" @click.stop="openActivityDetail(project.id)">
+            <el-button size="mini" type="primary" @click.stop="editProjectName(project.id,project.name)">
               <el-icon>
                 <Edit/>
               </el-icon>
@@ -221,6 +294,11 @@ const closeActivityManagement = () => {
               </el-icon>
             </el-button>
           </div>
+          <div v-else>
+            <el-button size="mini" type="primary" @click.stop="openMoreSelect(project)">
+              <el-icon><More /></el-icon>
+            </el-button>
+          </div>
         </li>
         <li v-if="loading" v-loading="loading" class="list-item"></li>
       </ul>
@@ -229,9 +307,28 @@ const closeActivityManagement = () => {
       <p v-if="error" style="color: red">{{ error }}</p>
     </div>
   </div>
+<!--  手机端更多选项弹窗-->
+  <el-dialog
+      v-model="moreSelectVisible"
+      title="更多"
+      width="500"
+      align-center
+  >
+    <span>
+      <el-button  size="mini" type="primary" @click.stop="openActivityManagement(nowSelectProject.id,nowSelectProject.name);">查看详情</el-button>
+    <el-button size="mini" type="primary" @click.stop="editProjectName(nowSelectProject.id,nowSelectProject.name);">编辑信息</el-button>
+    <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(project.id,activity.title)">删除项目</el-button>
+    </span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="closeMoreSelect">关闭</el-button>
+      </div>
+    </template>
+  </el-dialog>
   <ActivityManagement
       v-if="pageNum === 'ActivityManagement'"
       :projectId="nowProjectId"
+      :projectName="nowProjectName"
       @closeActivityManagement="closeActivityManagement"
   />
 </template>

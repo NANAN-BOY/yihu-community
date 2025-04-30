@@ -45,6 +45,7 @@ const activityListLoad = async () => {
           headers: {token: store.state.token}
         }
     )
+    console.log(response.data)
     if (response.data.code === 200) {
       // success
       activityList.value = [...activityList.value, ...response.data.data.list]
@@ -117,6 +118,7 @@ const activityNoticeContent = ref(null)
 const activityStaffCount = ref(null)
 const activityVolunteerCount = ref(null)
 const activityServiceObjectCount = ref(null)
+const activityQuestionnaireId = ref(null)
 // News Data
 const activityNews = ref([]);
 //File
@@ -234,6 +236,7 @@ const openActivityDetail = async (id) => {
     activityVolunteerCount.value = nowActivity.activity.volunteerCount;
     activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
     activityFiles.value = nowActivity.files;
+    activityQuestionnaireId.value = nowActivity.activity.questionnaireId;
     activityNews.value = nowActivity.news;
     activityCreateTime.value = nowActivity.activity.createTime;
     activityUpdateTime.value = nowActivity.activity.updateTime;
@@ -249,6 +252,7 @@ const closeActivityDetail = () => {
   activityStaffCount.value = null;
   activityVolunteerCount.value = null;
   activityServiceObjectCount.value = null;
+  activityQuestionnaireId.value = null;
   activityFiles.value = null;
   activityNews.value = null;
   activityCreateTime.value = null;
@@ -620,7 +624,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
         <SatisfactionLevel
-            :questionnaire_id="0"
+            :questionnaire_id="activityQuestionnaireId"
         />
       </div>
       <div v-if="nowStep === '附件'">

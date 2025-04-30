@@ -6,6 +6,7 @@ import com.yihu.common.Result;
 import com.yihu.dto.AnswerDTO;
 import com.yihu.dto.TempDTO;
 import com.yihu.entity.Answer;
+import com.yihu.entity.Questionnaire;
 import com.yihu.entity.Temp;
 import com.yihu.entity.User;
 import com.yihu.service.QuestionnaireService;
@@ -188,5 +189,21 @@ public class QuestionnaireController {
 //
 //        return Result.success(questionnaireService.delete(questionnaireId));
 //    }
+
+    @GetMapping("/outline")
+    public Result getOutline(@RequestParam Integer questionnaireId) {
+        User currentUser = TokenUtils.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "请登录");
+        }
+
+        Questionnaire outline = questionnaireService.getQuestionnaireOutline(questionnaireId);
+        if (outline == null) {
+            return Result.error(404, "问卷不存在");
+        }
+
+        return Result.success(outline);
+    }
+
 
 }

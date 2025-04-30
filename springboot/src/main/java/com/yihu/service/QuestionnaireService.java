@@ -2,6 +2,7 @@ package com.yihu.service;
 
 import com.yihu.dto.TempDTO;
 import com.yihu.entity.Answer;
+import com.yihu.entity.Questionnaire;
 import com.yihu.entity.Temp;
 
 import java.util.List;
@@ -31,4 +32,7 @@ public interface QuestionnaireService {
     Integer updateQuestionToTemp(Temp temp);
 
     void delete(Integer questionnaireId);
+
+    Questionnaire getQuestionnaireOutline(Integer questionnaireId);
+
 }

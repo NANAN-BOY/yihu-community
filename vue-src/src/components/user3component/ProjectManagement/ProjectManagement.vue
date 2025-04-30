@@ -215,6 +215,54 @@ const editProjectName = async (projectId,projectOldName) => {
       }
   )
 }
+const deleteProject = async (projectId, projectName) => {
+  closeMoreSelect()
+  await ElMessageBox.confirm(
+      `你确定要删除项目「${projectName}」吗？所属活动一并删除，该操作不可撤销！`,
+      '删除项目',
+      {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonClass: 'el-button--danger',
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            instance.confirmButtonLoading = true
+            instance.confirmButtonText = '删除中...'
+            axios.delete(`${import.meta.env.VITE_BACKEND_IP}/api/project/deleteById`, {
+              headers: {
+                token: store.state.token,
+              },
+              params: {
+                projectId: projectId,
+              },
+            })
+                .then((response) => {
+                  if (response.data.code === 200) {
+                    ElMessage.success('删除成功')
+                    refreshProjectList()
+                    done()
+                  } else {
+                    ElMessage.error('删除失败，请重试')
+                  }
+                })
+                .catch((err) => {
+                  console.error(err)
+                  ElMessage.error('删除失败，请重试')
+                })
+                .finally(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '删除'
+                })
+          } else {
+            done()
+          }
+        }
+      }
+  )
+}
+
 //活动管理所需数据
 const nowProjectId = ref(null)
 const nowProjectName = ref(null)
@@ -288,7 +336,7 @@ const closeMoreSelect = () => {
                 <Edit/>
               </el-icon>
             </el-button>
-            <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(project.id,activity.title)">
+            <el-button size="mini" type="danger" @click.stop="deleteProject(project.id,project.name)">
               <el-icon>
                 <Delete/>
               </el-icon>
@@ -317,7 +365,7 @@ const closeMoreSelect = () => {
     <span>
       <el-button  size="mini" type="primary" @click.stop="openActivityManagement(nowSelectProject.id,nowSelectProject.name);">查看详情</el-button>
     <el-button size="mini" type="primary" @click.stop="editProjectName(nowSelectProject.id,nowSelectProject.name);">编辑信息</el-button>
-    <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(project.id,activity.title)">删除项目</el-button>
+    <el-button size="mini" type="danger" @click.stop="deleteProject(nowSelectProject.id,nowSelectProject.name)">删除项目</el-button>
     </span>
     <template #footer>
       <div class="dialog-footer">

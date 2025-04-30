@@ -67,7 +67,6 @@ public class ProjectController {
 
 
 
-    @AuthAccess
     @DeleteMapping("/deleteById") // 表数据不删除，存储的文件需要删除
     public Result delete(@RequestParam Integer projectId) {
         User currentUser = TokenUtils.getCurrentUser();

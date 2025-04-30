@@ -4,12 +4,8 @@ import {ElButton, ElEmpty, ElInput, ElMessage, ElMessageBox} from "element-plus"
 import {Delete, Edit, Search, View} from "@element-plus/icons-vue";
 import store from "../../../store";
 import axios from "axios";
-import CreateProject from "./CreateProject.vue";
 
-const showCreateComponent = ref(false); // 控制创建组件的显示
 const searchInput = ref(''); // 搜索框的输入
-const filteredData = ref([]); // 存储过滤后的项目数据
-const allProjects = ref([]); // 存储所有项目数据
 const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
 if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
 
@@ -18,11 +14,6 @@ watch(searchInput, () => {
   refreshProjectList();
 });
 
-// 控制是否显示创建项目页面
-const toggleCreateComponent = () => {
-  store.dispatch('lockNavbar', '创建项目模板');
-  showCreateComponent.value = true;
-};
 
 //Data required for project list
 const projectList = ref([])
@@ -85,6 +76,10 @@ const refreshProjectList = async () => {
   await nextTick()
   await projectListLoad()
 }
+// 在组件挂载时获取我的项目
+onMounted(() => {
+  projectListLoad();
+});
 //project status classification
 const projectStatusValue = ref('全部')
 const projectStatusOptions = ['全部','未通过', '已通过']
@@ -103,46 +98,73 @@ const projectStatusConvert = async (status) => {
       return null
   }
 }
-// 取消创建项目操作
-const GiveUpCreateComponent = () => {
-  ElMessageBox.confirm(
-      '确定放弃当前的创建操作吗？',
-      '确定返回吗？',
+const createProject = () => {
+  ElMessageBox.prompt(
+      '请输入项目名称',
+      '创建新项目',
       {
-        confirmButtonText: '放弃',
+        confirmButtonText: '创建',
         cancelButtonText: '取消',
-        type: 'warning',
+        inputPattern: /.+/,
+        inputErrorMessage: '项目名称不能为空',
+        showCancelButton: true,
+        // 在这里拦截关闭：只有在 done() 被调用后才会真正关闭弹窗
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            // 开启按钮 loading，并修改文案
+            instance.confirmButtonLoading = true
+            instance.confirmButtonText = '提交中...'
+            // 取到用户输入
+            const projectName = (instance.inputValue || '').trim()
+            // 调用后端接口
+            axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/project/addProject`, {},
+                {
+                  params: {
+                    name: projectName,
+                  },
+                  headers: {
+                    token: store.state.token,
+                  },
+            })
+                .then((response) => {
+                  console.log(response)
+                  if (response.data.code === 200){
+                    instance.confirmButtonLoading = false
+                    instance.confirmButtonText = '创建'
+                    ElMessage.success('项目创建成功')
+                    refreshProjectList()
+                    done()
+                  }
+                  else if (response.data.code === 400){
+                    instance.confirmButtonLoading = false
+                    instance.confirmButtonText = '创建'
+                    ElMessage.error('创建失败，请重试')
+                    done()
+                  }
+                })
+                .catch((err) => {
+                  console.error(err)
+                  // 接口失败，先重置按钮
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '创建'
+                  ElMessage.error('创建失败，请重试')
+                })
+          } else {
+            done()
+          }
+        }
       }
   )
-      .then(() => {
-        store.dispatch('unlockNavbar');
-        showCreateComponent.value = false;
-        ElMessage.warning('已放弃创建');
-      })
-      .catch(() => {
-        ElMessage.info('操作已取消');
-      });
-};
+}
 
-// 关闭创建项目页面
-const CloseCreateComponent = () => {
-  store.dispatch('unlockNavbar');
-  showCreateComponent.value = false;
-  projectListLoad();  // 关闭后刷新项目列表
-};
-// 在组件挂载时获取我的项目
-onMounted(() => {
-  projectListLoad();
-});
 </script>
 
 <template>
-  <div v-if="!showCreateComponent">
     <el-breadcrumb separator="/">
       <el-breadcrumb-item><strong>项目管理</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br />
-    <el-button type="primary" @click="toggleCreateComponent">创建新项目</el-button>&nbsp;
+    <el-button type="primary" @click="createProject">创建新项目</el-button>&nbsp;
     <el-input
         v-model="searchInput"
         style="width: auto"
@@ -195,22 +217,6 @@ onMounted(() => {
       <p v-if="noMore">没有更多数据了</p>
       <p v-if="error" style="color: red">{{ error }}</p>
     </div>
-  </div>
-  <div v-if="showCreateComponent">
-    <!-- 创建项目模板页面 -->
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item @click="GiveUpCreateComponent"><a>项目管理</a></el-breadcrumb-item>
-      <el-breadcrumb-item><strong>新建项目</strong></el-breadcrumb-item>
-    </el-breadcrumb>
-    <br />
-    <el-page-header @back="GiveUpCreateComponent" title="放弃">
-      <template #content>
-        <span class="text-large font-600 mr-3"> 创建项目 </span>
-      </template>
-    </el-page-header>
-    <!-- 创建模板组件 -->
-    <CreateProject @closeForm="CloseCreateComponent"/>
-  </div>
 </template>
 
 <style scoped>

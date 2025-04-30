@@ -359,7 +359,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
     <br>
     <el-page-header @back="$emit('closeActivityManagement')" title="返回">
       <template #content>
-        <span class="text-large font-600 mr-3"> {{ projectName }} </span>
+        <span class="text-large font-600 mr-3"> {{ projectName }} - 活动列表</span>
       </template>
     </el-page-header>
     <br>

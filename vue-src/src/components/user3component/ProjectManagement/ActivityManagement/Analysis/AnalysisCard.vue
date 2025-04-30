@@ -92,6 +92,7 @@ import {ref, onMounted, watch} from 'vue'
 import * as echarts from 'echarts'
 import {ElMessage} from 'element-plus'
 import axios from 'axios'
+import store from "../../../../../store";
 
 const props = defineProps({
   questionIndex: Number,
@@ -107,37 +108,47 @@ const barHeight = ref('250px')
 
 const fetchData = async () => {
   try {
-    if (props.questionType === 'single_check' || props.questionType === 'multi_check' || props.questionType === 'number' || props.questionType === 'grade') {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionValueList`, {
-        params: {
-          questionId: props.questionId
-        }
-      })
+    // 选项或数值题，调用新的 analysis 接口
+    if (
+        props.questionType === "single_check" ||
+        props.questionType === "multi_check" ||
+        props.questionType === "number" ||
+        props.questionType === "grade"
+    ) {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/analysis`, {
+        params: { questionId: props.questionId },
+        headers: { token: store.state.token }
+      });
 
-      const temp = res.data
-      const dataList = []
+      // 后端返回的是一个字符串化的 JSON，需要再 parse
+      const raw     = res.data.data;            // e.g. "{\"选项A\":12,\"选项B\":8}"
+      const tempObj = JSON.parse(raw);          // { "选项A":12, ... }
 
-      for (const oneName in temp) {
-        dataList.push({'name': oneName, 'value': temp[oneName]})
-      }
+      // 转成 {name, value} 数组并排序
+      const dataList = Object.entries(tempObj)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => a.value - b.value);
 
-      dataList.sort((a, b) => a.value - b.value)
-      questionValueList.value = dataList
-      barHeight.value = `${questionValueList.value.length * 33 + 150}px`
-      drawBar()
-      drawPie()
+      questionValueList.value = dataList;
+      barHeight.value         = `${dataList.length * 33 + 150}px`;
+
+      drawBar();
+      drawPie();
+
     } else {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getWriteValue`, {
-        params: {
-          questionId: props.questionId
-        }
-      })
-      writeValueList.value = res.data
+      // 文本输入题，调用新的 get-answer 接口
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/get-answer`, {
+        params: { questionId: props.questionId },
+        headers: { token: store.state.token }
+      });
+      // 直接拿到后端返回的 Answer[] 数组
+      writeValueList.value = res.data.data;
     }
+
   } catch (error) {
-    ElMessage({message: "error！读取失败！", duration: 1000})
+    ElMessage({ message: "error！读取失败！", duration: 1000 });
   }
-}
+};
 
 const drawBar = () => {
   const myBarChart = echarts.init(document.getElementById('barChart' + props.questionIndex), 'light')

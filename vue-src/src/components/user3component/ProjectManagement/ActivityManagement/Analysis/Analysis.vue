@@ -5,9 +5,9 @@
     <el-button
         type="primary"
         @click="analysisResult"
-    >查看问卷分析结果
+    >{{ analysisVisible?  '刷新结果' : '查看问卷分析结果'}}
     </el-button>
-    <div v-if="analysisLoading" class="outlineData">
+    <div v-if="!analysisLoading" class="outlineData">
       <MainAnalysisList
           v-if="analysisVisible"
           :questionList="questionList"
@@ -36,49 +36,49 @@ const props = defineProps({
 
 const analysisVisible = ref(false);
 const analysisLoading = ref(false);
-const questionList = ref([])
+const questionList = ref([]);
 const questionnaire = ref({
   title: '',
   description: '描述',
   status: '已完成',
   createTime: null,
   endTime: null,
-  fillCount: 299,
-})
+  fillCount: 0,
+});
 
 const analysisResult = async () => {
   analysisLoading.value = true;
-  setTimeout(() => {
-    analysisLoading.value = false;
-  }, 6000);
   try {
-    const [questionListRes, questionnaireRes] = await Promise.all([
-      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionList`, {
-        params: {
-          questionnaireId: props.questionnaire_id,
-        },
-        headers: {
-          token: store.state.token
-        }
+    const backendUrl = import.meta.env.VITE_BACKEND_IP;
+    const token = store.state.token;
+
+    // 并发两个请求：问题列表 + 问卷概况
+    const [qListRes, outlineRes] = await Promise.all([
+      axios.get(`${backendUrl}/api/questionnaire/get-question`, {
+        params: { questionnaireId: props.questionnaire_id },
+        headers: { token }
       }),
-      axios.get(`${import.meta.env.VITE_BACKEND_IP}/api/getQuestionnaireOutline`, {
-        params: {
-          questionnaireId: props.questionnaire_id,
-        },
-        headers: {
-          token: store.state.token
-        }
-      })
+      axios.get(`${backendUrl}/api/questionnaire/outline`, {
+        params: { questionnaireId: props.questionnaire_id },
+        headers: { token }
+      }),
     ]);
 
-    questionList.value = questionListRes.data['questionList'];
-    questionnaire.value = questionnaireRes.data['questionnaire'];
+    // 设置问题列表
+    questionList.value = JSON.parse(qListRes.data.data).questionList;
+
+    // 设置问卷基本信息
+    questionnaire.value = outlineRes.data.data;
+
+    analysisVisible.value = true;
   } catch (error) {
-    ElMessage({message: "数据加载失败，请重试", duration: 1000});
+    console.error("加载失败", error);
+    ElMessage({ message: "数据加载失败，请重试", duration: 1000 });
   } finally {
     analysisLoading.value = false;
   }
 };
+
 
 </script>
 

@@ -2,24 +2,7 @@
   <div>
     <div class="main-analysis-list">
       <el-card>
-        <h1>{{ questionnaire.title }}</h1>
-        <div class="description-box">
-          <div>
-            <b>问卷描述：</b>{{ questionnaire.description }}
-          </div>
-          <div>
-            <b>问卷状态：</b>{{ translateLabel[questionnaire.status] }}
-          </div>
-          <div>
-            <b>填写人数：</b>{{ questionnaire.fillCount }}
-          </div>
-          <div>
-            <b>发布时间：</b>{{ questionnaire.createTime }}
-          </div>
-          <div>
-            <b>截止时间：</b>{{ questionnaire.endTime }}
-          </div>
-        </div>
+        <b>当前填写人数：</b>{{ questionnaire.fillCount }}
       </el-card>
       <AnalysisCard
           v-for="(item,index) in props.questionList"

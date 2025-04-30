@@ -87,9 +87,11 @@ const createNewActivity = async () => {
         {
           headers: {
             token: store.state.token
+          },
+          params: {
+            projectId: props.projectId
           }
         });
-    console.log(response);
     if (response.data.code === 200 && response.data.data) {
       const id = response.data.data;
       await refreshActivityList();

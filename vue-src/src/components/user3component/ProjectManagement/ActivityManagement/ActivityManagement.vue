@@ -11,6 +11,12 @@ const pageNum = ref(1)
 const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
 if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
 
+const props = defineProps({
+  projectId:{
+    type: Number,
+    required: true
+  }
+});
 
 //Data required for activity list
 const activityList = ref([])
@@ -29,9 +35,13 @@ const activityListLoad = async () => {
     error.value = ''
 
     const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_IP}/api/activity/queryByCreateId`,
+        `${import.meta.env.VITE_BACKEND_IP}/api/activity/getActivityByProjectId`,
         {
-          params: {pageNum: currentPage.value, pageSize: 10},
+          params: {
+            projectId: props.projectId,
+            pageNum: currentPage.value,
+            pageSize: 10
+          },
           headers: {token: store.state.token}
         }
     )
@@ -333,9 +343,16 @@ const deleteActivityWarning = (activityId, activityTitle) => {
 <template>
   <div v-if="pageNum===1">
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong>活动管理</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">活动管理</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong>项目活动列表</strong></el-breadcrumb-item>
     </el-breadcrumb>
-    <br/>
+    <br>
+    <el-page-header @back="$emit('closeActivityManagement')" title="返回">
+      <template #content>
+        <span class="text-large font-600 mr-3"> 项目活动列表 </span>
+      </template>
+    </el-page-header>
+    <br>
     <el-button :loading="createNewActivityLoading" type="primary" @click="createNewActivity()">创建新活动</el-button>&nbsp;
     <!--    <el-input v-model="input" style="width: auto" placeholder="请输入" @input="searchProjects" />-->
     <!--    <el-button type="primary" @click="">-->
@@ -383,7 +400,8 @@ const deleteActivityWarning = (activityId, activityTitle) => {
   <div v-if="pageNum===2">
     <!-- 面包屑导航 -->
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item @click="closeActivityDetail"><a>活动管理</a></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">活动管理</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="closeActivityDetail">项目活动列表</strong></el-breadcrumb-item>
       <el-breadcrumb-item><strong>活动编辑</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br>

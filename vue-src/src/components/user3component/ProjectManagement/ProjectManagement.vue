@@ -4,7 +4,9 @@ import {ElButton, ElEmpty, ElInput, ElMessage, ElMessageBox} from "element-plus"
 import {Delete, Edit, Search, View} from "@element-plus/icons-vue";
 import store from "../../../store";
 import axios from "axios";
+import ActivityManagement from "./ActivityManagement/ActivityManagement.vue";
 
+const pageNum = ref('ProjectList');
 const searchInput = ref(''); // 搜索框的输入
 const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
 if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
@@ -13,7 +15,6 @@ watch(searchInput, () => {
   projectStatusValue.value = '全部'
   refreshProjectList();
 });
-
 
 //Data required for project list
 const projectList = ref([])
@@ -156,10 +157,20 @@ const createProject = () => {
       }
   )
 }
-
+//活动管理所需数据
+const nowProjectId = ref(null)
+const openActivityManagement = async (projectId) => {
+  nowProjectId.value = projectId
+  pageNum.value = 'ActivityManagement'
+}
+const closeActivityManagement = () => {
+  pageNum.value = 'ProjectList'
+  refreshProjectList()
+}
 </script>
 
 <template>
+  <div v-if="pageNum === 'ProjectList'">
     <el-breadcrumb separator="/">
       <el-breadcrumb-item><strong>项目管理</strong></el-breadcrumb-item>
     </el-breadcrumb>
@@ -185,7 +196,7 @@ const createProject = () => {
           infinite-scroll-distance="100"
       >
         <li v-for="project in projectList" :key="project.id" class="list-item"
-            @click="openActivityDetail(project.id)">
+            @click="openActivityManagement(project.id)">
           <div>
             <el-tag v-if="project.status === 0" type="info">未提交</el-tag>
             <el-tag v-if="project.status === 1" type="primary">待审核</el-tag>
@@ -194,7 +205,7 @@ const createProject = () => {
             {{ !project.name ? "未命名项目": project.name}}
           </div>
           <div v-if="!onMobile" class="button-group">
-            <el-button size="mini" type="primary" @click.stop="openActivityDetail(project.id)">
+            <el-button size="mini" type="primary" @click.stop="openActivityManagement(project.id)">
               <el-icon>
                 <View/>
               </el-icon>
@@ -217,6 +228,12 @@ const createProject = () => {
       <p v-if="noMore">没有更多数据了</p>
       <p v-if="error" style="color: red">{{ error }}</p>
     </div>
+  </div>
+  <ActivityManagement
+      v-if="pageNum === 'ActivityManagement'"
+      :projectId="nowProjectId"
+      @closeActivityManagement="closeActivityManagement"
+  />
 </template>
 
 <style scoped>

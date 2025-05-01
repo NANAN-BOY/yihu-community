@@ -1,7 +1,7 @@
 <script setup>
 
 import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Delete, Edit, Link, Plus, View} from "@element-plus/icons-vue";
+import {Delete, Edit, Link, Plus, Upload, View} from "@element-plus/icons-vue";
 import {computed, h, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
@@ -347,6 +347,55 @@ const deleteActivityWarning = (activityId, activityTitle) => {
     }
   })
 }
+
+//提交审核活动
+const submitExample = (activity) => {
+  ElMessageBox({
+    title: '提交审核',
+    message: h('div', null, [
+      h('p', null, `确认提交审核“${!activity.title ? "未命名活动": activity.title}”活动吗？`),
+      h('p', {  }, '请确认检查相关资料已填写完整')
+    ]),
+    showCancelButton: true,
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    confirmButtonClass: 'confirm-delete-button',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true
+        axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/submitActivity`, {
+          activityId: activity.id
+        }, {
+          headers: {
+            token: store.state.token
+          }
+        })
+            .then(response => {
+              const res = response.data
+              if (res.code === 200) {
+                // 成功：关闭弹窗
+                ElMessage.success("提交成功,请等待审核")
+                refreshActivityList()
+                done()
+              } else {
+                // 失败：取消 loading、提示错误，保持弹窗开启
+                instance.confirmButtonLoading = false
+                instance.message = `提交失败：${res.message || '未知错误'}`
+              }
+            })
+            .catch(error => {
+              // 请求出错
+              instance.confirmButtonLoading = false
+              instance.message = `网络异常：${error.message}`
+            })
+      } else {
+        // 点击取消或右上角关闭
+        done()
+      }
+    }
+  })
+}
 </script>
 
 <template>
@@ -389,6 +438,11 @@ const deleteActivityWarning = (activityId, activityTitle) => {
             <el-button size="mini" type="primary" @click.stop="openActivityDetail(activity.id)">
               <el-icon>
                 <Edit/>
+              </el-icon>
+            </el-button>
+            <el-button size="mini" type="primary" @click.stop="submitExample(activity)">
+              <el-icon>
+                <Upload />
               </el-icon>
             </el-button>
             <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(activity.id,activity.title)">

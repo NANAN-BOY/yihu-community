@@ -5,6 +5,7 @@
         v-loading="uploadFileLoading"
         class="upload-btn"
         @click="handleUpload()"
+        v-if="props.allowEdit"
     >
       <el-icon>
         <Plus/>
@@ -79,6 +80,10 @@ const props = defineProps({
   activityId:{
     type: Number,
     required: true
+  },
+  allowEdit:{
+    type: Boolean,
+    default: true
   }
 });
 const emit = defineEmits(['update:modelValue', 'remove']);

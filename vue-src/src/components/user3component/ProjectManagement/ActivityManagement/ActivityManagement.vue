@@ -130,9 +130,56 @@ const activityFiles = ref([])
 const activityCreateTime = ref(null)
 const activityUpdateTime = ref(null)
 const lastUpdateTime = ref(new Date())
+const activityStatus = ref(null)
+const activityAllowEdit = ref(true)
 
-
+const openActivityDetail = async (id) => {
+  const nowActivity = await getActivityInfo(id)
+  if (nowActivity !== 0) {
+    //Data
+    activityId.value = id;
+    activityTitle.value = nowActivity.activity.title;
+    activityNoticeContent.value = nowActivity.activity.noticeContent;
+    activityStaffCount.value = nowActivity.activity.staffCount;
+    activityStatus.value = nowActivity.activity.status;
+    activityVolunteerCount.value = nowActivity.activity.volunteerCount;
+    activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
+    activityFiles.value = nowActivity.files;
+    activityQuestionnaireId.value = nowActivity.activity.questionnaireId;
+    activityNews.value = nowActivity.news;
+    activityCreateTime.value = nowActivity.activity.createTime;
+    activityUpdateTime.value = nowActivity.activity.updateTime;
+    pageNum.value = 2;
+  }
+  if(nowActivity.activity.status===1){
+    activityAllowEdit.value = false;
+  }
+}
+const closeActivityDetail = () => {
+  pageNum.value = 1;
+  //Data
+  activityId.value = null;
+  activityTitle.value = null;
+  activityNoticeContent.value = null;
+  activityStaffCount.value = null;
+  activityStatus.value = null;
+  activityVolunteerCount.value = null;
+  activityServiceObjectCount.value = null;
+  activityQuestionnaireId.value = null;
+  activityFiles.value = null;
+  activityNews.value = null;
+  activityCreateTime.value = null;
+  activityUpdateTime.value = null;
+  //step
+  nowStep.value = '描述';
+  activityAllowEdit.value = true;
+  refreshActivityList();
+}
 const addNewsItem = async() => {
+  if(!activityAllowEdit.value){
+    ElMessage.error("当前无法操作")
+    return;
+  }
   const platform = ref('');
   const link = ref('');
 
@@ -209,6 +256,10 @@ const addNewsItem = async() => {
 };
 
 const removeNewsItem = (index) => {
+  if(!activityAllowEdit.value){
+    ElMessage.error("当前无法操作")
+    return;
+  }
   ElMessageBox.confirm('确定要删除这条新闻吗？', '确认删除', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -228,42 +279,7 @@ const openLink = (url) => {
     ElMessage.warning('请先输入有效的链接')
   }
 }
-const openActivityDetail = async (id) => {
-  const nowActivity = await getActivityInfo(id)
-  if (nowActivity !== 0) {
-    //Data
-    activityId.value = id;
-    activityTitle.value = nowActivity.activity.title;
-    activityNoticeContent.value = nowActivity.activity.noticeContent;
-    activityStaffCount.value = nowActivity.activity.staffCount;
-    activityVolunteerCount.value = nowActivity.activity.volunteerCount;
-    activityServiceObjectCount.value = nowActivity.activity.serviceObjectCount;
-    activityFiles.value = nowActivity.files;
-    activityQuestionnaireId.value = nowActivity.activity.questionnaireId;
-    activityNews.value = nowActivity.news;
-    activityCreateTime.value = nowActivity.activity.createTime;
-    activityUpdateTime.value = nowActivity.activity.updateTime;
-    pageNum.value = 2;
-  }
-}
-const closeActivityDetail = () => {
-  pageNum.value = 1;
-  //Data
-  activityId.value = null;
-  activityTitle.value = null;
-  activityNoticeContent.value = null;
-  activityStaffCount.value = null;
-  activityVolunteerCount.value = null;
-  activityServiceObjectCount.value = null;
-  activityQuestionnaireId.value = null;
-  activityFiles.value = null;
-  activityNews.value = null;
-  activityCreateTime.value = null;
-  activityUpdateTime.value = null;
-  //step
-  nowStep.value = '描述';
-  refreshActivityList();
-}
+
 //Get activity info
 const ActivityInfoLoading = ref(false);
 const getActivityInfo = async (activityId) => {
@@ -292,6 +308,10 @@ const getActivityInfo = async (activityId) => {
 const updateActivityInfoLoading = ref(false);
 // update activity info
 const updateActivityInfo = async (apiParamName, paramValue) => {
+  if(!activityAllowEdit.value){
+    ElMessage.error("当前无法操作")
+    return;
+  }
   updateActivityInfoLoading.value = true;
   try {
     const requestBody = {
@@ -350,6 +370,10 @@ const deleteActivityWarning = (activityId, activityTitle) => {
 
 //提交审核活动
 const submitExample = (activity) => {
+  if(activity.status === 1){
+    ElMessage.warning("活动审核中，请耐心等待!")
+    return
+  }
   ElMessageBox({
     title: '提交审核',
     message: h('div', null, [
@@ -428,7 +452,13 @@ const submitExample = (activity) => {
       >
         <li v-for="activity in activityList" :key="activity.id" class="list-item"
             @click="openActivityDetail(activity.id)">
-          <div>{{ !activity.title ? "未命名活动": activity.title}}</div>
+          <div>
+            <el-tag v-if="activity.status === 0" type="info">未提交</el-tag>
+            <el-tag v-if="activity.status === 1" type="primary">审核中</el-tag>
+            <el-tag v-if="activity.status === 2" type="danger">已驳回</el-tag>
+            <el-tag v-if="activity.status === 3" type="success">已通过</el-tag>
+            {{ !activity.title ? "未命名项目": activity.title}}
+          </div>
           <div v-if="!onMobile" class="button-group">
             <el-button size="mini" type="primary" @click.stop="openActivityDetail(activity.id)">
               <el-icon>
@@ -472,7 +502,7 @@ const submitExample = (activity) => {
     <!-- 页面标题 -->
     <el-page-header @back="closeActivityDetail" title="返回">
       <template #content>
-        <span class="text-large font-600 mr-3">
+        <span class="text-large font-600 mr-3" v-if="activityAllowEdit">
           活动编辑
             {{
             updateActivityInfoLoading ?
@@ -487,6 +517,9 @@ const submitExample = (activity) => {
                     )
                 ) + ')'
           }}
+        </span>
+        <span class="text-large font-600 mr-3" v-else>
+          活动详情(已提交)
         </span>
       </template>
     </el-page-header>
@@ -504,6 +537,7 @@ const submitExample = (activity) => {
               placeholder="请输入活动名称"
               @blur="updateActivityInfo('title', activityTitle)"
               @keyup.enter.native.prevent="updateActivityInfo('title', activityTitle)"
+              :disabled="!activityAllowEdit"
           />
         </el-form-item>
         <el-form-item label="活动通知" prop="notice">
@@ -513,6 +547,7 @@ const submitExample = (activity) => {
               :rows="4"
               placeholder="请输入活动通知内容"
               @blur="updateActivityInfo('noticeContent', activityNoticeContent)"
+              :disabled="!activityAllowEdit"
           />
         </el-form-item>
       </div>
@@ -525,6 +560,7 @@ const submitExample = (activity) => {
           <el-input-number v-model="activityStaffCount"
                            :min="0"
                            @change="updateActivityInfo('staffCount', activityStaffCount)"
+                           :disabled="!activityAllowEdit"
           />
         </el-form-item>
         <el-form-item label="签到照片">
@@ -534,7 +570,8 @@ const submitExample = (activity) => {
               :fileType="1"
               :fileTypeName="'图片'"
               :accept-file-type="'image/*'"
-              :activityId="activityId"/>
+              :activityId="activityId"
+              :allow-edit="activityAllowEdit"/>
         </el-form-item>
 
         <!-- 志愿者 -->
@@ -544,6 +581,7 @@ const submitExample = (activity) => {
               v-model="activityVolunteerCount"
               :min="0"
               @change="updateActivityInfo('volunteerCount', activityVolunteerCount)"
+              :disabled="!activityAllowEdit"
           />
         </el-form-item>
         <el-form-item label="签到照片">
@@ -554,6 +592,7 @@ const submitExample = (activity) => {
               :fileTypeName="'图片'"
               :accept-file-type="'image/*'"
               :activity-id="activityId"
+              :allow-edit="activityAllowEdit"
           />
         </el-form-item>
 
@@ -564,6 +603,7 @@ const submitExample = (activity) => {
               v-model="activityServiceObjectCount"
               :min="0"
               @change="updateActivityInfo('serviceObjectCount', activityServiceObjectCount)"
+              :disabled="!activityAllowEdit"
           />
         </el-form-item>
         <el-form-item label="签到照片">
@@ -573,6 +613,7 @@ const submitExample = (activity) => {
               :fileType="3"
               :fileTypeName="'图片'"
               :activityId="activityId"
+              :allow-edit="activityAllowEdit"
           />
         </el-form-item>
       </div>
@@ -587,6 +628,7 @@ const submitExample = (activity) => {
               :fileTypeName="'图片'"
               :accept-file-type="'image/*'"
               :activityId="activityId"
+              :allow-edit="activityAllowEdit"
           />
         </el-form-item>
       </div>
@@ -610,6 +652,7 @@ const submitExample = (activity) => {
                       :fileTypeName="'图片'"
                       :accept-file-type="'image/*'"
                       :activityId="activityId"
+                      :allow-edit="activityAllowEdit"
                   />
                 </div>
             </el-card>
@@ -638,6 +681,7 @@ const submitExample = (activity) => {
                     clearable
                     placeholder="如：微信公众号、今日头条等"
                     @blur="updateActivityInfo('news',activityNews)"
+                    :disabled="!activityAllowEdit"
                 />
               </el-form-item>
 
@@ -647,6 +691,7 @@ const submitExample = (activity) => {
                     clearable
                     placeholder="请输入完整的文章URL"
                     @blur="updateActivityInfo('news', activityNews)"
+                    :disabled="!activityAllowEdit"
                 >
                   <template #append>
                     <el-button :icon="Link" @click="openLink(item.link)"/>
@@ -693,6 +738,7 @@ const submitExample = (activity) => {
             :fileTypeName="'压缩包'"
             :accept-file-type="'application/zip,application/x-zip,application/x-zip-compressed'"
             :activityId="activityId"
+            :allow-edit="activityAllowEdit"
         />
       </div>
       <div v-if="nowStep === '管理'">

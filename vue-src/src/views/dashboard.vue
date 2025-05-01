@@ -224,17 +224,19 @@ import {ref, onMounted, h, watch, onUnmounted} from 'vue';
 import {useRouter} from 'vue-router';
 import store from '../store';
 import user2ProjectManagement from '../components/user2component/ProjectManagement/user2ProjectManagement.vue';
-import user1ExpertLibraryManagement
-  from '../components/user1component/ExpertLibraryManagement/ExpertLibraryManagement.vue';
+
 import user2ProjectTemplateManagement
   from '../components/user2component/TemplateManagement/ProjectTemplateManagement/ProjectTemplateManagement.vue';
 import user2ActivityTemplateManagement
   from '../components/user2component/TemplateManagement/ActivityTemplateManagement.vue';
 import user2SocialOrganizationManagement
   from '../components/user2component/SocialOrganizationManagement/SocialOrganizationManagement.vue';
+//User1Component
+import user1ExpertLibraryManagement
+  from '../components/user1component/ExpertLibraryManagement/ExpertLibraryManagement.vue';
+import ProjectExamine from "../components/user1component/ProjectExamine/ProjectExamine.vue";
 //User3Component
 import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
-import ActivityManagement from '../components/user3component/ProjectManagement/ActivityManagement/ActivityManagement.vue'
 import ProjectManagement from '../components/user3component/ProjectManagement/ProjectManagement.vue'
 //User4Component
 import ReceiveOrder from '../components/user4component/ReceiveOrder/ReceiveOrder.vue';
@@ -276,10 +278,11 @@ onMounted(() =>{
 
 // MENUConfig
 const menus = [
-  {role: 1, index: '1-1', icon: Document, title: '专家库管理'},
-  {role: 1, index: '1-2', icon: Avatar, title: '系统管理'},
-  {role: 1, index: '1-3', icon: Tickets, title: '满意度调查模板管理'},
-  {role: 1, index: '1-4', icon: Document, title: '关于我的信息'},
+  {role: 1, index: '1-1', icon: Document, title: '活动审核'},
+  {role: 1, index: '1-2', icon: Document, title: '专家库管理'},
+  {role: 1, index: '1-3', icon: Avatar, title: '系统管理'},
+  {role: 1, index: '1-4', icon: Tickets, title: '满意度调查模板管理'},
+  {role: 1, index: '1-5', icon: Document, title: '关于我的信息'},
 
   {role: 2, index: '2-1', icon: Document, title: '项目管理'},
   {role: 2, index: '2-2', icon: Avatar, title: '专家库管理'},
@@ -311,15 +314,18 @@ const handleSelect = (index) => {
 
   switch (index) {
     case '1-1':
-      currentComponent.value = user1ExpertLibraryManagement;
+      currentComponent.value = ProjectExamine;
       break;
     case '1-2':
-      currentComponent.value = SystemSetting;
+      currentComponent.value = user1ExpertLibraryManagement;
       break;
     case '1-3':
-      currentComponent.value = ActivityQuestionnaireSetting;
+      currentComponent.value = SystemSetting;
       break;
     case '1-4':
+      currentComponent.value = ActivityQuestionnaireSetting;
+      break;
+    case '1-5':
       currentComponent.value = aboutMyInfo;
       break;
 

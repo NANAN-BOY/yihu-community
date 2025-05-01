@@ -188,7 +188,7 @@ const props = defineProps({
   tempId: Number,
 })
 
-const emit = defineEmits(['clickUnSelected', 'clickSelected', 'saveOneQuestion', 'resetQuestion', 'clickDelete'])
+const emit = defineEmits(['clickUnSelected', 'clickSelected', 'saveOneQuestion', 'clickDelete'])
 
 const typeOptions = [
   {value: 'not_selected', label: '请输入'},

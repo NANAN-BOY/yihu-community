@@ -27,7 +27,6 @@
           @clickDelete="() => deleteOneBox(index, item)"
           @clickSelected="selectOneBox(index)"
           @clickUnSelected="selectOneBox(index)"
-          @resetQuestion="resetQuestion(index)"
           @saveOneQuestion="saveOneQuestion"
           v-loading=item.isSaveLoading
       />

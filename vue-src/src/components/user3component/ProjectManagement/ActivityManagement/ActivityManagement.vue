@@ -80,7 +80,6 @@ const refreshActivityList = async () => {
   error.value = ''
   loading.value = false
   await activityListLoad()
-  await activityListLoad()
 }
 
 //创建新活动
@@ -672,7 +671,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
 
 <style scoped>
 .infinite-list-wrapper {
-  height: 750px;
+  height: calc(100vh - 224px);
   text-align: center;
 }
 
@@ -689,18 +688,46 @@ const deleteActivityWarning = (activityId, activityTitle) => {
 }
 
 .infinite-list-wrapper .list-item {
-  margin-bottom: 10px;
+  min-height: 50px;
   border-radius: 10px;
   padding: 10px;
   display: flex;
   align-items: center;
   background: #f5f5f5;
   color: #000000;
+  margin-bottom: 5px;
   justify-content: space-between;
 }
-.button-group {
-  display: flex;
-  gap: 8px;
+@media (max-width: 768px) {
+  .infinite-list-wrapper {
+    height: calc(100vh - 222px);
+    text-align: center;
+  }
+
+  .infinite-list-wrapper .list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .infinite-list-wrapper .list-item:hover {
+    background: #b6b6b6;
+    transition: background 0.3s ease;
+    cursor: pointer;
+  }
+
+  .infinite-list-wrapper .list-item {
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    color: #000000;
+  }
+
+  .infinite-list-wrapper .list-item + .list-item {
+    margin-top: 5px;
+  }
 }
 /* 第二页样式 */
 .form-section-title {

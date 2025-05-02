@@ -1,7 +1,7 @@
 <script setup>
 
 import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Delete, Edit, Link, Plus, Upload, View} from "@element-plus/icons-vue";
+import {Delete, Edit, Link, More, Plus, Upload, View} from "@element-plus/icons-vue";
 import {computed, h, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
@@ -134,6 +134,7 @@ const activityStatus = ref(null)
 const activityAllowEdit = ref(true)
 
 const openActivityDetail = async (id) => {
+  closeMoreSelect()
   const nowActivity = await getActivityInfo(id)
   if (nowActivity !== 0) {
     //Data
@@ -328,6 +329,7 @@ const updateActivityInfo = async (apiParamName, paramValue) => {
   updateActivityInfoLoading.value = false;
 };
 const deleteActivityWarning = (activityId, activityTitle) => {
+  closeMoreSelect()
   ElMessageBox({
     title: '删除确认',
     message: h('div', null, [
@@ -370,6 +372,7 @@ const deleteActivityWarning = (activityId, activityTitle) => {
 
 //提交审核活动
 const submitExample = (activity) => {
+  closeMoreSelect()
   if(activity.status === 1){
     ElMessage.warning("活动审核中，请耐心等待!")
     return
@@ -423,6 +426,17 @@ const submitExample = (activity) => {
       }
     }
   })
+}
+//手机端更多选项所需数据
+const nowSelectActivity = ref(null)
+const moreSelectVisible = ref(false)
+const openMoreSelect = (Activity) => {
+  nowSelectActivity.value = Activity
+  moreSelectVisible.value = true
+}
+const closeMoreSelect = () => {
+  moreSelectVisible.value = false
+  nowSelectActivity.value = null
 }
 </script>
 
@@ -485,6 +499,11 @@ const submitExample = (activity) => {
               </el-icon>
             </el-button>
           </div>
+          <div v-else>
+            <el-button size="mini" type="primary" @click.stop="openMoreSelect(activity)">
+              <el-icon><More /></el-icon>
+            </el-button>
+          </div>
         </li>
         <li v-if="loading" v-loading="loading" class="list-item"></li>
       </ul>
@@ -493,6 +512,25 @@ const submitExample = (activity) => {
       <p v-if="error" style="color: red">{{ error }}</p>
     </div>
   </div>
+  <!--  手机端更多选项弹窗-->
+  <el-dialog
+      v-model="moreSelectVisible"
+      title="更多"
+      width="500"
+      align-center
+  >
+    <span>
+      <el-button  size="mini" type="primary" @click.stop="openActivityDetail(nowSelectActivity.id);">查看详情</el-button>
+    <el-button size="mini" type="primary" @click.stop="openActivityDetail(nowSelectActivity.id);">编辑信息</el-button>
+      <el-button size="mini" type="success" @click.stop="submitExample(nowSelectActivity)">提交审核</el-button>
+    <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(nowSelectActivity.id,nowSelectActivity.title)">删除活动</el-button>
+    </span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="closeMoreSelect">关闭</el-button>
+      </div>
+    </template>
+  </el-dialog>
 
   <div v-if="pageNum===2">
     <!-- 面包屑导航 -->

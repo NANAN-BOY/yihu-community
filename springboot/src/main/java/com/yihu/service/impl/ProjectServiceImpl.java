@@ -119,10 +119,11 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public void updateStatus(Integer activityId,Integer status, Integer userId) {
+    public void updateStatus(Integer activityId,Integer status, Integer userId, String reason) {
         Project project = new Project();
         project.setId(activityId);
         project.setStatus(status);
+        project.setRejectReason(reason);
         project.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         project.setUpdateById(userId);
 

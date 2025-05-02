@@ -284,7 +284,7 @@ public class ActivityController {
     public Result submitActivity(@RequestBody ActivityDTO activityDTO) {
         try {
             User currentUser = TokenUtils.getCurrentUser();
-            activityService.updateStatus(activityDTO.getActivityId(),1,currentUser.getId());
+            activityService.updateStatus(activityDTO.getActivityId(),1,currentUser.getId(),null);
             return Result.success("保存并提交成功");
         } catch (Exception e){
             return Result.error("保存并提交失败");
@@ -292,10 +292,11 @@ public class ActivityController {
     }
 
     @PostMapping("/withdrawSubmission")  //管理员撤回提交申请
-    public Result withdrawSubmission(@RequestParam Integer activityId) {
+    public Result withdrawSubmission(@RequestParam Integer activityId,
+                                    @RequestParam String reason) {
         try {
             User currentUser = TokenUtils.getCurrentUser();
-            activityService.updateStatus(activityId,2, currentUser.getId());
+            activityService.updateStatus(activityId,2, currentUser.getId(),reason);
             return Result.success("撤回提交成功");
         } catch (Exception e) {
             log.error("撤回提交失败", e);
@@ -307,7 +308,7 @@ public class ActivityController {
     public Result approved(@RequestParam Integer activityId) {
         try {
             User currentUser = TokenUtils.getCurrentUser();
-            activityService.updateStatus(activityId,3,currentUser.getId());
+            activityService.updateStatus(activityId,3,currentUser.getId(),null);
             return Result.success("审核通过成功");
         } catch (Exception e) {
             log.error("审核通过失败", e);

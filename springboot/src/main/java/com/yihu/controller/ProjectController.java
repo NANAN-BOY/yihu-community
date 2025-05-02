@@ -11,6 +11,7 @@ import com.yihu.service.ActivityService;
 import com.yihu.service.ProjectService;
 import com.yihu.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -137,7 +138,7 @@ public class ProjectController {
             }
             else {
                 User currentUser = TokenUtils.getCurrentUser();
-                projectService.updateStatus(project.getId(),1,currentUser.getId());
+                projectService.updateStatus(project.getId(),1,currentUser.getId(), null);
                 return Result.success("提交成功");
             }
         } catch (Exception e){
@@ -147,10 +148,11 @@ public class ProjectController {
     }
 
     @PostMapping("/withdrawSubmission")  //管理员撤回提交申请
-    public Result withdrawSubmission(@RequestParam Integer projectId) {
+    public Result withdrawSubmission(@RequestParam Integer projectId,
+                                        @RequestParam String reason) {
         try {
             User currentUser = TokenUtils.getCurrentUser();
-            projectService.updateStatus(projectId,2, currentUser.getId());
+            projectService.updateStatus(projectId,2, currentUser.getId(),reason);
             return Result.success("撤回提交成功");
         } catch (Exception e) {
             log.error("撤回提交失败", e);
@@ -162,7 +164,7 @@ public class ProjectController {
     public Result approved(@RequestParam Integer projectId) {
         try {
             User currentUser = TokenUtils.getCurrentUser();
-            projectService.updateStatus(projectId,3,currentUser.getId());
+            projectService.updateStatus(projectId,3,currentUser.getId(),null);
             return Result.success("审核通过成功");
         } catch (Exception e) {
             log.error("审核通过失败", e);

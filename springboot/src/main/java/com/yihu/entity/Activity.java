@@ -12,6 +12,7 @@ public class Activity {
     private  Integer serviceObjectCount;
     private Integer questionnaireId;
     private  Integer status;
+    private String rejectReason;
     private  String delFlag;
     private Date createTime;
     private Integer createById;
@@ -92,6 +93,14 @@ public class Activity {
         this.status = status;
     }
 
+    public String getRejectReason() {
+        return rejectReason;
+    }
+
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+
     public String getDelFlag() {
         return delFlag;
     }
@@ -144,6 +153,7 @@ public class Activity {
                 ", serviceObjectCount=" + serviceObjectCount +
                 ", questionnaireId=" + questionnaireId +
                 ", status=" + status +
+                ", rejectReason='" + rejectReason + '\'' +
                 ", delFlg='" + delFlag + '\'' +
                 ", createTime=" + createTime +
                 ", createById=" + createById +

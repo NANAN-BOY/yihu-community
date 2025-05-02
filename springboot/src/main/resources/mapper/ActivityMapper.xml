@@ -59,6 +59,9 @@
         set status = #{status},
         update_time = #{updateTime},
         update_by_id = #{updateById}
+        <if test="status == 2">
+            ,reject_reason = #{rejectReason}
+        </if>
         where id = #{id}
     </update>
 

@@ -34,7 +34,7 @@ public interface ProjectService {
     Project getProjectById(Integer projectId);
 
 
-    void updateStatus(Integer projectId,Integer status, Integer userId);
+    void updateStatus(Integer projectId,Integer status, Integer userId,String reason);
 
 
     PageInfo<ActivityAuditDTO> checkActivityStatus(Integer projectId);

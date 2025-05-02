@@ -55,7 +55,7 @@ public interface ActivityService {
 
     List<ActivityNews> getNewsByActivityId(Integer id);
 
-    void updateStatus(Integer activityId,Integer status,Integer userId);
+    void updateStatus(Integer activityId,Integer status,Integer userId,String reason);
 
 
     List<Activity> getActivityIdByProjectId(Integer projectId);

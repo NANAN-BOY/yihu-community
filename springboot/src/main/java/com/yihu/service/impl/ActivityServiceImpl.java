@@ -217,10 +217,11 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void updateStatus(Integer activityId,Integer status, Integer userId) {
+    public void updateStatus(Integer activityId,Integer status, Integer userId,String reason) {
         Activity activity = new Activity();
         activity.setId(activityId);
         activity.setStatus(status);
+        activity.setRejectReason(reason);
         activity.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         activity.setUpdateById(userId);
 

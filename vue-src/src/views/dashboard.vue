@@ -234,7 +234,11 @@ import user2SocialOrganizationManagement
 //User1Component
 import user1ExpertLibraryManagement
   from '../components/user1component/ExpertLibraryManagement/ExpertLibraryManagement.vue';
-import ProjectExamine from "../components/user1component/ProjectExamine/ProjectExamine.vue";
+import ActivityExamine from "../components/user1component/ProjectExamine/ActivityExamine.vue";
+import ProjectExamine from "../components/user1component/ProjectExamine/ProjectExamine.vue"
+import SystemSetting from "../components/user1component/SystemSetting/SystemSetting.vue";
+import ActivityQuestionnaireSetting
+  from "../components/user1component/ActivityQuestionnaire/ActivityQuestionnaireSetting.vue";
 //User3Component
 import ExpertCustomization from '../components/user3component/ExpertCustomization/ExpertCustomization.vue';
 import ProjectManagement from '../components/user3component/ProjectManagement/ProjectManagement.vue'
@@ -278,7 +282,11 @@ onMounted(() =>{
 
 // MENUConfig
 const menus = [
-  {role: 1, index: '1-1', icon: Document, title: '活动审核'},
+  {role: 1, index: '1-1', icon: Document, title: '审核', children: [
+      {index: '1-1-1', title: '项目申报审核'},
+      {index: '1-1-2', title: '活动审核'}
+    ]
+  },
   {role: 1, index: '1-2', icon: Document, title: '专家库管理'},
   {role: 1, index: '1-3', icon: Avatar, title: '系统管理'},
   {role: 1, index: '1-4', icon: Tickets, title: '满意度调查模板管理'},
@@ -313,8 +321,11 @@ const handleSelect = (index) => {
   }
 
   switch (index) {
-    case '1-1':
+    case '1-1-1':
       currentComponent.value = ProjectExamine;
+      break;
+    case '1-1-2':
+      currentComponent.value = ActivityExamine;
       break;
     case '1-2':
       currentComponent.value = user1ExpertLibraryManagement;
@@ -553,9 +564,7 @@ const closePayInfoDialogVisible = () => {
   PayInfoDialogVisible.value = false;
 }
 import QRCode from 'qrcode.vue';
-import SystemSetting from "../components/user1component/SystemSetting/SystemSetting.vue";
-import ActivityQuestionnaireSetting
-  from "../components/user1component/ActivityQuestionnaire/ActivityQuestionnaireSetting.vue";
+
 const PayInfo =ref(null);
 const BuyYiHuLoading = ref(false);
 const BuyYiHu_Vip = (type) => {

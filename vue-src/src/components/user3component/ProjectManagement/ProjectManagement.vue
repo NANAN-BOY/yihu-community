@@ -29,6 +29,7 @@ const projectListLoad = async () => {
   if (disabled.value) return
   if (loading.value) return
   const status = await projectStatusConvert(projectStatusValue.value);
+  console.log(status)
   try {
     loading.value = true
     error.value = ''
@@ -83,7 +84,7 @@ onMounted(() => {
 });
 //project status classification
 const projectStatusValue = ref('全部')
-const projectStatusOptions = ['全部','未完结', '已完结']
+const projectStatusOptions = ['全部','未通过','已通过']
 watch(projectStatusValue, () => {
   refreshProjectList()
 })
@@ -91,10 +92,10 @@ const projectStatusConvert = async (status) => {
   switch (status) {
     case '全部':
       return null
-    case '未完结':
+    case '未通过':
       return 0
-    case '已完结':
-      return 1
+    case '已通过':
+      return 3
     default:
       return null
   }
@@ -379,7 +380,7 @@ const submitExampleProject = (project) => {
         <li v-for="project in projectList" :key="project.id" class="list-item"
             @click="openActivityManagement(project.id,project.name)">
           <div>
-            <el-tag v-if="project.status === 0" type="info">未完结</el-tag>
+            <el-tag v-if="project.status === 0" type="info">未提交</el-tag>
             <el-tag v-if="project.status === 1" type="primary">待审核</el-tag>
             <el-tag v-if="project.status === 2" type="danger">已驳回</el-tag>
             <el-tag v-if="project.status === 3" type="success">已通过</el-tag>

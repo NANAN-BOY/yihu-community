@@ -1,20 +1,23 @@
 <script setup>
+
+
 //Data required for activity list
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import axios from "axios";
 import store from "../../../store";
+import ActivityDetail from "./ActivityDetail.vue";
 
 const pageNum = ref(1)
-const ProjectList = ref([])
+const activityList = ref([])
 const currentPage = ref(1)
 const loading = ref(false)
 const error = ref('')
 const hasMore = ref(true)
 const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
-//project loading method
-const projectListLoad = async () => {
-  const status = await ProjectStatusConvert(ProjectStatusValue.value)
+//activity loading method
+const activityListLoad = async () => {
+  const status = await ActivityStatusConvert(ActivityStatusValue.value)
   if (disabled.value) return
   if (loading.value) return
   try {
@@ -22,7 +25,7 @@ const projectListLoad = async () => {
     error.value = ''
 
     const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_IP}/api`,
+        `${import.meta.env.VITE_BACKEND_IP}/api/activity/getActivityAuditList`,
         {
           params: {
             status: status,
@@ -32,19 +35,18 @@ const projectListLoad = async () => {
           headers: {token: store.state.token}
         }
     )
-    console.log(response.data)
     if (response.data.code === 200) {
       // success
-      ProjectList.value = [...ProjectList.value, ...response.data.data.list]
+      activityList.value = [...activityList.value, ...response.data.data.list]
       hasMore.value = response.data.data.hasNextPage
       currentPage.value++
     } else if (response.data.code === 404) {
-      // Project not found , list is empty
+      // activity not found , list is empty
       hasMore.value = false
 
-      if (currentPage.value === 1) ProjectList.value = []
+      if (currentPage.value === 1) activityList.value = []
     } else {
-      // Project error
+      // activity error
       error.value = response.data.msg || '请求出现异常'
     }
 
@@ -55,78 +57,81 @@ const projectListLoad = async () => {
     loading.value = false
   }
 }
-//Refresh Project list
-const refreshProjectList = async () => {
-  ProjectList.value = []
+//Refresh activity list
+const refreshActivityList = async () => {
+  activityList.value = []
   currentPage.value = 1
   hasMore.value = true
   loading.value = false
   error.value = ''
   await nextTick()
-  await projectListLoad()
+  await activityListLoad()
 }
 onMounted(() => {
-  projectListLoad()
+  activityListLoad()
 })
-//Project status classification
-const ProjectStatusValue = ref('未审核')
-const ProjectStatusOptions = ['未审核', '已通过']
+//Activity status classification
+const ActivityStatusValue = ref('未审核')
+const ActivityStatusOptions = ['未审核','已驳回','已通过']
 watch(ActivityStatusValue, () => {
-  refreshProjectList()
+  refreshActivityList()
 })
-const ProjectStatusConvert = async (status) => {
+const ActivityStatusConvert = async (status) => {
   switch (status) {
     case '未审核':
       return 1
+    case '已驳回':
+      return 2
     case '已通过':
       return 3
     default:
       return null
   }
 }
-const NowProject = ref(null)
-const openProjectDetail = async (Project) => {
-  NowProject.value = Project
-  console.log(Project)
+const NowActivity = ref(null)
+const openActivityDetail = async (activity) => {
+  NowActivity.value = activity
+  console.log(activity)
   pageNum.value = 2
 }
-const closeProjectDetail = () => {
+const closeActivityDetail = () => {
   pageNum.value = 1
-  NowProject.value = null
-  refreshProjectList()
+  NowActivity.value = null
+  refreshActivityList()
 }
 </script>
 
 <template>
   <div v-if="pageNum === 1">
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong @click="">活动审核</strong></el-breadcrumb-item>
-    </el-breadcrumb>
-    <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
-      <el-segmented v-model="ProjectStatusValue" :options="ProjectStatusOptions" size="large"/>
-    </div>
-    <div class="infinite-list-wrapper" style="overflow: auto">
-      <ul
-          v-infinite-scroll="projectListLoad"
-          class="list"
-          :infinite-scroll-disabled="disabled"
-          infinite-scroll-immediate="false"
-          infinite-scroll-distance="100"
-      >
-        <li v-for="Project in ProjectList" :key="Project.activityId" class="list-item"
-            @click="openProjectDetail(Project)">
-          <div>
-            {{ Project.name }}&nbsp;&nbsp;
-            <a style="color: #8f8f8f">所属项目：{{Project.projectName}}</a>
-          </div>
-        </li>
-        <li v-if="loading" v-loading="loading" class="list-item"></li>
-      </ul>
-      <p v-if="loading">加载中...</p>
-      <p v-if="noMore">没有更多数据了</p>
-      <p v-if="error" style="color: red">{{ error }}</p>
-    </div>
+  <el-breadcrumb separator="/">
+    <el-breadcrumb-item><strong @click="">活动审核</strong></el-breadcrumb-item>
+  </el-breadcrumb>
+  <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
+    <el-segmented v-model="ActivityStatusValue" :options="ActivityStatusOptions" size="large"/>
   </div>
+  <div class="infinite-list-wrapper" style="overflow: auto">
+    <ul
+        v-infinite-scroll="activityListLoad"
+        class="list"
+        :infinite-scroll-disabled="disabled"
+        infinite-scroll-immediate="false"
+        infinite-scroll-distance="100"
+    >
+      <li v-for="activity in activityList" :key="activity.activityId" class="list-item"
+          @click="openActivityDetail(activity)">
+        <div>
+          {{ activity.title }}&nbsp;&nbsp;
+          <a style="color: #8f8f8f">所属项目：{{activity.projectName}}</a>
+        </div>
+      </li>
+      <li v-if="loading" v-loading="loading" class="list-item"></li>
+    </ul>
+    <p v-if="loading">加载中...</p>
+    <p v-if="noMore">没有更多数据了</p>
+    <p v-if="error" style="color: red">{{ error }}</p>
+  </div>
+  </div>
+  <ActivityDetail v-if="pageNum === 2" :nowActivity="NowActivity" @closeActivityDetail="closeActivityDetail"/>
 </template>
 
 <style scoped>

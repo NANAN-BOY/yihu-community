@@ -22,7 +22,7 @@ const projectListLoad = async () => {
     error.value = ''
 
     const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_IP}/api`,
+        `${import.meta.env.VITE_BACKEND_IP}/api/project/queryByCreateId`,
         {
           params: {
             status: status,
@@ -70,14 +70,16 @@ onMounted(() => {
 })
 //Project status classification
 const ProjectStatusValue = ref('未审核')
-const ProjectStatusOptions = ['未审核', '已通过']
-watch(ActivityStatusValue, () => {
+const ProjectStatusOptions = ['未审核','已驳回','已通过']
+watch(ProjectStatusValue, () => {
   refreshProjectList()
 })
 const ProjectStatusConvert = async (status) => {
   switch (status) {
     case '未审核':
       return 1
+    case '已驳回':
+      return 2
     case '已通过':
       return 3
     default:

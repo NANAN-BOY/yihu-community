@@ -374,6 +374,10 @@ const submitExample = (activity) => {
     ElMessage.warning("活动审核中，请耐心等待!")
     return
   }
+  if(activity.status === 3){
+    ElMessage.warning("活动已通过!")
+    return
+  }
   ElMessageBox({
     title: '提交审核',
     message: h('div', null, [

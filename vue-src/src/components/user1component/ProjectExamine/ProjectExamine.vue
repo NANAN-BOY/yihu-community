@@ -82,7 +82,7 @@ const ActivityStatusConvert = async (status) => {
     case '未审核':
       return 1
     case '已通过':
-      return 2
+      return 3
     default:
       return null
   }

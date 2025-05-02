@@ -42,7 +42,7 @@
   <el-col :lg="4" :md="6" :sm="8" :xl="4" class="create-page-select-bar-wrapper hidden-xs-only">
     <div class="placeholder"></div>
     <SelectBar
-        v-if="!questionnaireLoading || addNewQuestionLoading"
+        v-if="!questionnaireLoading && !addNewQuestionLoading && !onMobile"
         class="create-page-select-bar"
         @addNewQuestion="addNewQuestion"
     />
@@ -58,6 +58,10 @@ import {ElMessage} from 'element-plus';
 import axios from 'axios';
 import store from "../../../../store";
 import SelectBar from "./SelectBar.vue";
+
+const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
+if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
+
 
 const questionList = ref([]);
 const questionnaireLoading = ref(false);

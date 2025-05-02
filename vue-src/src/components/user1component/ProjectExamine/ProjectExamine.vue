@@ -2,10 +2,12 @@
 
 
 //Data required for activity list
-import {computed, nextTick, onMounted, ref} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import axios from "axios";
 import store from "../../../store";
+import ActivityDetail from "./ActivityDetail.vue";
 
+const pageNum = ref(1)
 const activityList = ref([])
 const currentPage = ref(1)
 const loading = ref(false)
@@ -15,6 +17,7 @@ const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
 //activity loading method
 const activityListLoad = async () => {
+  const status = await ActivityStatusConvert(ActivityStatusValue.value)
   if (disabled.value) return
   if (loading.value) return
   try {
@@ -22,9 +25,13 @@ const activityListLoad = async () => {
     error.value = ''
 
     const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_IP}/api/project/queryByCreateId`,
+        `${import.meta.env.VITE_BACKEND_IP}/api/activity/getActivityAuditList`,
         {
-          params: {pageNum: currentPage.value, pageSize: 20},
+          params: {
+            status: status,
+            pageNum: currentPage.value,
+            pageSize: 20
+          },
           headers: {token: store.state.token}
         }
     )
@@ -64,9 +71,43 @@ const refreshActivityList = async () => {
 onMounted(() => {
   activityListLoad()
 })
+//Activity status classification
+const ActivityStatusValue = ref('未审核')
+const ActivityStatusOptions = ['未审核', '已通过']
+watch(ActivityStatusValue, () => {
+  refreshActivityList()
+})
+const ActivityStatusConvert = async (status) => {
+  switch (status) {
+    case '未审核':
+      return 1
+    case '已通过':
+      return 2
+    default:
+      return null
+  }
+}
+const NowActivity = ref(null)
+const openActivityDetail = async (activity) => {
+  NowActivity.value = activity
+  console.log(activity)
+  pageNum.value = 2
+}
+const closeActivityDetail = () => {
+  pageNum.value = 1
+  NowActivity.value = null
+  refreshActivityList()
+}
 </script>
 
 <template>
+  <div v-if="pageNum === 1">
+  <el-breadcrumb separator="/">
+    <el-breadcrumb-item><strong @click="">活动审核</strong></el-breadcrumb-item>
+  </el-breadcrumb>
+  <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
+    <el-segmented v-model="ActivityStatusValue" :options="ActivityStatusOptions" size="large"/>
+  </div>
   <div class="infinite-list-wrapper" style="overflow: auto">
     <ul
         v-infinite-scroll="activityListLoad"
@@ -77,11 +118,10 @@ onMounted(() => {
     >
       <li v-for="activity in activityList" :key="activity.activityId" class="list-item"
           @click="">
-        <el-tag v-if="activity.status === 0" type="info">未支付</el-tag>
-        <el-tag v-if="activity.status  === 1" type="primary">待接单</el-tag>
-        <el-tag v-if="activity.status  === 2" type="success">进行中</el-tag>
-        <el-tag type="danger" v-if="activity.status  === 3">已完结</el-tag>
-        <div>{{ activity.createAt }}</div>
+        <div @click="openActivityDetail(activity)">
+          {{ activity.title }}&nbsp;&nbsp;
+          <a style="color: #8f8f8f">所属项目：{{activity.projectName}}</a>
+        </div>
       </li>
       <li v-if="loading" v-loading="loading" class="list-item"></li>
     </ul>
@@ -89,11 +129,13 @@ onMounted(() => {
     <p v-if="noMore">没有更多数据了</p>
     <p v-if="error" style="color: red">{{ error }}</p>
   </div>
+  </div>
+  <ActivityDetail v-if="pageNum === 2" :nowActivity="NowActivity" @closeActivityDetail="closeActivityDetail"/>
 </template>
 
 <style scoped>
 .infinite-list-wrapper {
-  height: calc(100vh - 221px);
+  height: calc(100vh - 212px);
   text-align: center;
 }
 
@@ -110,16 +152,19 @@ onMounted(() => {
 }
 
 .infinite-list-wrapper .list-item {
+  min-height: 50px;
   border-radius: 10px;
   padding: 10px;
   display: flex;
   align-items: center;
   background: #f5f5f5;
   color: #000000;
+  margin-bottom: 5px;
+  justify-content: space-between;
 }
 @media (max-width: 768px) {
   .infinite-list-wrapper {
-    height: calc(100vh - 221px);
+    height: calc(100vh - 212px);
     text-align: center;
   }
 
@@ -145,7 +190,7 @@ onMounted(() => {
   }
 
   .infinite-list-wrapper .list-item + .list-item {
-    margin-top: 10px;
+    margin-top: 5px;
   }
 }
 

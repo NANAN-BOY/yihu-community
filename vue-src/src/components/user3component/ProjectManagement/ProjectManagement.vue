@@ -1,7 +1,7 @@
 <script setup>
-import {ref, onMounted, computed, watch, nextTick} from "vue";
-import {ElButton, ElEmpty, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Delete, Edit, More, Search, View} from "@element-plus/icons-vue";
+import {ref, onMounted, computed, watch, nextTick, h} from "vue";
+import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
+import {Delete, Edit, More, Search, Upload, View} from "@element-plus/icons-vue";
 import store from "../../../store";
 import axios from "axios";
 import ActivityManagement from "./ActivityManagement/ActivityManagement.vue";
@@ -83,7 +83,7 @@ onMounted(() => {
 });
 //project status classification
 const projectStatusValue = ref('全部')
-const projectStatusOptions = ['全部','未通过', '已通过']
+const projectStatusOptions = ['全部','未完结', '已完结']
 watch(projectStatusValue, () => {
   refreshProjectList()
 })
@@ -91,10 +91,10 @@ const projectStatusConvert = async (status) => {
   switch (status) {
     case '全部':
       return null
-    case '未通过':
-      return 2
-    case '已通过':
-      return 3
+    case '未完结':
+      return 0
+    case '已完结':
+      return 1
     default:
       return null
   }
@@ -288,6 +288,66 @@ const closeMoreSelect = () => {
   moreSelectVisible.value = false
   nowSelectProject.value = null
 }
+//提交审核项目
+const submitExampleProject = (project) => {
+  console.log(project)
+  closeMoreSelect()
+  if(project.status === 1){
+    ElMessage.warning("项目审核中，请耐心等待!")
+    return
+  }
+  if(project.status === 3){
+    ElMessage.warning("项目已通过!")
+    return
+  }
+  ElMessageBox({
+    title: '提交审核',
+    message: h('div', null, [
+      h('p', null, `确认提交审核“${!project.name ? "未命名活动": project.name}”项目吗？`),
+      h('p', {  }, '请确认项目已经结项，并且活动均填写完整')
+    ]),
+    showCancelButton: true,
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    confirmButtonClass: 'confirm-delete-button',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true
+        axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/project/submitProject`,
+        {
+              id: project.id
+        }, {
+          headers: {
+            token: store.state.token
+          }
+        })
+            .then(response => {
+              const res = response.data
+              if (res.code === 200) {
+                console.log(res)
+                // 成功：关闭弹窗
+                ElMessage.success("提交成功,请等待审核")
+                refreshProjectList()
+                done()
+              } else {
+                // 失败：取消 loading、提示错误，保持弹窗开启
+                instance.confirmButtonLoading = false
+                instance.message = `提交失败：${res.message || '未知错误'}`
+              }
+            })
+            .catch(error => {
+              // 请求出错
+              instance.confirmButtonLoading = false
+              instance.message = `网络异常：${error.message}`
+            })
+      } else {
+        // 点击取消或右上角关闭
+        done()
+      }
+    }
+  })
+}
 </script>
 
 <template>
@@ -319,7 +379,7 @@ const closeMoreSelect = () => {
         <li v-for="project in projectList" :key="project.id" class="list-item"
             @click="openActivityManagement(project.id,project.name)">
           <div>
-            <el-tag v-if="project.status === 0" type="info">未提交</el-tag>
+            <el-tag v-if="project.status === 0" type="info">未完结</el-tag>
             <el-tag v-if="project.status === 1" type="primary">待审核</el-tag>
             <el-tag v-if="project.status === 2" type="danger">已驳回</el-tag>
             <el-tag v-if="project.status === 3" type="success">已通过</el-tag>
@@ -334,6 +394,11 @@ const closeMoreSelect = () => {
             <el-button size="mini" type="primary" @click.stop="editProjectName(project.id,project.name)">
               <el-icon>
                 <Edit/>
+              </el-icon>
+            </el-button>
+            <el-button size="mini" type="primary" @click.stop="submitExampleProject(project)">
+              <el-icon>
+                <Upload />
               </el-icon>
             </el-button>
             <el-button size="mini" type="danger" @click.stop="deleteProject(project.id,project.name)">
@@ -365,6 +430,7 @@ const closeMoreSelect = () => {
     <span>
       <el-button  size="mini" type="primary" @click.stop="openActivityManagement(nowSelectProject.id,nowSelectProject.name);">查看详情</el-button>
     <el-button size="mini" type="primary" @click.stop="editProjectName(nowSelectProject.id,nowSelectProject.name);">编辑信息</el-button>
+      <el-button size="mini" type="success" @click.stop="submitExampleProject(nowSelectProject.id,nowSelectProject.name);">提交审核</el-button>
     <el-button size="mini" type="danger" @click.stop="deleteProject(nowSelectProject.id,nowSelectProject.name)">删除项目</el-button>
     </span>
     <template #footer>

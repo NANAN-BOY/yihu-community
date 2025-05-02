@@ -127,7 +127,7 @@ public class ProjectController {
     }
 
     @PostMapping("/submitProject")
-    public Result submitProject(Project project) {
+    public Result submitProject(@RequestBody Project project) {
         try {
             User currentUser = TokenUtils.getCurrentUser();
             projectService.updateStatus(project.getId(),1,currentUser.getId());

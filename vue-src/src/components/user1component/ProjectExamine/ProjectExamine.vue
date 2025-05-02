@@ -117,8 +117,8 @@ const closeActivityDetail = () => {
         infinite-scroll-distance="100"
     >
       <li v-for="activity in activityList" :key="activity.activityId" class="list-item"
-          @click="">
-        <div @click="openActivityDetail(activity)">
+          @click="openActivityDetail(activity)">
+        <div>
           {{ activity.title }}&nbsp;&nbsp;
           <a style="color: #8f8f8f">所属项目：{{activity.projectName}}</a>
         </div>

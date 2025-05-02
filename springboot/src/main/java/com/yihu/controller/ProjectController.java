@@ -133,7 +133,7 @@ public class ProjectController {
             // 检查是否有未提交的活动
             PageInfo<ActivityAuditDTO> activityList = projectService.checkActivityStatus(project.getId());
             if (!activityList.getList().isEmpty()) {
-                return Result.error(501,"请先完成未提交的活动");
+                return Result.error(501,"有未审核成功的活动");
             }
             else {
                 User currentUser = TokenUtils.getCurrentUser();

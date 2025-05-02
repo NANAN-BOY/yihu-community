@@ -3,6 +3,7 @@ package com.yihu.controller;
 import com.github.pagehelper.PageInfo;
 import com.yihu.common.AuthAccess;
 import com.yihu.common.Result;
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.dto.ActivityQueryDTO;
 import com.yihu.entity.*;
@@ -111,8 +112,8 @@ public class ProjectController {
             }
             if (currentUser.getRole() == 1){
                 // 管理员查询 查询所有已经提交的
-                PageInfo<Project> activityList = projectService.queryAllSubmited(project,pageNum,pageSize);
-                return Result.success(activityList);
+                PageInfo<Project> projectList = projectService.queryAllSubmited(project,pageNum,pageSize);
+                return Result.success(projectList);
             }else{
                 // 用户查询 查询当前用户未删除的
                 PageInfo<Project> activityList = projectService.queryByCreateId(currentUser.getId(),project,pageNum,pageSize);
@@ -129,9 +130,16 @@ public class ProjectController {
     @PostMapping("/submitProject")
     public Result submitProject(@RequestBody Project project) {
         try {
-            User currentUser = TokenUtils.getCurrentUser();
-            projectService.updateStatus(project.getId(),1,currentUser.getId());
-            return Result.success("提交成功");
+            // 检查是否有未提交的活动
+            PageInfo<ActivityAuditDTO> activityList = projectService.checkActivityStatus(project.getId());
+            if (!activityList.getList().isEmpty()) {
+                return Result.error(501,"请先完成未提交的活动");
+            }
+            else {
+                User currentUser = TokenUtils.getCurrentUser();
+                projectService.updateStatus(project.getId(),1,currentUser.getId());
+                return Result.success("提交成功");
+            }
         } catch (Exception e){
             return Result.error("提交失败");
         }

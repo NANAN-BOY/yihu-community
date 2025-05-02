@@ -76,5 +76,23 @@
         ORDER BY update_time DESC
     </select>
 
+    <select id="getActivityAuditList" parameterType="java.lang.Integer" resultType="com.yihu.dto.ActivityAuditDTO">
+        SELECT
+        a.id,
+        a.project_id,
+        a.title,
+        a.status,
+        a.create_time,
+        a.update_time,
+        p.name AS project_name,
+        u.name AS create_by_name
+        FROM
+        activity a
+        LEFT JOIN project p ON a.project_id = p.id
+        LEFT JOIN user u ON a.create_by_id = u.id
+        WHERE
+            a.status != 3 AND a.del_flag = 'N' AND p.id = #{projectId}
+    </select>
+
 
 </mapper>

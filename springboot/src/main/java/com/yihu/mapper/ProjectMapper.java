@@ -2,6 +2,7 @@ package com.yihu.mapper;
 
 
 
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.Project;
 
@@ -24,4 +25,5 @@ public interface ProjectMapper {
     void updateStatus(Project project);
 
 
+    List<? extends ActivityAuditDTO> checkActivityStatus(Integer projectId);
 }

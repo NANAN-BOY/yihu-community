@@ -3,6 +3,7 @@ package com.yihu.service.impl;
 import cn.hutool.core.io.FileUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
@@ -126,6 +127,11 @@ public class ProjectServiceImpl implements ProjectService {
         project.setUpdateById(userId);
 
         projectMapper.updateStatus(project);
+    }
+
+    @Override
+    public PageInfo<ActivityAuditDTO> checkActivityStatus(Integer projectId) {
+        return new PageInfo<>(projectMapper.checkActivityStatus(projectId));
     }
 
 

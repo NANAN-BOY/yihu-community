@@ -1,6 +1,7 @@
 package com.yihu.service;
 
 import com.github.pagehelper.PageInfo;
+import com.yihu.dto.ActivityAuditDTO;
 import com.yihu.dto.ActivityDTO;
 import com.yihu.entity.Activity;
 import com.yihu.entity.ActivityFiles;
@@ -36,5 +37,5 @@ public interface ProjectService {
     void updateStatus(Integer projectId,Integer status, Integer userId);
 
 
-
+    PageInfo<ActivityAuditDTO> checkActivityStatus(Integer projectId);
 }

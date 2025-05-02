@@ -10,7 +10,7 @@
     <template #content>
       <span class="text-large font-600 mr-3">
           {{ activityTitle+'&nbsp&nbsp所属项目:'+props.nowActivity.projectName}}
-        <el-button @click="" type="danger" v-if="activityStatus  === 1">驳回</el-button>
+        <el-button @click="withdrawSubmissionActivity(activityId)" type="danger" v-if="activityStatus  === 1">驳回</el-button>
         <el-button @click="approvedActivity(activityId)" type="success" v-if="activityStatus  === 1">审核通过</el-button>
       </span>
     </template>
@@ -329,10 +329,35 @@ const approvedActivity = async (activityId) => {
         token: store.state.token
       }
     })
-    console.log(response)
     if (response.data.code === 200) {
       if (response.data.data) {
         ElMessage.success("活动审核通过")
+        //提交事件关闭页面
+        emit('closeActivityDetail')
+      } else {
+        ElMessage.error(response.data.data)
+      }
+    } else {
+      ElMessage.error("请求失败")
+    }
+  }catch (error){
+    ElMessage.error("请求失败")
+  }
+}
+const withdrawSubmissionActivity = async (activityId) => {
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/activity/withdrawSubmission`, {},
+        {
+          params: {
+            activityId: activityId
+          },
+          headers: {
+            token: store.state.token
+          }
+        })
+    if (response.data.code === 200) {
+      if (response.data.data) {
+        ElMessage.success("活动驳回成功！")
         //提交事件关闭页面
         emit('closeActivityDetail')
       } else {

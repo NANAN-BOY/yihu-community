@@ -1,7 +1,7 @@
 <script setup>
 
 import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Delete, Edit, Link, More, Plus, Upload, View} from "@element-plus/icons-vue";
+import {Delete, Edit, Link, More, Plus, StarFilled, Upload, View} from "@element-plus/icons-vue";
 import {computed, h, ref} from "vue";
 import axios from "axios";
 import store from "../../../../store";
@@ -133,6 +133,15 @@ const lastUpdateTime = ref(new Date())
 const activityStatus = ref(null)
 const activityAllowEdit = ref(true)
 
+const commentMap = ref({
+  描述: '',
+  签到: '',
+  档案: '',
+  新闻稿: '',
+  满意度: '',
+  附件: ''
+});
+
 const openActivityDetail = async (id) => {
   closeMoreSelect()
   const nowActivity = await getActivityInfo(id)
@@ -150,6 +159,8 @@ const openActivityDetail = async (id) => {
     activityNews.value = nowActivity.news;
     activityCreateTime.value = nowActivity.activity.createTime;
     activityUpdateTime.value = nowActivity.activity.updateTime;
+    if (nowActivity.activity.rejectReason)
+      commentMap.value = JSON.parse(nowActivity.activity.rejectReason)
     pageNum.value = 2;
   }
   if(nowActivity.activity.status===1){
@@ -174,6 +185,14 @@ const closeActivityDetail = () => {
   //step
   nowStep.value = '描述';
   activityAllowEdit.value = true;
+  commentMap.value = {
+    描述: '',
+    签到: '',
+    档案: '',
+    新闻稿: '',
+    满意度: '',
+    附件: ''
+  };
   refreshActivityList();
 }
 const addNewsItem = async() => {
@@ -592,6 +611,21 @@ const closeMoreSelect = () => {
               :disabled="!activityAllowEdit"
           />
         </el-form-item>
+        <!-- 评论框 -->
+        <div v-if="(activityStatus === 2)">
+          <el-divider>
+            <el-icon><star-filled /></el-icon>
+          </el-divider>
+          <el-form-item label="审核评论">
+            <el-input
+                type="textarea"
+                v-model="commentMap['描述']"
+                :placeholder="(activityStatus !== 1)||(!store.state.user.role === 1)?'无评论':'请输入审核评论'"
+                :rows="3"
+                :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
+            />
+          </el-form-item>
+        </div>
       </div>
 
       <!-- 第二步 签到信息 -->
@@ -658,6 +692,21 @@ const closeMoreSelect = () => {
               :allow-edit="activityAllowEdit"
           />
         </el-form-item>
+        <!-- 评论框 -->
+        <div v-if="(activityStatus === 2)">
+          <el-divider>
+            <el-icon><star-filled /></el-icon>
+          </el-divider>
+          <el-form-item label="审核评论">
+            <el-input
+                type="textarea"
+                v-model="commentMap['签到']"
+                :placeholder="(activityStatus !== 1)||(!store.state.user.role === 1)?'无评论':'请输入审核评论'"
+                :rows="3"
+                :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
+            />
+          </el-form-item>
+        </div>
       </div>
 
       <!-- 第四步 活动过程档案 -->
@@ -673,6 +722,21 @@ const closeMoreSelect = () => {
               :allow-edit="activityAllowEdit"
           />
         </el-form-item>
+        <!-- 评论框 -->
+        <div v-if="(activityStatus === 2)">
+          <el-divider>
+            <el-icon><star-filled /></el-icon>
+          </el-divider>
+          <el-form-item label="审核评论">
+            <el-input
+                type="textarea"
+                v-model="commentMap['档案']"
+                :placeholder="(activityStatus !== 1)||(!store.state.user.role === 1)?'无评论':'请输入审核评论'"
+                :rows="3"
+                :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
+            />
+          </el-form-item>
+        </div>
       </div>
       <!-- 第五步 新闻稿 -->
       <div v-if="nowStep === '新闻稿'" class="news-container">
@@ -764,12 +828,42 @@ const closeMoreSelect = () => {
             </div>
           </div>
         </el-form>
+        <!-- 评论框 -->
+        <div v-if="(activityStatus === 2)">
+          <el-divider>
+            <el-icon><star-filled /></el-icon>
+          </el-divider>
+          <el-form-item label="审核评论">
+            <el-input
+                type="textarea"
+                v-model="commentMap['新闻稿']"
+                :placeholder="(activityStatus !== 1)||(!store.state.user.role === 1)?'无评论':'请输入审核评论'"
+                :rows="3"
+                :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
+            />
+          </el-form-item>
+        </div>
       </div>
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
         <SatisfactionLevel
             :questionnaire_id="activityQuestionnaireId"
         />
+        <!-- 评论框 -->
+        <div v-if="(activityStatus === 2)">
+          <el-divider>
+            <el-icon><star-filled /></el-icon>
+          </el-divider>
+          <el-form-item label="审核评论">
+            <el-input
+                type="textarea"
+                v-model="commentMap['满意度']"
+                :placeholder="(activityStatus !== 1)||(!store.state.user.role === 1)?'无评论':'请输入审核评论'"
+                :rows="3"
+                :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
+            />
+          </el-form-item>
+        </div>
       </div>
       <div v-if="nowStep === '附件'">
         <!-- 附件上传 -->
@@ -782,6 +876,21 @@ const closeMoreSelect = () => {
             :activityId="activityId"
             :allow-edit="activityAllowEdit"
         />
+        <!-- 评论框 -->
+        <div v-if="(activityStatus === 2)">
+          <el-divider>
+            <el-icon><star-filled /></el-icon>
+          </el-divider>
+          <el-form-item label="审核评论">
+            <el-input
+                type="textarea"
+                v-model="commentMap['附件']"
+                :placeholder="(activityStatus !== 1)||(!store.state.user.role === 1)?'无评论':'请输入审核评论'"
+                :rows="3"
+                :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
+            />
+          </el-form-item>
+        </div>
       </div>
       <div v-if="nowStep === '管理'">
         <br><h4>活动管理</h4>

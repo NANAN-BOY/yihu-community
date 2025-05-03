@@ -117,11 +117,11 @@
               :allow-edit="activityAllowEdit"
           />
         </el-form-item>
+        <!-- 评论框 -->
         <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
-        <!-- 评论框 -->
         <el-form-item label="审核评论">
           <el-input
               type="textarea"
@@ -147,11 +147,11 @@
               :allow-edit="activityAllowEdit"
           />
         </el-form-item>
+        <!-- 评论框 -->
         <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
-        <!-- 评论框 -->
         <el-form-item label="审核评论">
           <el-input
               type="textarea"
@@ -220,11 +220,11 @@
             </el-card>
           </div>
         </el-form>
+        <!-- 评论框 -->
         <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
-        <!-- 评论框 -->
         <el-form-item label="审核评论">
           <el-input
               type="textarea"
@@ -240,11 +240,11 @@
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
         <SatisfactionLevel :questionnaire_id="activityQuestionnaireId" />
+        <!-- 评论框 -->
         <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
-        <!-- 评论框 -->
         <el-form-item label="审核评论">
           <el-input
               type="textarea"
@@ -268,11 +268,11 @@
             :activityId="activityId"
             :allow-edit="activityAllowEdit"
         />
+        <!-- 评论框 -->
         <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
-        <!-- 评论框 -->
         <el-form-item label="审核评论">
           <el-input
               type="textarea"

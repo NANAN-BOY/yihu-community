@@ -324,6 +324,7 @@ const submitExampleProject = (project) => {
           }
         })
             .then(response => {
+              console.log(response)
               const res = response.data
               if (res.code === 200) {
                 console.log(res)
@@ -334,6 +335,7 @@ const submitExampleProject = (project) => {
               } else {
                 // 失败：取消 loading、提示错误，保持弹窗开启
                 instance.confirmButtonLoading = false
+                ElMessage.error(res.data)
                 instance.message = `提交失败：${res.message || '未知错误'}`
               }
             })
@@ -341,6 +343,7 @@ const submitExampleProject = (project) => {
               // 请求出错
               instance.confirmButtonLoading = false
               instance.message = `网络异常：${error.message}`
+              ElMessage.error('提交失败，请重试')
             })
       } else {
         // 点击取消或右上角关闭

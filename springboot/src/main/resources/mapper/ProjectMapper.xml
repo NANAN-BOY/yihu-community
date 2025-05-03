@@ -79,7 +79,7 @@
         ORDER BY update_time DESC
     </select>
 
-    <select id="getActivityAuditList" parameterType="java.lang.Integer" resultType="com.yihu.dto.ActivityAuditDTO">
+    <select id="checkActivityStatus" parameterType="java.lang.Integer" resultType="com.yihu.dto.ActivityAuditDTO">
         SELECT
         a.id,
         a.project_id,

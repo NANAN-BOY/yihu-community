@@ -41,10 +41,11 @@
               :disabled="!activityAllowEdit"
           />
         </el-form-item>
+        <!-- 评论框 -->
+        <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
-        <!-- 评论框 -->
         <el-form-item label="审核评论">
           <el-input
               type="textarea"
@@ -54,6 +55,7 @@
               :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
           />
         </el-form-item>
+        </div>
       </div>
 
       <!-- 第二步 签到信息 -->
@@ -115,6 +117,7 @@
               :allow-edit="activityAllowEdit"
           />
         </el-form-item>
+        <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
@@ -128,6 +131,7 @@
               :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
           />
         </el-form-item>
+        </div>
       </div>
 
       <!-- 第四步 活动过程档案 -->
@@ -143,6 +147,7 @@
               :allow-edit="activityAllowEdit"
           />
         </el-form-item>
+        <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
@@ -156,6 +161,7 @@
               :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
           />
         </el-form-item>
+        </div>
       </div>
 
       <!-- 第五步 新闻稿 -->
@@ -214,6 +220,7 @@
             </el-card>
           </div>
         </el-form>
+        <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
@@ -227,11 +234,13 @@
               :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
           />
         </el-form-item>
+        </div>
       </div>
 
       <!-- 第六步 -->
       <div v-if="nowStep === '满意度'">
         <SatisfactionLevel :questionnaire_id="activityQuestionnaireId" />
+        <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
@@ -245,6 +254,7 @@
               :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
           />
         </el-form-item>
+        </div>
       </div>
 
       <div v-if="nowStep === '附件'">
@@ -258,6 +268,7 @@
             :activityId="activityId"
             :allow-edit="activityAllowEdit"
         />
+        <div v-if="(activityStatus === 1)||(activityStatus === 2)">
         <el-divider>
           <el-icon><star-filled /></el-icon>
         </el-divider>
@@ -271,6 +282,7 @@
               :disabled="(activityStatus !== 1)||(!store.state.user.role === 1)"
           />
         </el-form-item>
+        </div>
       </div>
     </el-form>
   </div>
@@ -339,6 +351,7 @@ const activityInfoLoading  = ref(false)
 const openActivityDetail = async (id) => {
   activityInfoLoading.value=true
   const nowActivity = await getActivityInfo(id)
+  console.log(nowActivity)
   if (nowActivity !== 0) {
     //Data
     activityId.value = id;
@@ -353,6 +366,8 @@ const openActivityDetail = async (id) => {
     activityNews.value = nowActivity.news;
     activityCreateTime.value = nowActivity.activity.createTime;
     activityUpdateTime.value = nowActivity.activity.updateTime;
+    if (nowActivity.activity.rejectReason)
+        commentMap.value = JSON.parse(nowActivity.activity.rejectReason)
   }
   if(nowActivity.activity.status===1){
     activityAllowEdit.value = false;

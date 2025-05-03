@@ -1,4 +1,5 @@
 <template>
+  <div v-if="topIsVisible">
   <!-- 面包屑导航 -->
   <el-breadcrumb separator="/">
     <el-breadcrumb-item><strong @click="$emit('closeActivityDetail')">活动审核</strong></el-breadcrumb-item>
@@ -15,8 +16,9 @@
       </span>
     </template>
   </el-page-header>
-  <div v-loading="activityInfoLoading" :element-loading-text="loadingText">
     <br>
+  </div>
+  <div v-loading="activityInfoLoading" :element-loading-text="loadingText">
     <div class="flex flex-col items-start gap-4">
       <el-segmented v-model="nowStep" :options="stepOptions" :size="onMobile ? 'default' : 'large'" />
     </div>
@@ -308,6 +310,11 @@ const props = defineProps({
         id: 0,
       }
     }
+  },
+  topIsVisible:{
+    type: Boolean,
+    required: false,
+    default: true
   }
 })
 const emit = defineEmits(['closeActivityDetail'])

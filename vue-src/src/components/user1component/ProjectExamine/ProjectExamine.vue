@@ -3,6 +3,9 @@
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import axios from "axios";
 import store from "../../../store";
+import ProjectActivityList from "./ProjectActivityList.vue";
+import {ElButton, ElMessage, ElMessageBox} from "element-plus";
+import ActivityDetail from "./ActivityDetail.vue";
 
 const pageNum = ref(1)
 const ProjectList = ref([])
@@ -97,12 +100,83 @@ const closeProjectDetail = () => {
   NowProject.value = null
   refreshProjectList()
 }
+const NowActivity = ref(null)
+const openActivityDetail = async (activity) => {
+  console.log(activity)
+  NowActivity.value = activity
+  pageNum.value = 3
+}
+const closeActivityDetail = () => {
+  pageNum.value = 2
+  NowActivity.value = null
+}
+//驳回项目
+const withdrawSubmission = async (project) => {
+    await ElMessageBox.prompt(
+        '请输入驳回备注',
+        '驳回项目',
+        {
+          confirmButtonText: '提交',
+          cancelButtonText: '取消',
+          inputPattern: /.+/,
+          inputErrorMessage: '驳回备注不能为空',
+          showCancelButton: true,
+          // 在这里拦截关闭：只有在 done() 被调用后才会真正关闭弹窗
+          beforeClose: (action, instance, done) => {
+            if (action === 'confirm') {
+              // 开启按钮 loading，并修改文案
+              instance.confirmButtonLoading = true
+              instance.confirmButtonText = '提交中...'
+              // 取到用户输入
+              const reason = (instance.inputValue || '').trim()
+              // 调用后端接口
+              axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/project/withdrawSubmission`, {},
+                  {
+                    params: {
+                      projectId: project.id,
+                      reason: reason,
+                    },
+                    headers: {
+                      token: store.state.token,
+                    },
+                  })
+                  .then((response) => {
+                    console.log(response)
+                    if (response.data.code === 200) {
+                      instance.confirmButtonLoading = false
+                      instance.confirmButtonText = '提交'
+                      ElMessage.success('成功驳回')
+                      closeActivityDetail()
+                      closeProjectDetail()
+                      refreshProjectList()
+                      done()
+                    } else if (response.data.code === 400) {
+                      instance.confirmButtonLoading = false
+                      instance.confirmButtonText = '提交'
+                      ElMessage.error('提交失败，请重试')
+                      done()
+                    }
+                  })
+                  .catch((err) => {
+                    console.error(err)
+                    // 接口失败，先重置按钮
+                    instance.confirmButtonLoading = false
+                    instance.confirmButtonText = '提交'
+                    ElMessage.error('提交失败，请重试')
+                  })
+            } else {
+              done()
+            }
+          }
+        }
+    )
+}
 </script>
 
 <template>
   <div v-if="pageNum === 1">
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong @click="">活动审核</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="">项目审核</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
       <el-segmented v-model="ProjectStatusValue" :options="ProjectStatusOptions" size="large"/>
@@ -119,7 +193,6 @@ const closeProjectDetail = () => {
             @click="openProjectDetail(Project)">
           <div>
             {{ Project.name }}&nbsp;&nbsp;
-            <a style="color: #8f8f8f">所属项目：{{Project.projectName}}</a>
           </div>
         </li>
         <li v-if="loading" v-loading="loading" class="list-item"></li>
@@ -129,6 +202,52 @@ const closeProjectDetail = () => {
       <p v-if="error" style="color: red">{{ error }}</p>
     </div>
   </div>
+  <div v-if="pageNum === 2">
+    <!-- 面包屑导航 -->
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item><strong @click="">项目审核</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong>{{NowProject.name}}</strong></el-breadcrumb-item>
+    </el-breadcrumb>
+    <br>
+    <!-- 页面标题 -->
+    <el-page-header @back="closeProjectDetail" title="返回">
+      <template #content>
+      <span class="text-large font-600 mr-3">
+        {{ NowProject.name }}
+        <el-button @click="withdrawSubmission(NowProject)" type="danger" v-if="NowProject.status === 1">驳回项目</el-button>
+        <el-button @click="" type="success" v-if="NowProject.status === 1">审核通过</el-button>
+      </span>
+      </template>
+    </el-page-header><br>
+    <ProjectActivityList
+        :project-id="NowProject.id"
+        :project-name="NowProject.name"
+        @openActivityDetail="openActivityDetail"
+    />
+  </div>
+    <div v-if="pageNum === 3">
+      <!-- 面包屑导航 -->
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item><strong @click="">项目审核</strong></el-breadcrumb-item>
+        <el-breadcrumb-item><strong>{{NowProject.name}}</strong></el-breadcrumb-item>
+        <el-breadcrumb-item><strong>{{NowActivity.title}}</strong></el-breadcrumb-item>
+      </el-breadcrumb>
+      <br>
+      <!-- 页面标题 -->
+      <el-page-header @back="closeActivityDetail" title="返回">
+        <template #content>
+      <span class="text-large font-600 mr-3">
+        {{NowActivity.title}}
+        <el-button @click="withdrawSubmission(NowProject)" type="danger" v-if="NowProject.status === 1">驳回项目</el-button>
+        <el-button @click="" type="success" v-if="NowProject.status === 1">审核通过</el-button>
+      </span>
+        </template>
+      </el-page-header><br>
+      <ActivityDetail
+          :nowActivity="NowActivity"
+          :topIsVisible="false"
+      />
+    </div>
 </template>
 
 <style scoped>

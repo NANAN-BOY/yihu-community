@@ -1,13 +1,22 @@
 <script setup>
 
-
-//Data required for activity list
-import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {computed, onMounted, ref} from "vue";
 import axios from "axios";
 import store from "../../../store";
-import ActivityDetail from "./ActivityDetail.vue";
+import {f} from "vue-verify-slider/dist/vue-verify-slider.common";
 
-const pageNum = ref(1)
+const props = defineProps({
+  projectId:{
+    type: Number,
+    required: true
+  },
+  projectName:{
+    type: String,
+    required: true
+  },
+});
+const emits = defineEmits(['openActivityDetail'])
+//Data required for activity list
 const activityList = ref([])
 const currentPage = ref(1)
 const loading = ref(false)
@@ -17,7 +26,6 @@ const noMore = computed(() => !hasMore.value)
 const disabled = computed(() => loading.value || noMore.value)
 //activity loading method
 const activityListLoad = async () => {
-  const status = await ActivityStatusConvert(ActivityStatusValue.value)
   if (disabled.value) return
   if (loading.value) return
   try {
@@ -25,28 +33,29 @@ const activityListLoad = async () => {
     error.value = ''
 
     const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_IP}/api/activity/getActivityAuditList`,
+        `${import.meta.env.VITE_BACKEND_IP}/api/activity/getActivityByProjectId`,
         {
           params: {
-            status: status,
+            projectId: props.projectId,
             pageNum: currentPage.value,
-            pageSize: 20
+            pageSize: 10
           },
           headers: {token: store.state.token}
         }
     )
+    console.log(response.data)
     if (response.data.code === 200) {
       // success
       activityList.value = [...activityList.value, ...response.data.data.list]
       hasMore.value = response.data.data.hasNextPage
       currentPage.value++
     } else if (response.data.code === 404) {
-      // activity not found , list is empty
+      // Order not found , list is empty
       hasMore.value = false
 
       if (currentPage.value === 1) activityList.value = []
     } else {
-      // activity error
+      // Other error
       error.value = response.data.msg || '请求出现异常'
     }
 
@@ -57,71 +66,41 @@ const activityListLoad = async () => {
     loading.value = false
   }
 }
-//Refresh activity list
+//Refresh order list
 const refreshActivityList = async () => {
-  activityList.value = []
   currentPage.value = 1
+  activityList.value = []
   hasMore.value = true
-  loading.value = false
   error.value = ''
-  await nextTick()
+  loading.value = false
   await activityListLoad()
 }
 onMounted(() => {
   activityListLoad()
 })
-//Activity status classification
-const ActivityStatusValue = ref('未审核')
-const ActivityStatusOptions = ['未审核','已驳回','已通过']
-watch(ActivityStatusValue, () => {
-  refreshActivityList()
-})
-const ActivityStatusConvert = async (status) => {
-  switch (status) {
-    case '未审核':
-      return 1
-    case '已驳回':
-      return 2
-    case '已通过':
-      return 3
-    default:
-      return null
-  }
-}
-const NowActivity = ref(null)
 const openActivityDetail = async (activity) => {
-  NowActivity.value = activity
-  console.log(activity)
-  pageNum.value = 2
+  emits('openActivityDetail', activity)
 }
-const closeActivityDetail = () => {
-  pageNum.value = 1
-  NowActivity.value = null
-  refreshActivityList()
-}
+
 </script>
 
 <template>
-  <div v-if="pageNum === 1">
-  <el-breadcrumb separator="/">
-    <el-breadcrumb-item><strong @click="">活动审核</strong></el-breadcrumb-item>
-  </el-breadcrumb>
-  <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
-    <el-segmented v-model="ActivityStatusValue" :options="ActivityStatusOptions" size="large"/>
-  </div>
-  <div class="infinite-list-wrapper" style="overflow: auto">
+  <!-- 活动列表显示无限滚动列表 -->
+  <div class="infinite-list-wrapper" style="overflow: auto" >
     <ul
         v-infinite-scroll="activityListLoad"
         class="list"
         :infinite-scroll-disabled="disabled"
-        infinite-scroll-immediate="false"
-        infinite-scroll-distance="100"
+        v-loading="loading"
     >
-      <li v-for="activity in activityList" :key="activity.activityId" class="list-item"
+      <li v-for="activity in activityList" :key="activity.id" class="list-item"
           @click="openActivityDetail(activity)">
         <div>
-          {{ activity.title }}&nbsp;&nbsp;
-          <a style="color: #8f8f8f">所属项目：{{activity.projectName}}</a>
+          <el-tag v-if="activity.status === 0" type="info">未提交</el-tag>
+          <el-tag v-if="activity.status === 1" type="primary">审核中</el-tag>
+          <el-tag v-if="activity.status === 2" type="danger">已驳回</el-tag>
+          <el-tag v-if="activity.status === 3" type="success">已通过</el-tag>
+          {{ !activity.title ? "未命名项目": activity.title}}
         </div>
       </li>
       <li v-if="loading" v-loading="loading" class="list-item"></li>
@@ -130,13 +109,11 @@ const closeActivityDetail = () => {
     <p v-if="noMore">没有更多数据了</p>
     <p v-if="error" style="color: red">{{ error }}</p>
   </div>
-  </div>
-  <ActivityDetail v-if="pageNum === 2" :nowActivity="NowActivity" @closeActivityDetail="closeActivityDetail" :topIsVisible="true"/>
 </template>
 
 <style scoped>
 .infinite-list-wrapper {
-  height: calc(100vh - 212px);
+  height: calc(100vh - 224px);
   text-align: center;
 }
 
@@ -165,7 +142,7 @@ const closeActivityDetail = () => {
 }
 @media (max-width: 768px) {
   .infinite-list-wrapper {
-    height: calc(100vh - 212px);
+    height: calc(100vh - 222px);
     text-align: center;
   }
 
@@ -194,5 +171,4 @@ const closeActivityDetail = () => {
     margin-top: 5px;
   }
 }
-
 </style>

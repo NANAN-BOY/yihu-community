@@ -366,7 +366,7 @@ const openActivityDetail = async (id) => {
     activityNews.value = nowActivity.news;
     activityCreateTime.value = nowActivity.activity.createTime;
     activityUpdateTime.value = nowActivity.activity.updateTime;
-    if (nowActivity.activity.rejectReason)
+    if (nowActivity.activity.rejectReason && nowActivity.activity.status!==1)
         commentMap.value = JSON.parse(nowActivity.activity.rejectReason)
   }
   if(nowActivity.activity.status===1){

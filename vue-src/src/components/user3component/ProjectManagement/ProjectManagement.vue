@@ -335,7 +335,7 @@ const submitExampleProject = (project) => {
               } else {
                 // 失败：取消 loading、提示错误，保持弹窗开启
                 instance.confirmButtonLoading = false
-                ElMessage.error(res.data)
+                ElMessage.error(res.msg)
                 instance.message = `提交失败：${res.message || '未知错误'}`
               }
             })

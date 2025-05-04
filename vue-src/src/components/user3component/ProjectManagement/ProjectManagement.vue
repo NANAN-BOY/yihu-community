@@ -157,7 +157,17 @@ const createProject = async () => {
       }
   )
 }
-const editProjectName = async (projectId,projectOldName) => {
+const editProjectName = async (project) => {
+  if(project.status === 1){
+    ElMessage.warning("项目审核中，无法编辑!")
+    return
+  }
+  if(project.status === 3){
+    ElMessage.warning("项目已经结束，无法编辑!")
+    return
+  }
+  const projectId = project.id
+  const projectOldName = project.name
   closeMoreSelect()
   await ElMessageBox.prompt(
       '请输入项目名称',
@@ -265,29 +275,28 @@ const deleteProject = async (projectId, projectName) => {
 }
 
 //活动管理所需数据
-const nowProjectId = ref(null)
-const nowProjectName = ref(null)
-const openActivityManagement = async (projectId,  projectName) => {
-  nowProjectId.value = projectId
-  nowProjectName.value = projectName
+const nowProject = ref(null)
+const openActivityManagement = async (project) => {
+  console.log(project)
+  nowProject.value = project
   pageNum.value = 'ActivityManagement'
   closeMoreSelect()
 }
 const closeActivityManagement = () => {
   pageNum.value = 'ProjectList'
-  nowProjectId.value = null
+  nowProject.value = null
   refreshProjectList()
 }
 //手机端更多选项所需数据
 const nowSelectProject = ref(null)
 const moreSelectVisible = ref(false)
 const openMoreSelect = (project) => {
+  console.log(project)
   nowSelectProject.value = project
   moreSelectVisible.value = true
 }
 const closeMoreSelect = () => {
   moreSelectVisible.value = false
-  nowSelectProject.value = null
 }
 //提交审核项目
 const submitExampleProject = (project) => {
@@ -381,7 +390,7 @@ const submitExampleProject = (project) => {
           infinite-scroll-distance="100"
       >
         <li v-for="project in projectList" :key="project.id" class="list-item"
-            @click="openActivityManagement(project.id,project.name)">
+            @click="openActivityManagement(project)">
           <div>
             <el-tag v-if="project.status === 0" type="info">未提交</el-tag>
             <el-tag v-if="project.status === 1" type="primary">待审核</el-tag>
@@ -390,29 +399,29 @@ const submitExampleProject = (project) => {
             {{ !project.name ? "未命名项目": project.name}}
           </div>
           <div v-if="!onMobile" class="button-group">
-            <el-button  size="mini" type="primary" @click.stop="openActivityManagement(project.id,project.name)">
+            <el-button  size="default" type="primary" @click.stop="openActivityManagement(project)">
               <el-icon>
                 <View/>
               </el-icon>
             </el-button>
-            <el-button size="mini" type="primary" @click.stop="editProjectName(project.id,project.name)">
+            <el-button size="default" type="primary" @click.stop="editProjectName(project)">
               <el-icon>
                 <Edit/>
               </el-icon>
             </el-button>
-            <el-button size="mini" type="primary" @click.stop="submitExampleProject(project)">
+            <el-button size="default" type="primary" @click.stop="submitExampleProject(project)">
               <el-icon>
                 <Upload />
               </el-icon>
             </el-button>
-            <el-button size="mini" type="danger" @click.stop="deleteProject(project.id,project.name)">
+            <el-button size="default" type="danger" @click.stop="deleteProject(project.id,project.name)">
               <el-icon>
                 <Delete/>
               </el-icon>
             </el-button>
           </div>
           <div v-else>
-            <el-button size="mini" type="primary" @click.stop="openMoreSelect(project)">
+            <el-button size="default" type="primary" @click.stop="openMoreSelect(project)">
               <el-icon><More /></el-icon>
             </el-button>
           </div>
@@ -432,10 +441,10 @@ const submitExampleProject = (project) => {
       align-center
   >
     <span>
-      <el-button  size="mini" type="primary" @click.stop="openActivityManagement(nowSelectProject.id,nowSelectProject.name);">查看详情</el-button>
-    <el-button size="mini" type="primary" @click.stop="editProjectName(nowSelectProject.id,nowSelectProject.name);">编辑信息</el-button>
-      <el-button size="mini" type="success" @click.stop="submitExampleProject(nowSelectProject.id,nowSelectProject.name);">提交审核</el-button>
-    <el-button size="mini" type="danger" @click.stop="deleteProject(nowSelectProject.id,nowSelectProject.name)">删除项目</el-button>
+      <el-button  size="small" type="primary" @click.stop="openActivityManagement(nowSelectProject);">查看详情</el-button>
+    <el-button size="small" type="primary" @click.stop="editProjectName(nowSelectProject);">编辑信息</el-button>
+      <el-button size="small" type="success" @click.stop="submitExampleProject(nowSelectProject);">{{nowSelectProject.status===2?'重新提交':'提交审核'}}</el-button>
+    <el-button size="small" type="danger" @click.stop="deleteProject(nowSelectProject.id,nowSelectProject.name)">删除项目</el-button>
     </span>
     <template #footer>
       <div class="dialog-footer">
@@ -445,8 +454,7 @@ const submitExampleProject = (project) => {
   </el-dialog>
   <ActivityManagement
       v-if="pageNum === 'ActivityManagement'"
-      :projectId="nowProjectId"
-      :projectName="nowProjectName"
+      :project="nowProject"
       @closeActivityManagement="closeActivityManagement"
   />
 </template>

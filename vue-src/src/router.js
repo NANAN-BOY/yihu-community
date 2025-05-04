@@ -5,8 +5,14 @@ import store from './store.js';
 const routes = [
   {
     path: '/',
-    component: () => import(/* webpackChunkName: "dashboard" */ './views/dashboard.vue'),
-    meta: { requiresAuth: true }
+    component: () => import(/* webpackChunkName: "dashboard" */ './views/home.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/mobileHome',
+    name: 'mobileHome',
+    component: () => import(/* webpackChunkName: "about" */ './views/mobileHome.vue'),
+    meta: { requiresAuth: false }
   },
   {
     path: '/login',

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易互系统介绍页</title>
+    <style>
+        /* 全局重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow-x: hidden; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
+        a { text-decoration: none; color: inherit; }
+
+        /* 背景动态渐变 */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body {
+            color: #eee;
+            background: linear-gradient(270deg, #1A73E8, #4285F4, #6A1B9A, #1A237E);
+            background-size: 800% 800%;
+            animation: gradientBG 20s ease infinite;
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航 */
+        header {
+            position: fixed; top: 0; width: 100%; padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
+            z-index: 100;
+            animation: fadeInDown 1s ease 0.5s forwards;
+            transform: translateY(-50px); opacity: 0;
+        }
+        header.visible { transform: translateY(0); opacity: 1; }
+        header .logo { font-size: 1.8rem; font-weight: bold; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        header nav a { margin-left: 1.5rem; font-size: 1rem; color: #fff; transition: color .3s; }
+        header nav a:hover { color: #FFD54F; }
+
+        /* 主内容容器 */
+        main { width: 100%; height: 100%; overflow-y: scroll; overflow-x: hidden; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        section { width: 100%; height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 0 2rem; }
+
+        /* 图片容器 */
+        .image-container { width: 400px; height: 250px; margin-bottom: 2rem; background: rgba(255,255,255,0.1); border-radius: 0.5rem; overflow: hidden; }
+        .image-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 淡入动画 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: translateY(0);} }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px);} to { opacity: 1; transform: translateY(0);} }
+
+        /* 霓虹卡片 */
+        .card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 1rem; padding: 2rem; width: 300px; box-shadow: 0 0 20px rgba(0,0,0,0.2); backdrop-filter: blur(8px); transition: transform .3s, box-shadow .3s; }
+        .card:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 0 30px rgba(255,255,255,0.5); }
+        .card img { width: 60px; margin-bottom: 1rem; filter: drop-shadow(0 0 5px #fff); }
+        .card h3 { font-size: 1.6rem; margin-bottom: .5rem; color: #FFD54F; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+        .card p { font-size: 1rem; color: #ddd; }
+
+        /* 霓虹标题 */
+        .content h2 { font-size: 3rem; margin-bottom: 1rem; background: linear-gradient(45deg, #FFD54F, #FF8A65); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: fadeIn 1s ease both; }
+        .content p { font-size: 1.2rem; max-width: 800px; line-height: 1.6; margin-bottom: 2rem; color: #eee; animation: fadeIn 1s ease 0.3s both; }
+        .cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; }
+
+        /* 分屏提示箭头 */
+        .scroll-hint { position: absolute; bottom: 2rem; width: 30px; height: 30px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg); animation: bounce 2s infinite; }
+        @keyframes bounce { 0%,100% { transform: translateY(0) rotate(-45deg);} 50% { transform: translateY(-10px) rotate(-45deg);} }
+
+        /* 背景纹理 */
+        .hero::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('https://www.transparenttextures.com/patterns/cubes.png'); opacity: 0.1; }
+
+        /* 联系我们表单 */
+        .contact-form { display: flex; flex-direction: column; width: 400px; gap: 1rem; background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 1rem; backdrop-filter: blur(8px); }
+        .contact-form input, .contact-form textarea { width: 100%; padding: 0.8rem; border: none; border-radius: 0.5rem; }
+        .contact-form button { padding: 1rem; border: none; border-radius: 0.5rem; background: #FFD54F; color: #1A237E; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+<header id="header">
+    <div class="logo">易互系统</div>
+    <nav>
+        <a href="#project">项目管理</a>
+        <a href="#activities">活动管理</a>
+        <a href="#checkin">签到统计</a>
+        <a href="#news">新闻稿</a>
+        <a href="#survey">满意度调查</a>
+        <a href="#expert">专家定制</a>
+        <a href="#contact">联系我们</a>
+    </nav>
+</header>
+<main>
+    <!-- Hero 分屏 -->
+    <section class="hero" id="hero">
+        <h1 style="font-size:4rem; text-shadow: 0 2px 8px rgba(0,0,0,0.6);">一站式公益项目与活动管理平台</h1>
+        <p style="font-size:1.3rem; max-width:900px;">支持多项目与多活动的深度管理，全流程数字化，无缝对接专家，打造高效公益生态。</p>
+        <div class="scroll-hint"></div>
+    </section>
+
+    <!-- 项目管理 -->
+    <section id="project">
+        <div class="content">
+            <div class="image-container">
+                <img src="" alt="项目管理图预留" />
+            </div>
+            <h2>公益项目管理</h2>
+            <p>并行管理多个项目，实时查看状态与进度。权限分级，团队协作，数据图表一目了然。</p>
+            <div class="cards">
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/folder-invoices.png" alt="多项目管理" />
+                    <h3>多项目管理</h3>
+                    <p>创建、切换、归档，项目生命周期全程可控。</p>
+                </div>
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/share.png" alt="团队协作" />
+                    <h3>团队协作</h3>
+                    <p>实时共享与评论，让沟通更高效。</p>
+                </div>
+            </div>
+            <div class="scroll-hint"></div>
+        </div>
+    </section>
+
+    <!-- 活动管理 -->
+    <section id="activities">
+        <div class="content">
+            <div class="image-container">
+                <img src="" alt="活动管理图预留" />
+            </div>
+            <h2>活动管理</h2>
+            <p>在项目内创建多个活动，全面管理活动名称、通知、档案与细节图片，提升执行效率。</p>
+            <div class="cards">
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/calendar.png" alt="创建活动" />
+                    <h3>创建与组织</h3>
+                    <p>活动名称、时间、地点与描述一键填写，自动生成详情页并推送通知。</p>
+                </div>
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/gallery.png" alt="档案管理" />
+                    <h3>档案管理</h3>
+                    <p>上传活动图片与文档，分类存储，检索快速。</p>
+                </div>
+            </div>
+            <div class="scroll-hint"></div>
+        </div>
+    </section>
+
+    <!-- 签到统计 -->
+    <section id="checkin">
+        <div class="content">
+            <div class="image-container">
+                <img src="" alt="签到统计图预留" />
+            </div>
+            <h2>签到统计</h2>
+            <p>精准记录签到信息，支持在线与纸质签到表上传，并自动汇总。</p>
+            <div class="cards">
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/checklist.png" alt="在线签到" />
+                    <h3>在线签到</h3>
+                    <p>扫码或手动签到，数据实时同步。</p>
+                </div>
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/camera.png" alt="签到表" />
+                    <h3>签到表上传</h3>
+                    <p>上传纸质签到表照片，系统OCR提取并匹配名单。</p>
+                </div>
+            </div>
+            <div class="scroll-hint"></div>
+        </div>
+    </section>
+
+    <!-- 新闻稿管理 -->
+    <section id="news">
+        <div class="content">
+            <div class="image-container">
+                <img src="" alt="新闻稿管理图预留" />
+            </div>
+            <h2>新闻稿管理</h2>
+            <p>支持图片和链接两种形式上传，一键发布，提高宣传效果。</p>
+            <div class="cards">
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/news.png" alt="图片新闻稿" />
+                    <h3>图片新闻稿</h3>
+                    <p>上传图文混排新闻稿，如翻书般体验。</p>
+                </div>
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/link.png" alt="链接新闻稿" />
+                    <h3>链接新闻稿</h3>
+                    <p>嵌入外部媒体链接，提升公信力。</p>
+                </div>
+            </div>
+            <div class="scroll-hint"></div>
+        </div>
+    </section>
+
+    <!-- 满意度调查 -->
+    <section id="survey">
+        <div class="content">
+            <div class="image-container">
+                <img src="" alt="满意度调查图预留" />
+            </div>
+            <h2>满意度调查</h2>
+            <p>内置问卷系统，支持多题型，并提供可视化分析报告。</p>
+            <div class="cards">
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/survey.png" alt="问卷系统" />
+                    <h3>灵活问卷</h3>
+                    <p>多种题型：单选、多选、评分、矩阵等，自由定制。</p>
+                </div>
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/chart.png" alt="数据分析" />
+                    <h3>结果分析</h3>
+                    <p>生成柱状图、饼图、折线图等，实时洞察。</p>
+                </div>
+            </div>
+            <div class="scroll-hint"></div>
+        </div>
+    </section>
+
+    <!-- 专家定制 -->
+    <section id="expert">
+        <div class="content">
+            <div class="image-container">
+                <img src="" alt="专家定制图预留" />
+            </div>
+            <h2>专家定制系统</h2>
+            <p>内置一对一聊天与视频指导，项目设计与执行全程获得专业支持。</p>
+            <div class="cards">
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/chat.png" alt="专家沟通" />
+                    <h3>实时沟通</h3>
+                    <p>内置聊天系统，支持文件与图片共享，专家实时答疑。</p>
+                </div>
+                <div class="card">
+                    <img src="https://img.icons8.com/ios-filled/100/ffffff/video-call.png" alt="视频指导" />
+                    <h3>视频指导</h3>
+                    <p>发起一对一或小组视频会议，获得现场演示与策略建议。</p>
+                </div>
+            </div>
+            <div class="scroll-hint"></div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <div class="content">
+            <h2>联系我们</h2>
+            <p>欢迎留言咨询，我们将尽快与您取得联系！</p>
+            <div class="contact-form">
+                <input type="text" placeholder="姓名" />
+                <input type="email" placeholder="邮箱" />
+                <input type="tel" placeholder="电话（可选）" />
+                <textarea rows="5" placeholder="您的信息或需求"></textarea>
+                <button type="submit">提交</button>
+            </div>
+            <div class="scroll-hint"></div>
+        </div>
+    </section>
+</main>
+<script>
+    // 导航淡入
+    window.addEventListener('load', () => document.getElementById('header').classList.add('visible'));
+</script>
+</body>
+</html>
+

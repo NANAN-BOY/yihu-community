@@ -12,12 +12,8 @@ const onMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-wi
 if (typeof window !== 'undefined') {window.matchMedia('(max-width: 768px)').addListener(e => {onMobile.value = e.matches})}
 
 const props = defineProps({
-  projectId:{
-    type: Number,
-    required: true
-  },
-  projectName:{
-    type: String,
+  project:{
+    type: Object,
     required: true
   }
 });
@@ -42,7 +38,7 @@ const activityListLoad = async () => {
         `${import.meta.env.VITE_BACKEND_IP}/api/activity/getActivityByProjectId`,
         {
           params: {
-            projectId: props.projectId,
+            projectId: props.project.id,
             pageNum: currentPage.value,
             pageSize: 10
           },
@@ -93,7 +89,7 @@ const createNewActivity = async () => {
             token: store.state.token
           },
           params: {
-            projectId: props.projectId
+            projectId: props.project.id
           }
         });
     if (response.data.code === 200 && response.data.data) {
@@ -163,7 +159,7 @@ const openActivityDetail = async (id) => {
       commentMap.value = JSON.parse(nowActivity.activity.rejectReason)
     pageNum.value = 2;
   }
-  if(nowActivity.activity.status===1){
+  if(nowActivity.activity.status===1 || nowActivity.activity.status===3){
     activityAllowEdit.value = false;
   }
 }
@@ -463,12 +459,12 @@ const closeMoreSelect = () => {
   <div v-if="pageNum===1">
     <el-breadcrumb separator="/">
       <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">项目管理</strong></el-breadcrumb-item>
-      <el-breadcrumb-item><strong>{{ projectName }}</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong>{{ props.project.name }}</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br>
     <el-page-header @back="$emit('closeActivityManagement')" title="返回">
       <template #content>
-        <span class="text-large font-600 mr-3"> {{ projectName }} - 活动列表</span>
+        <span class="text-large font-600 mr-3"> {{ props.project.name }} - 活动列表</span>
       </template>
     </el-page-header>
     <br>
@@ -487,6 +483,10 @@ const closeMoreSelect = () => {
           :infinite-scroll-disabled="disabled"
           v-loading="loading"
       >
+          <el-alert v-if="props.project.status === 2 "
+                    :title="'驳回原因：'+props.project.rejectReason"
+                    type="error"
+                    style="margin: 0 0 10px;max-width: 600px;"/>
         <li v-for="activity in activityList" :key="activity.id" class="list-item"
             @click="openActivityDetail(activity.id)">
           <div>
@@ -497,29 +497,29 @@ const closeMoreSelect = () => {
             {{ !activity.title ? "未命名项目": activity.title}}
           </div>
           <div v-if="!onMobile" class="button-group">
-            <el-button size="mini" type="primary" @click.stop="openActivityDetail(activity.id)">
+            <el-button size="default" type="primary" @click.stop="openActivityDetail(activity.id)">
               <el-icon>
                 <View/>
               </el-icon>
             </el-button>
-            <el-button size="mini" type="primary" @click.stop="openActivityDetail(activity.id)">
+            <el-button size="default" type="primary" @click.stop="openActivityDetail(activity.id)">
               <el-icon>
                 <Edit/>
               </el-icon>
             </el-button>
-            <el-button size="mini" type="primary" @click.stop="submitExample(activity)">
+            <el-button size="default" type="primary" @click.stop="submitExample(activity)">
               <el-icon>
                 <Upload />
               </el-icon>
             </el-button>
-            <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(activity.id,activity.title)">
+            <el-button size="default" type="danger" @click.stop="deleteActivityWarning(activity.id,activity.title)">
               <el-icon>
                 <Delete/>
               </el-icon>
             </el-button>
           </div>
           <div v-else>
-            <el-button size="mini" type="primary" @click.stop="openMoreSelect(activity)">
+            <el-button size="default" type="primary" @click.stop="openMoreSelect(activity)">
               <el-icon><More /></el-icon>
             </el-button>
           </div>
@@ -539,10 +539,10 @@ const closeMoreSelect = () => {
       align-center
   >
     <span>
-      <el-button  size="mini" type="primary" @click.stop="openActivityDetail(nowSelectActivity.id);">查看详情</el-button>
-    <el-button size="mini" type="primary" @click.stop="openActivityDetail(nowSelectActivity.id);">编辑信息</el-button>
-      <el-button size="mini" type="success" @click.stop="submitExample(nowSelectActivity)">提交审核</el-button>
-    <el-button size="mini" type="danger" @click.stop="deleteActivityWarning(nowSelectActivity.id,nowSelectActivity.title)">删除活动</el-button>
+      <el-button  size="small" type="primary" @click.stop="openActivityDetail(nowSelectActivity.id);">查看详情</el-button>
+    <el-button size="small" type="primary" @click.stop="openActivityDetail(nowSelectActivity.id);">编辑信息</el-button>
+      <el-button size="small" type="success" @click.stop="submitExample(nowSelectActivity)">{{nowSelectActivity.status===2?'重新提交':'提交审核'}}</el-button>
+    <el-button size="small" type="danger" @click.stop="deleteActivityWarning(nowSelectActivity.id,nowSelectActivity.title)">删除活动</el-button>
     </span>
     <template #footer>
       <div class="dialog-footer">
@@ -555,7 +555,7 @@ const closeMoreSelect = () => {
     <!-- 面包屑导航 -->
     <el-breadcrumb separator="/">
       <el-breadcrumb-item><strong @click="$emit('closeActivityManagement')">项目管理</strong></el-breadcrumb-item>
-      <el-breadcrumb-item><strong @click="closeActivityDetail">{{ projectName }}</strong></el-breadcrumb-item>
+      <el-breadcrumb-item><strong @click="closeActivityDetail">{{ props.project.name }}</strong></el-breadcrumb-item>
       <el-breadcrumb-item><strong>活动编辑</strong></el-breadcrumb-item>
     </el-breadcrumb>
     <br>
@@ -586,8 +586,9 @@ const closeMoreSelect = () => {
     </el-page-header>
     <br>
     <div class="flex flex-col items-start gap-4">
-      <el-segmented v-model="nowStep" :options="stepOptions" :size="onMobile ?'default':'large'"/>
+      <el-segmented v-model="nowStep" :options="stepOptions" :size="onMobile ?'small':'large'"/>
     </div>
+    <br/>
     <!-- 步骤表单 -->
     <el-form label-width="120px" @submit.native.prevent="">
       <!-- 第一步 -->

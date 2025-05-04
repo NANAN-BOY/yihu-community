@@ -23,14 +23,15 @@
     <update id="stopQuestionnaire">
         update questionnaire
         set status   = 2,
-            end_time = #{endTime}
+            end_time = NOW()
         where questionnaire_id = #{questionnaireId}
     </update>
+
 
     <update id="startQuestionnaire">
         update questionnaire
         set status     = 1,
-            start_time = #{startTime}
+            start_time = NOW()
         where questionnaire_id = #{questionnaireId}
     </update>
 

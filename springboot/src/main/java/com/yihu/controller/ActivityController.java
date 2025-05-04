@@ -283,6 +283,10 @@ public class ActivityController {
     @PostMapping("/submitActivity")
     public Result submitActivity(@RequestBody ActivityDTO activityDTO) {
         try {
+            // 停止问卷
+            Activity activity = activityService.getActivityById(activityDTO.getActivityId());
+            questionnaireService.stop(activity.getQuestionnaireId());
+            // 更新活动状态
             User currentUser = TokenUtils.getCurrentUser();
             activityService.updateStatus(activityDTO.getActivityId(),1,currentUser.getId(),null);
             return Result.success("保存并提交成功");
@@ -295,6 +299,9 @@ public class ActivityController {
     public Result withdrawSubmission(@RequestParam Integer activityId,
                                     @RequestParam String reason) {
         try {
+            // 启用问卷
+            questionnaireService.release(activityService.getActivityById(activityId).getQuestionnaireId());
+            // 更新活动状态
             User currentUser = TokenUtils.getCurrentUser();
             activityService.updateStatus(activityId,2, currentUser.getId(),reason);
             return Result.success("撤回提交成功");

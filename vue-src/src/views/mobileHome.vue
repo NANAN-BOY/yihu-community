@@ -180,7 +180,7 @@ function submitForm() {
 }
 
 onMounted(() => {
-  setTimeout(() => (headerVisible.value = true), 500);
+  setTimeout(() => (headerVisible.value = true), 10);
 });
 </script>
 

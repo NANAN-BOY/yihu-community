@@ -264,7 +264,7 @@ const currentComponent = ref(null);
 onMounted(() =>{
   switch (store.state.user.role) {
     case 1:
-      currentComponent.value = user1ExpertLibraryManagement;
+      currentComponent.value = ProjectExamine;
       break;
     case 2:
       currentComponent.value = user2ProjectManagement;

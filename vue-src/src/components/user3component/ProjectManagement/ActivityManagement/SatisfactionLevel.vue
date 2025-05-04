@@ -3,6 +3,8 @@ import { onMounted, ref } from "vue";
 import { ElButton, ElInput, ElMessage } from "element-plus";
 import Analysis from "./Analysis/Analysis.vue";
 import QRCode from "qrcode.vue";
+import axios from "axios";
+import store from "../../../../store";
 
 const props = defineProps({
   questionnaire_id: {
@@ -11,7 +13,37 @@ const props = defineProps({
     default: 0
   }
 });
+const QuestionnaireStatus = ref(0)
+const QuestionnaireStatusLoading = ref(false)
+const getQuestionnaireStatus = async () => {
+  QuestionnaireStatusLoading.value = true;
+  try {
+    const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_IP}/api/questionnaire/outline`,
+        {
+          params: { questionnaireId: props.questionnaire_id },
+          headers: { token: store.state.token },
+        }
+    );
 
+    const statusData = response?.data?.data?.status;
+    if (statusData != null) {
+      QuestionnaireStatus.value = statusData;
+    } else {
+      ElMessage.error('问卷状态加载失败！');
+    }
+  } catch (err) {
+    // 优先显示后端返回的错误信息，否则显示通用消息
+    const msg = err.response?.data?.message || err.message || '未知错误';
+    ElMessage.error(`问卷状态加载失败：${msg}`);
+    console.error('getQuestionnaireStatus error:', err);
+  } finally {
+    QuestionnaireStatusLoading.value = false;
+  }
+};
+onMounted(() => {
+  getQuestionnaireStatus();
+})
 const QuestionnaireUrl = ref("");
 const setURL = (QuestionnaireId) => {
   return `${window.location.origin}/fillin/${QuestionnaireId}`;
@@ -33,8 +65,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="invite-container">
-    <div class="invite-content">
+  <div class="invite-container" v-loading="QuestionnaireStatusLoading">
+    <div class="invite-content" v-if="QuestionnaireStatus===1">
       <div class="qrcode-wrapper">
         <QRCode :value="QuestionnaireUrl" :size="200" />
       </div>
@@ -43,8 +75,11 @@ onMounted(() => {
         <el-button @click="copyInviteUrl(QuestionnaireUrl)" size="small" class="copy-button">复制链接</el-button>
       </div>
     </div>
+    <div class="invite-content" v-else>
+      <el-empty :description="QuestionnaireStatusLoading?'加载中...' : '问卷调查已经停止'" />
+    </div>
   </div>
-  <Analysis :questionnaire_id="props.questionnaire_id" />
+  <Analysis :questionnaire_id="props.questionnaire_id"/>
 </template>
 
 <style scoped>

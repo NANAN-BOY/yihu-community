@@ -171,6 +171,33 @@ const withdrawSubmission = async (project) => {
         }
     )
 }
+//通过项目
+const approvedProject = async (project) => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/project/approved`, {},
+          {
+            params: {
+              projectId: project.id
+            },
+            headers: {
+              token: store.state.token
+            }
+          })
+      if (response.data.code === 200) {
+        if (response.data.data) {
+          ElMessage.success("项目审核通过")
+          //提交事件关闭页面
+          closeProjectDetail()
+        } else {
+          ElMessage.error(response.data.data)
+        }
+      } else {
+        ElMessage.error("请求失败")
+      }
+    }catch (error){
+      ElMessage.error("请求失败")
+    }
+}
 </script>
 
 <template>
@@ -215,7 +242,7 @@ const withdrawSubmission = async (project) => {
       <span class="text-large font-600 mr-3">
         {{ NowProject.name }}
         <el-button @click="withdrawSubmission(NowProject)" type="danger" v-if="NowProject.status === 1">驳回项目</el-button>
-        <el-button @click="" type="success" v-if="NowProject.status === 1">审核通过</el-button>
+        <el-button @click="approvedProject(NowProject)" type="success" v-if="NowProject.status === 1">审核通过</el-button>
       </span>
       </template>
     </el-page-header><br>
@@ -239,7 +266,7 @@ const withdrawSubmission = async (project) => {
       <span class="text-large font-600 mr-3">
         {{NowActivity.title}}
         <el-button @click="withdrawSubmission(NowProject)" type="danger" v-if="NowProject.status === 1">驳回项目</el-button>
-        <el-button @click="" type="success" v-if="NowProject.status === 1">审核通过</el-button>
+        <el-button @click="approvedProject(NowProject)" type="success" v-if="NowProject.status === 1">审核通过</el-button>
       </span>
         </template>
       </el-page-header><br>

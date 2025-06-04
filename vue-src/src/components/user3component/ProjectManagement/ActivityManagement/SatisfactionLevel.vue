@@ -25,7 +25,8 @@ const getQuestionnaireStatus = async () => {
           headers: { token: store.state.token },
         }
     );
-
+    console.log("问卷响应：");
+    console.log(response);
     const statusData = response?.data?.data?.status;
     if (statusData != null) {
       QuestionnaireStatus.value = statusData;

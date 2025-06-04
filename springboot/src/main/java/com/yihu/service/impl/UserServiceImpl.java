@@ -43,8 +43,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int register(String userName, String password, String phoneNumber, String captcha, String location) {
-        if (userMapper.selectByPhone(phoneNumber)){
-            return -2;//手机号已注册
+        Boolean exists = userMapper.selectByPhone(phoneNumber);
+        if (exists != null && exists) {
+            return -2; // 手机号已注册
         }
         Boolean isVerify = captchaService.verifyCaptcha(phoneNumber,captcha);
         if (isVerify){

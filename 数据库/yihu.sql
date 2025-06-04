@@ -11,7 +11,7 @@
  Target Server Version : 80040 (8.0.40)
  File Encoding         : 65001
 
- Date: 03/06/2025 08:29:20
+ Date: 04/06/2025 09:02:16
 */
 
 SET NAMES utf8mb4;
@@ -40,7 +40,7 @@ CREATE TABLE `activity`
     `update_time`          datetime NULL DEFAULT NULL,
     `update_by_id`         int NULL DEFAULT NULL,
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 34 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 40 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for activity_files
@@ -56,7 +56,7 @@ CREATE TABLE `activity_files`
     `file_url`     varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '文件保存路径',
     `del_flag`     varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 67 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 72 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for activity_news
@@ -70,7 +70,7 @@ CREATE TABLE `activity_news`
     `link`        varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '新闻稿链接',
     `del_flag`    varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '删除标识',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for answer
@@ -78,14 +78,14 @@ CREATE TABLE `activity_news`
 DROP TABLE IF EXISTS `answer`;
 CREATE TABLE `answer`
 (
-    `answerId`      int NOT NULL AUTO_INCREMENT,
-    `questionId`    int NOT NULL,
-    `questionTitle` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
-    `questionType`  varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
-    `writeValue`    varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
-    `fillTime`      datetime NULL DEFAULT NULL,
+    `answerId`       int NOT NULL AUTO_INCREMENT,
+    `fill_time`      datetime NULL DEFAULT NULL,
+    `question_id`    int NOT NULL,
+    `question_title` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+    `question_type`  varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+    `write_value`    varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
     PRIMARY KEY (`answerId`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for business
@@ -140,7 +140,7 @@ CREATE TABLE `communication_file`
     INDEX              `fk_communication_file_file_1`(`file_id` ASC) USING BTREE,
     CONSTRAINT `fk_communication_file_file_1` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
     CONSTRAINT `FK_communication_id` FOREIGN KEY (`communication_id`) REFERENCES `communication` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for file
@@ -266,7 +266,7 @@ CREATE TABLE `proj_file`
     INDEX        `fk_proj_file_project_2`(`file_id` ASC) USING BTREE,
     CONSTRAINT `fk_proj_file_project_1` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
     CONSTRAINT `fk_proj_file_project_2` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '有文件id的为文件节点\r\n无文件id的为文件夹节点\r\n整体表格组成树' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '有文件id的为文件节点\r\n无文件id的为文件夹节点\r\n整体表格组成树' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for project
@@ -282,9 +282,9 @@ CREATE TABLE `project`
     `create_time`   datetime NULL DEFAULT NULL,
     `create_by_id`  int NULL DEFAULT NULL,
     `update_time`   datetime NULL DEFAULT NULL,
-    `update_bt_id`  int NULL DEFAULT NULL,
+    `update_by_id`  int NULL DEFAULT NULL,
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for qualification_info
@@ -301,7 +301,7 @@ CREATE TABLE `qualification_info`
     INDEX       `fk_qualification_info_file_1`(`file_id` ASC) USING BTREE,
     CONSTRAINT `fk_qualification_info_file_1` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
     CONSTRAINT `fk_record_id` FOREIGN KEY (`record_id`) REFERENCES `invite_expert_record` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for question
@@ -310,14 +310,14 @@ DROP TABLE IF EXISTS `question`;
 CREATE TABLE `question`
 (
     `question_id`          int NOT NULL AUTO_INCREMENT,
-    `questionnaire_id`     int NOT NULL,
-    `question_title`       varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
-    `question_description` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
-    `question_nullable`    bit(1) NULL DEFAULT NULL,
-    `question_type`        varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
     `details`              varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+    `question_description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL,
+    `question_nullable`    bit(1) NULL DEFAULT NULL,
+    `question_title`       varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+    `question_type`        varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+    `questionnaire_id`     int NOT NULL,
     PRIMARY KEY (`question_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for questionnaire
@@ -333,7 +333,7 @@ CREATE TABLE `questionnaire`
     `fill_count`       int NULL DEFAULT NULL,
     `delete_flag`      int NULL DEFAULT NULL,
     PRIMARY KEY (`questionnaire_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for questionnaire_ip
@@ -345,7 +345,7 @@ CREATE TABLE `questionnaire_ip`
     `questionnaire_id` int NULL DEFAULT NULL,
     `ip`               varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for sys_setting
@@ -362,7 +362,7 @@ CREATE TABLE `sys_setting`
     PRIMARY KEY (`id`) USING BTREE,
     INDEX            `FK_change_userid`(`last_change_id` ASC) USING BTREE,
     CONSTRAINT `FK_change_userid` FOREIGN KEY (`last_change_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for temp
@@ -441,7 +441,7 @@ CREATE TABLE `user_sitting`
     INDEX            `fk_user_sitting_user_2`(`last_change_id` ASC) USING BTREE,
     CONSTRAINT `fk_user_sitting_user_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
     CONSTRAINT `fk_user_sitting_user_2` FOREIGN KEY (`last_change_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 SET
 FOREIGN_KEY_CHECKS = 1;

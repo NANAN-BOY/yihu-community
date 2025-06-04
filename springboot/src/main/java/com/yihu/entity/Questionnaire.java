@@ -26,9 +26,8 @@ public class Questionnaire {
         this.deleteFlag = deleteFlag;
     }
 
-    public Questionnaire(Integer questionnaireId, Date createTime, Date endTime,
-                         Integer fillCount, Date startTime,
-                         Integer status, Integer deleteFlag) {
+    public Questionnaire(Integer questionnaireId, Date createTime, Date startTime,
+                         Date endTime, Integer status, Integer fillCount, Integer deleteFlag) {
         this.questionnaireId = questionnaireId;
         this.createTime = createTime;
         this.startTime = startTime;

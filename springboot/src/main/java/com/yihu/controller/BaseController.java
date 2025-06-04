@@ -50,6 +50,7 @@ public class BaseController {
                            @RequestParam String location){
         int isSuccess = userService.register(userName,password,phoneNumber,captcha,location);
         if (isSuccess == 0){
+
             return Result.success("注册成功");
         }else if (isSuccess == 1){
             return Result.error(404,"注册失败");

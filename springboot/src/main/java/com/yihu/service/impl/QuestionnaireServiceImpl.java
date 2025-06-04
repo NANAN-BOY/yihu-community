@@ -412,11 +412,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
     @Override
     public Questionnaire getQuestionnaireOutline(Integer questionnaireId) {
-        Questionnaire questionnaire = questionnaireMapper.selectByPrimaryKey(questionnaireId);
-        if (questionnaire == null) {
-            return null;
-        }
-        return questionnaire;
+        return questionnaireMapper.selectByPrimaryKey(questionnaireId);
     }
 
 

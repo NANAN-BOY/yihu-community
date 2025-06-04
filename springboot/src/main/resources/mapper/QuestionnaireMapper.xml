@@ -35,7 +35,7 @@
         where questionnaire_id = #{questionnaireId}
     </update>
 
-    <select id="selectByPrimaryKey">
+    <select id="selectByPrimaryKey" resultType="com.yihu.entity.Questionnaire">
         select *
         from questionnaire
         where questionnaire_id = #{questionnaireId}

@@ -129,12 +129,13 @@ const createProject = async () => {
                   },
                 })
                 .then((response) => {
+                  console.log(response)
                   if (response.data.code === 200) {
                     instance.confirmButtonLoading = false
                     instance.confirmButtonText = '创建'
                     ElMessage.success('项目创建成功')
                     refreshProjectList()
-                    openActivityManagement(response.data.data,projectName)
+                    // openActivityManagement(response.data.data,projectName)
                     done()
                   } else if (response.data.code === 400) {
                     instance.confirmButtonLoading = false

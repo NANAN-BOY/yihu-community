@@ -88,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentType(1);
         Product product = productMapper.getProduct(order.getType()); //获取产品信息
         //专家服务订单
-        if (product.getVipTime() == null) {
+        if (product.getVipTime() == null || product.getVipTime() == 0 || product.getType() == 0) {
             int affectedRows = orderMapper.ExpertOrder(
                     order.getOrderNo(),
                     order.getStatus() - 1,  // 旧状态=已支付状态-1

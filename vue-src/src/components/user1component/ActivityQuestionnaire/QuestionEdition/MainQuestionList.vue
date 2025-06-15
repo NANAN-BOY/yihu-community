@@ -39,14 +39,14 @@
 
     </div>
   </div>
-  <el-col :lg="4" :md="6" :sm="8" :xl="4" class="create-page-select-bar-wrapper hidden-xs-only">
-    <div class="placeholder"></div>
-    <SelectBar
-        v-if="!questionnaireLoading && !addNewQuestionLoading && !onMobile"
-        class="create-page-select-bar"
-        @addNewQuestion="addNewQuestion"
-    />
-  </el-col>
+<!--  <el-col :lg="4" :md="6" :sm="8" :xl="4" class="create-page-select-bar-wrapper hidden-xs-only">-->
+<!--    <div class="placeholder"></div>-->
+<!--    <SelectBar-->
+<!--        v-if="!questionnaireLoading && !addNewQuestionLoading && !onMobile"-->
+<!--        class="create-page-select-bar"-->
+<!--        @addNewQuestion="addNewQuestion"-->
+<!--    />-->
+<!--  </el-col>-->
 </template>
 
 <script setup>

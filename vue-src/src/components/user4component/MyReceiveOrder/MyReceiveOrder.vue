@@ -240,7 +240,7 @@ const endOrder = (orderNo) => {
         <el-tag type="danger" v-if="nowOrder.status  === 3">已完结</el-tag>
       </el-form-item>
       <el-form-item label="订单金额">
-        <el-input v-model="nowOrder" disabled></el-input>
+        <el-input v-model="nowOrder.receivedAmount" disabled></el-input>
         <el-tag type="danger" v-if="nowOrder.status  === 2">元</el-tag>
         <el-tag type="danger" v-if="nowOrder.status  === 3">元</el-tag>
       </el-form-item>

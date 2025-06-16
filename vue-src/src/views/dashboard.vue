@@ -2,76 +2,97 @@
   <!-- Dashboard -->
   <div>
     <!-- TopNavbar -->
-    <el-header class="top-navbar">
-      <div class="header-content">
-        <!-- MobilePhoneMenuButton -->
-        <el-button v-if="isMobile" class="mobile-menu-button" @click="drawerVisible = true">
-          <el-icon>
-            <Expand/>
-          </el-icon>
-        </el-button>
-        <!-- Logo -->
-        <el-col :span="isMobile ? 19 : 20" class="left-menu">
-          <span :class="isMobile ? 'menu-title-mobile' : 'menu-title'"><strong>易互</strong></span>
-          <div>
-            <el-tag size="small" type="warning" v-if="store.state.connectionStatus==='connecting'">连接中</el-tag>
-            <el-tag size="small" type="success" v-if="store.state.connectionStatus==='connected'">在线</el-tag>
-            <el-tag size="small" type="danger" v-if="store.state.connectionStatus==='disconnected'">离线</el-tag>
-          </div>
-        </el-col>
-        <el-col :span="1" class="right-menu">
-          <el-button @click="openVIPAreaDialogVisible" type="warning" class="logout-button" color="warning">
-            <div v-if="MembershipInfo == null && MembershipLevel===0">不是会员</div>
-            <div v-if="MembershipInfo !== null && MembershipLevel===0">会员已过期</div>
-            <div v-if="MembershipLevel===1">普通会员</div>
-            <div v-if="MembershipError">请重试</div>
-            <div v-if="MembershipStatusLoading">加载中..</div>
-          </el-button>
-          <!-- LogoutButton -->
-          <el-button v-if="!isMobile" type="primary" @click="handleLogout" class="logout-button">安全登出</el-button>
-        </el-col>
-      </div>
-    </el-header>
+<!--    <el-header class="top-navbar">-->
+<!--      <div class="header-content">-->
+<!--        &lt;!&ndash; MobilePhoneMenuButton &ndash;&gt;-->
+<!--        <el-button v-if="isMobile" class="mobile-menu-button" @click="drawerVisible = true">-->
+<!--          <el-icon>-->
+<!--            <Expand/>-->
+<!--          </el-icon>-->
+<!--        </el-button>-->
+<!--        &lt;!&ndash; Logo &ndash;&gt;-->
+<!--        <el-col :span="isMobile ? 19 : 20" class="left-menu">-->
+<!--          <span :class="isMobile ? 'menu-title-mobile' : 'menu-title'"><strong>易互</strong></span>-->
+<!--          <div>-->
+<!--            <el-tag size="small" type="warning" v-if="store.state.connectionStatus==='connecting'">连接中</el-tag>-->
+<!--            <el-tag size="small" type="success" v-if="store.state.connectionStatus==='connected'">在线</el-tag>-->
+<!--            <el-tag size="small" type="danger" v-if="store.state.connectionStatus==='disconnected'">离线</el-tag>-->
+<!--          </div>-->
+<!--        </el-col>-->
+<!--        <el-col :span="1" class="right-menu">-->
+<!--          <el-button @click="openVIPAreaDialogVisible" type="warning" class="logout-button" color="warning">-->
+<!--            <div v-if="MembershipInfo == null && MembershipLevel===0">不是会员</div>-->
+<!--            <div v-if="MembershipInfo !== null && MembershipLevel===0">会员已过期</div>-->
+<!--            <div v-if="MembershipLevel===1">普通会员</div>-->
+<!--            <div v-if="MembershipError">请重试</div>-->
+<!--            <div v-if="MembershipStatusLoading">加载中..</div>-->
+<!--          </el-button>-->
+<!--          &lt;!&ndash; LogoutButton &ndash;&gt;-->
+<!--          <el-button v-if="!isMobile" type="primary" @click="handleLogout" class="logout-button">安全登出</el-button>-->
+<!--        </el-col>-->
+<!--      </div>-->
+<!--    </el-header>-->
     <!-- Content -->
     <el-container style="height: auto">
       <!-- LeftSidebar -->
       <div>
         <!-- DesktopSidebar -->
-        <el-aside :width="sidebarWidth" class="sidebar">
-          <el-menu class="el-menu-vertical-demo" @select="handleSelect">
-            <template v-for="menu in menus">
-              <el-sub-menu
-                  v-if="menu.children && store.state.user.role === menu.role"
-                  :index="menu.index"
-                  :key="`sub-${menu.index}`"
-              >
-                <template #title>
+        <el-aside width="140" class="sidebar">
+          <div class="sidebar-avatar">
+            <el-avatar :size="60" style="background: #558b83;" src="">
+              <div style="font-size: 20px;">{{ store.state.user.name.substring(0, 2) }}</div>
+            </el-avatar>
+          </div>
+          <el-divider class="sidebar-divider"/>
+
+          <!-- 主菜单区域 -->
+          <div class="menu-container">
+            <el-menu class="el-menu-vertical-demo" @select="handleSelect">
+              <template v-for="menu in menus">
+                <el-sub-menu
+                    v-if="menu.children && store.state.user.role === menu.role"
+                    :index="menu.index"
+                    :key="`sub-${menu.index}`"
+                >
+                  <template #title>
+                    <el-icon>
+                      <component :is="menu.icon"/>
+                    </el-icon>
+                    <span>{{ menu.title }}</span>
+                  </template>
+                  <el-menu-item
+                      v-for="child in menu.children"
+                      :key="child.index"
+                      :index="child.index"
+                  >
+                    {{ child.title }}
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-menu-item
+                    v-else-if="store.state.user.role === menu.role"
+                    :index="menu.index"
+                    :key="`item-${menu.index}`"
+                >
                   <el-icon>
                     <component :is="menu.icon"/>
                   </el-icon>
                   <span>{{ menu.title }}</span>
-                </template>
-                <el-menu-item
-                    v-for="child in menu.children"
-                    :key="child.index"
-                    :index="child.index"
-                >
-                  {{ child.title }}
                 </el-menu-item>
-              </el-sub-menu>
+              </template>
+            </el-menu>
+          </div>
 
-              <el-menu-item
-                  v-else-if="store.state.user.role === menu.role"
-                  :index="menu.index"
-                  :key="`item-${menu.index}`"
-              >
-                <el-icon>
-                  <component :is="menu.icon"/>
-                </el-icon>
-                <span>{{ menu.title }}</span>
-              </el-menu-item>
-            </template>
-          </el-menu>
+          <div class="bottom-buttons-area">
+            <button class="bottom-buttons" @click="openBuyVIPAreaDialogVisible">
+              <el-icon class="bottom-buttons-icon"><Present /></el-icon>
+              会员购买
+            </button>
+            <button class="bottom-buttons" @click="handleLogout">
+              <el-icon class="bottom-buttons-icon"><SwitchButton /></el-icon>
+              安全登出
+            </button>
+          </div>
         </el-aside>
         <!-- MobileSidebar -->
         <el-drawer v-model="drawerVisible" :size="'250px'" direction="ltr" :before-close="handleDrawerClose">
@@ -251,13 +272,23 @@ import aboutMyInfo from '../components/user/aboutMyInfo/aboutMyInfo.vue';
 import Communicate from '../components/user/Communicate.vue'
 
 
-import {Avatar, Document, Expand, HomeFilled, Star, StarFilled, Tickets, UserFilled} from "@element-plus/icons-vue";
+import {
+  Avatar,
+  Document,
+  Expand,
+  HomeFilled, Present,
+  Star,
+  StarFilled,
+  SwitchButton,
+  Tickets,
+  UserFilled
+} from "@element-plus/icons-vue";
 import {ElMessage, ElMessageBox} from "element-plus";
 import axios from "axios";
 
 const router = useRouter();
 const drawerVisible = ref(false);
-const sidebarWidth = ref('250px');
+const sidebarWidth = ref('150px');
 const isMobile = ref(false);
 const currentComponent = ref(null);
 //初始化用户展示页面
@@ -721,19 +752,129 @@ onMounted(() => {
   color: #d7fbe8;
 }
 
+/* 侧边栏整体样式 */
 .sidebar {
-  background-color: #ffffff;
-}
+  height: 100vh;
+  background-color: #536786; /* 深色背景 */
+  transition: width 0.3s ease;
+  box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
+  display: flex;
+  flex-direction: column;
+  /* 无法选择 */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer 10+ */
+  user-select: none; /* 标准语法 */
 
-.el-menu-vertical-demo {
-  border-right: none;
-  padding-top: 20px;
-}
+  .menu-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 
+  /* 菜单整体样式 */
+  .el-menu-vertical-demo {
+    border-right: none;
+    background-color: transparent;
+    margin: 5px 10px 0px 10px;
+
+    /* 菜单项通用样式 */
+    .el-menu-item, .el-sub-menu__title{
+      color: #bfcbd9;
+      height: 40px;
+      line-height: 56px;
+      border-radius: 3px;
+      padding-left: 10px;
+      &:hover {
+        background-color: #263445 !important;
+        color: #fff;
+      }
+
+      /* 图标样式 */
+      .el-icon {
+        font-size: 18px;
+        margin-right: 8px;
+      }
+    }
+
+    /* 激活/选中菜单项样式 */
+    .el-menu-item.is-active {
+      background-color: #6f89b2 !important;
+      color: #fff;
+    }
+
+    /* 子菜单样式 */
+    .el-sub-menu {
+      /* 子菜单标题 */
+      .el-sub-menu__title {
+        span {
+          font-size: 14px;
+        }
+      }
+
+      /* 子菜单项 */
+      .el-menu-item {
+        min-width: 140px;
+        padding-left: 50px !important;
+        background-color: #1f2d3d !important;
+
+        &:hover {
+          background-color: #001528 !important;
+        }
+      }
+    }
+  }
+
+  .bottom-buttons-area {
+    margin: 0 10px 10px 10px; /* 保持与菜单项相同的左右边距 */
+  }
+
+  .bottom-buttons{
+    color: #bfcbd9;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+    min-width: 140px;
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    &:hover {
+      background-color: #263445;
+      color: #fff;
+    }
+  }
+
+  .bottom-buttons-text{
+    color: inherit; /* 继承按钮的颜色 */
+    font-size: 14px;
+    flex: 1;
+  }
+
+  .bottom-buttons-icon{
+    font-size: 18px; /* 与菜单项图标大小一致 */
+    margin-right: 8px; /* 与菜单项图标间距一致 */
+  }
+}
+.sidebar-avatar{
+  margin-left: 10px;
+  margin-top: 10px;
+}
+.sidebar-divider{
+  margin-left: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: calc(100% - 20px);
+}
 .main-content {
   padding: 20px;
   background-color: #ffffff;
-  min-height: calc(100vh - 60px);
+  min-height: 100%;
 }
 
 .mobile-logout-button {

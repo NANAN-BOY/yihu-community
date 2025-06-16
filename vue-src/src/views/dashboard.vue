@@ -139,7 +139,7 @@
         </el-drawer>
       </div>
       <!-- MainContent -->
-      <el-container>
+      <el-container class="main-content-back">
         <el-main class="main-content">
           <component :is="currentComponent"/>
         </el-main>
@@ -871,14 +871,22 @@ onMounted(() => {
   margin-bottom: 10px;
   width: calc(100% - 20px);
 }
+.main-content-back {
+  background-color: #536786;
+  padding: 10px;
+  height: 100vh;
+
+}
+
 .main-content {
-  padding: 20px;
-  background-color: #ffffff;
-  min-height: 100%;
+  background-color: white;
+  border-radius: 10px;
+  padding-left: 50px;
 }
 
 .mobile-logout-button {
   width: 100%;
+
 }
 
 @media (max-width: 768px) {

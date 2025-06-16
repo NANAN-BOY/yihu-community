@@ -1,10 +1,11 @@
 <script setup>
 import {ref, onMounted, computed, watch, nextTick, h} from "vue";
-import {ElButton, ElInput, ElMessage, ElMessageBox} from "element-plus";
-import {Delete, Edit, More, Search, Upload, View} from "@element-plus/icons-vue";
+import {ElButton, ElInput, ElMessage, ElMessageBox, ElPagination} from "element-plus";
+import {CirclePlus, Delete, Edit, More, Search, Upload, View} from "@element-plus/icons-vue";
 import store from "../../../store";
 import axios from "axios";
 import ActivityManagement from "./ActivityManagement/ActivityManagement.vue";
+import zhCn from "element-plus/es/locale/lang/zh-cn";
 
 const pageNum = ref('ProjectList');
 const searchInput = ref(''); // 搜索框的输入
@@ -19,14 +20,13 @@ watch(searchInput, () => {
 //Data required for project list
 const projectList = ref([])
 const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
 const loading = ref(false); // 控制加载状态
 const error = ref('')
-const hasMore = ref(true)
-const noMore = computed(() => !hasMore.value)
-const disabled = computed(() => loading.value || noMore.value)
+
 //Project loading method
 const projectListLoad = async () => {
-  if (disabled.value) return
   if (loading.value) return
   const status = await projectStatusConvert(projectStatusValue.value);
   console.log(status)
@@ -40,21 +40,19 @@ const projectListLoad = async () => {
       },
       params:{
         pageNum: currentPage.value,
-        pageSize: 20,
+        pageSize: pageSize.value,
         status: status,
         name: searchInput.value
       }
     });
     if (response.data.code === 200) {
       // success
-      projectList.value = [...projectList.value, ...response.data.data.list]
-      hasMore.value = response.data.data.hasNextPage
-      currentPage.value++
+      projectList.value = response.data.data.list
+      total.value = response.data.data.total || 0
     } else if (response.data.code === 404) {
       // project not found , list is empty
-      hasMore.value = false
-
-      if (currentPage.value === 1) projectList.value = []
+      projectList.value = []
+      total.value = 0
     } else {
       // Other error
       error.value = response.data.msg || '请求出现异常'
@@ -68,23 +66,40 @@ const projectListLoad = async () => {
     loading.value = false
   }
 }
+
+// 处理分页变化
+const handleCurrentPageChange = (page) => {
+  currentPage.value = page
+  projectListLoad()
+}
+
+const handlePageSizeChange = (size) => {
+  pageSize.value = size
+  currentPage.value = 1
+  projectListLoad()
+}
+
 //Refresh project list
 const refreshProjectList = async () => {
-  projectList.value = []
   currentPage.value = 1
-  hasMore.value = true
   loading.value = false
   error.value = ''
   await nextTick()
   await projectListLoad()
 }
+
 // 在组件挂载时获取我的项目
 onMounted(() => {
   projectListLoad();
 });
-//project status classification
+
+// project status classification
 const projectStatusValue = ref('全部')
 const projectStatusOptions = ['全部','未通过','已通过']
+const handleStatusChange = (option) => {// 处理状态改变
+  searchInput.value = '' // 清空搜索输入
+  projectStatusValue.value = option
+}
 watch(projectStatusValue, () => {
   refreshProjectList()
 })
@@ -100,6 +115,7 @@ const projectStatusConvert = async (status) => {
       return null
   }
 }
+
 const createProject = async () => {
   await ElMessageBox.prompt(
       '请输入项目名称',
@@ -158,6 +174,7 @@ const createProject = async () => {
       }
   )
 }
+
 const editProjectName = async (project) => {
   if(project.status === 1){
     ElMessage.warning("项目审核中，无法编辑!")
@@ -227,6 +244,7 @@ const editProjectName = async (project) => {
       }
   )
 }
+
 const deleteProject = async (projectId, projectName) => {
   closeMoreSelect()
   await ElMessageBox.confirm(
@@ -288,6 +306,7 @@ const closeActivityManagement = () => {
   nowProject.value = null
   refreshProjectList()
 }
+
 //手机端更多选项所需数据
 const nowSelectProject = ref(null)
 const moreSelectVisible = ref(false)
@@ -299,6 +318,7 @@ const openMoreSelect = (project) => {
 const closeMoreSelect = () => {
   moreSelectVisible.value = false
 }
+
 //提交审核项目
 const submitExampleProject = (project) => {
   console.log(project)
@@ -314,7 +334,7 @@ const submitExampleProject = (project) => {
   ElMessageBox({
     title: '提交审核',
     message: h('div', null, [
-      h('p', null, `确认提交审核“${!project.name ? "未命名活动": project.name}”项目吗？`),
+      h('p', null, `确认提交审核"${!project.name ? "未命名活动": project.name}"项目吗？`),
       h('p', {  }, '请确认项目已经结项，并且活动均填写完整')
     ]),
     showCancelButton: true,
@@ -326,13 +346,13 @@ const submitExampleProject = (project) => {
       if (action === 'confirm') {
         instance.confirmButtonLoading = true
         axios.post(`${import.meta.env.VITE_BACKEND_IP}/api/project/submitProject`,
-        {
+            {
               id: project.id
-        }, {
-          headers: {
-            token: store.state.token
-          }
-        })
+            }, {
+              headers: {
+                token: store.state.token
+              }
+            })
             .then(response => {
               console.log(response)
               const res = response.data
@@ -365,76 +385,126 @@ const submitExampleProject = (project) => {
 </script>
 
 <template>
+  <div class="Page">
   <div v-if="pageNum === 'ProjectList'">
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item><strong>项目管理</strong></el-breadcrumb-item>
-    </el-breadcrumb>
-    <br />
-    <el-button type="primary" @click="createProject">创建新项目</el-button>&nbsp;
-    <el-input
-        v-model="searchInput"
-        style="width: auto"
-        placeholder="键入以搜索"
-        :prefix-icon="Search"
-    />
-    <br />
-    <!--  状态分类-->
-    <div class="flex flex-col items-start gap-4" style="margin-bottom: 4px;margin-top: 4px">
-      <el-segmented v-model="projectStatusValue" :options="projectStatusOptions" size="large" @click="searchInput=''"/>
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h1 class="page-title">项目管理</h1>
+      <p class="page-subtitle">共{{ total }}个项目，？个已通过，？个未通过</p>
     </div>
-    <div class="infinite-list-wrapper" style="overflow: auto">
-      <ul
-          v-infinite-scroll="projectListLoad"
-          class="list"
-          :infinite-scroll-disabled="disabled"
-          infinite-scroll-immediate="false"
-          infinite-scroll-distance="100"
+    <div style="display:flex;justify-content: space-between">
+      <el-button type="primary"
+                 @click="createProject"
+                 style="width: 200px;height: 45px;font-size: 20px"
       >
-        <li v-for="project in projectList" :key="project.id" class="list-item"
-            @click="openActivityManagement(project)">
-          <div>
-            <el-tag v-if="project.status === 0" type="info">未提交</el-tag>
-            <el-tag v-if="project.status === 1" type="primary">待审核</el-tag>
-            <el-tag v-if="project.status === 2" type="danger">已驳回</el-tag>
-            <el-tag v-if="project.status === 3" type="success">已通过</el-tag>
-            {{ !project.name ? "未命名项目": project.name}}
+        <el-icon><CirclePlus /></el-icon>
+        新建
+      </el-button>
+      <el-input
+          v-model="searchInput"
+          style="width: auto"
+          placeholder="键入以搜索"
+          :prefix-icon="Search"
+      />
+    </div>
+    <el-divider style="margin-top: 10px;margin-bottom: 10px"/>
+    <!--  状态分类-->
+    <div style="margin-bottom: 4px;margin-top: 4px">
+      <!-- 更新替换为三个按钮 -->
+      <div>
+        <el-button
+            v-for="option in projectStatusOptions"
+            :key="option"
+            :type="projectStatusValue === option ? 'primary' : 'default'"
+            size="large"
+            @click="handleStatusChange(option)"
+            style="width: 100px;height: 35px"
+        >
+          {{ option }}
+        </el-button>
+      </div>
+    </div>
+
+    <div class="project-list-wrapper" v-loading="loading">
+      <div class="card-grid">
+        <div v-for="project in projectList" :key="project.id" class="project-card"
+             @click="openActivityManagement(project)">
+          <div class="card-header">
+            <div class="project-status">
+              <el-tag v-if="project.status === 0" type="info">未提交</el-tag>
+              <el-tag v-if="project.status === 1" type="primary">待审核</el-tag>
+              <el-tag v-if="project.status === 2" type="danger">已驳回</el-tag>
+              <el-tag v-if="project.status === 3" type="success">已通过</el-tag>
+            </div>
+            <div v-if="onMobile" class="mobile-more">
+              <el-button size="small" type="primary" @click.stop="openMoreSelect(project)">
+                <el-icon><More /></el-icon>
+              </el-button>
+            </div>
           </div>
-          <div v-if="!onMobile" class="button-group">
-            <el-button  size="default" type="primary" @click.stop="openActivityManagement(project)">
+
+          <div class="card-content">
+            <div class="project-name">
+              {{ !project.name ? "未命名项目": project.name}}
+            </div>
+            <div class="project-info">
+              <span class="project-id">ID: {{ project.id }}</span>
+            </div>
+          </div>
+
+          <div v-if="!onMobile" class="card-actions">
+            <el-button size="small" type="primary" @click.stop="openActivityManagement(project)" title="查看详情">
               <el-icon>
                 <View/>
               </el-icon>
             </el-button>
-            <el-button size="default" type="primary" @click.stop="editProjectName(project)">
+            <el-button size="small" type="primary" @click.stop="editProjectName(project)" title="编辑信息">
               <el-icon>
                 <Edit/>
               </el-icon>
             </el-button>
-            <el-button size="default" type="primary" @click.stop="submitExampleProject(project)">
+            <el-button size="small" type="success" @click.stop="submitExampleProject(project)" title="提交审核">
               <el-icon>
                 <Upload />
               </el-icon>
             </el-button>
-            <el-button size="default" type="danger" @click.stop="deleteProject(project.id,project.name)">
+            <el-button size="small" type="danger" @click.stop="deleteProject(project.id,project.name)" title="删除项目">
               <el-icon>
                 <Delete/>
               </el-icon>
             </el-button>
           </div>
-          <div v-else>
-            <el-button size="default" type="primary" @click.stop="openMoreSelect(project)">
-              <el-icon><More /></el-icon>
-            </el-button>
-          </div>
-        </li>
-        <li v-if="loading" v-loading="loading" class="list-item"></li>
-      </ul>
-      <p v-if="loading">加载中...</p>
-      <p v-if="noMore">没有更多数据了</p>
-      <p v-if="error" style="color: red">{{ error }}</p>
+        </div>
+      </div>
+
+      <!-- 空状态提示 -->
+      <div v-if="!loading && projectList.length === 0" class="empty-state">
+        <p>暂无项目数据</p>
+      </div>
+
+      <!-- 错误提示 -->
+      <div v-if="error" class="error-state">
+        <p style="color: red">{{ error }}</p>
+      </div>
+    </div>
+
+    <!-- 分页组件 -->
+    <div class="pagination-wrapper" v-if="total > 0">
+      <el-config-provider :locale="zhCn">
+        <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handlePageSizeChange"
+            @current-change="handleCurrentPageChange"
+        />
+      </el-config-provider>
     </div>
   </div>
-<!--  手机端更多选项弹窗-->
+
+  <!--  手机端更多选项弹窗-->
   <el-dialog
       v-model="moreSelectVisible"
       title="更多"
@@ -453,74 +523,181 @@ const submitExampleProject = (project) => {
       </div>
     </template>
   </el-dialog>
+
   <ActivityManagement
       v-if="pageNum === 'ActivityManagement'"
       :project="nowProject"
       @closeActivityManagement="closeActivityManagement"
   />
+  </div>
 </template>
 
 <style scoped>
-.infinite-list-wrapper {
-  height: calc(100vh - 212px);
-  text-align: center;
+.Page{
+  background-color: white;
 }
 
-.infinite-list-wrapper .list {
-  padding: 0;
+/* 页面标题 */
+.page-header {
+  margin-bottom: 10px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0 0;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #6b7280;
   margin: 0;
-  list-style: none;
+}
+.project-list-wrapper {
+  height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding: 10px 0;
 }
 
-.infinite-list-wrapper .list-item:hover {
-  background: #b6b6b6;
-  transition: background 0.3s ease;
-  cursor: pointer;
-}
-
-.infinite-list-wrapper .list-item {
-  min-height: 50px;
-  border-radius: 10px;
-  padding: 10px;
+.card-grid {
   display: flex;
-  align-items: center;
-  background: #f5f5f5;
-  color: #000000;
-  margin-bottom: 5px;
+  gap: 10px;
+}
+
+.project-card {
+  background: #ffffff;
+  border: 1px solid #e4e7ed;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 160px;
+  width: 230px;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
 }
-@media (max-width: 768px) {
-  .infinite-list-wrapper {
-    height: calc(100vh - 212px);
-    text-align: center;
-  }
 
-  .infinite-list-wrapper .list {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .infinite-list-wrapper .list-item:hover {
-    background: #b6b6b6;
-    transition: background 0.3s ease;
-    cursor: pointer;
-  }
-
-  .infinite-list-wrapper .list-item {
-    border-radius: 10px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    background: #f5f5f5;
-    color: #000000;
-  }
-
-  .infinite-list-wrapper .list-item + .list-item {
-    margin-top: 5px;
-  }
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #409eff;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.project-status {
+  flex: 1;
+}
+
+.mobile-more {
+  margin-left: 10px;
+}
+
+.card-content {
+  flex: 1;
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.project-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.project-info {
+  font-size: 12px;
+  color: #909399;
+}
+
+.project-id {
+  font-family: monospace;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #999;
+  font-size: 16px;
+}
+
+.error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 16px;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 10px 0;
+}
+
+@media (max-width: 768px) {
+  .project-list-wrapper {
+    height: calc(100vh - 280px);
+    overflow-y: auto;
+    padding: 10px 0;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 0 15px;
+  }
+
+  .project-card {
+    min-height: 140px;
+    padding: 15px;
+  }
+
+  .card-header {
+    margin-bottom: 10px;
+  }
+
+  .card-content {
+    margin-bottom: 10px;
+  }
+
+  .project-name {
+    font-size: 15px;
+  }
+
+  .pagination-wrapper {
+    padding: 10px;
+  }
+
+  .pagination-wrapper :deep(.el-pagination) {
+    justify-content: center;
+  }
+
+  .pagination-wrapper :deep(.el-pagination .el-pager) {
+    flex-wrap: wrap;
+  }
+}
 
 .project-status span {
   font-weight: bold;

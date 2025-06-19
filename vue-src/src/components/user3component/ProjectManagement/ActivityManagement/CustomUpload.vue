@@ -20,7 +20,7 @@
           :key="file.id"
           class="preview-item"
       >
-        <img v-if="props.fileTypeName==='图片'" :src="file.url" alt="" class="preview-image"  @click.stop="openFileDetailVisible(file)"/>
+        <Image v-if="props.fileTypeName==='图片'" :DownloadUrl="file.url" @click.stop="openFileDetailVisible(file)" class="preview-image"/>
         <div v-else class="file-icon">
           <el-icon>
             <Document/>
@@ -62,6 +62,7 @@ import {Plus, Close, Document} from '@element-plus/icons-vue';
 import axios from 'axios';
 import {ElMessage, ElMessageBox} from "element-plus";
 import store from "../../../../store";
+import Image from "./Image.vue";
 
 const props = defineProps({
   modelValue: {

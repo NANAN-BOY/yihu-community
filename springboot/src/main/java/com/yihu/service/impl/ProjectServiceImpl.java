@@ -1,6 +1,8 @@
 package com.yihu.service.impl;
 
 import cn.hutool.core.io.FileUtil;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.model.OSSObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yihu.dto.ActivityAuditDTO;
@@ -13,7 +15,9 @@ import com.yihu.mapper.*;
 import com.yihu.service.ActivityService;
 import com.yihu.service.ProjectService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +29,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
@@ -40,6 +49,14 @@ public class ProjectServiceImpl implements ProjectService {
     private ActivityFilesMapper activityFilesMapper;
     @Autowired
     private ActivityNewsMapper activityNewsMapper;
+
+    @Autowired
+    private ActivityMapper activityMapper;
+
+    @Autowired
+    private OSS ossClient;
+    @Value("${aliyun.oss.bucket-name}") private String bucketName;
+
 
 
 
@@ -135,6 +152,48 @@ public class ProjectServiceImpl implements ProjectService {
         return new PageInfo<>(projectMapper.checkActivityStatus(projectId));
     }
 
+    @Override
+    public String packageAndDownloadActivityFiles(Integer projectId) throws IOException {
+
+        List<Activity> activities = activityMapper.findByProjectId(projectId);
+        Project project = projectMapper.findById(projectId);
+
+        // 创建临时目录
+        Path tempDir = Files.createTempDirectory("project_download_");
+
+        try {
+            // 创建压缩包
+            Path zipPath = tempDir.resolve(generateZipFileName(project));
+
+            // 关键修改：在循环外打开ZIP输出流（追加模式）
+            try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+                for(Activity activity : activities){
+                    List<ActivityFiles> fileDetails = activityFilesMapper.findByActivityId(activity.getId());
+                    if (fileDetails.isEmpty()) continue;
+
+                    // 直接使用原方法逻辑，但传入统一的zos
+                    for (ActivityFiles file : fileDetails) {
+                        addFileToZip(activity, file, zos); // 复用原有方法
+                    }
+                }
+            }
+            // 上传到OSS
+            String ossKey = "downloads/" + zipPath.getFileName().toString();
+            uploadToOSS(zipPath, ossKey);
+            // 生成签名URL
+            return generateSignedUrl(ossKey);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            // 6. 清理临时文件
+            FileUtils.deleteDirectory(tempDir.toFile());
+        }
+
+
+    }
+
+
+
 
     /**
      * 保存文件到存储目录
@@ -183,4 +242,112 @@ public class ProjectServiceImpl implements ProjectService {
 
         return targetPath.toString();
     }
+
+    private String saveFileToStorage(MultipartFile file,Integer activityId,Integer sort,String storageName,Integer projectId) throws IOException {
+        // 1. 获取文件后缀（如 ".jpg"）
+        String fileExtension = file.getOriginalFilename()
+                .substring(file.getOriginalFilename().lastIndexOf("."));
+
+        /// 2. 根据sort确定子目录
+        String subDir = switch (sort) {
+            case 1, 2, 3 -> "签到";
+            case 4 -> "活动过程";
+            case 5 -> "纸质新闻稿";
+            case 6 -> "附件";
+            default -> throw new IllegalArgumentException("非法的sort值: " + sort);
+        };
+
+        // 3. 构建OSS对象键（模拟目录结构）
+        String objectKey = String.format("%s/%d/%d/%s/%s",
+                storageDir,
+                projectId,
+                activityId,
+                subDir,
+                storageName);
+
+        // 4. 上传到OSS
+        try (InputStream is = file.getInputStream()) {
+            ossClient.putObject(bucketName, objectKey, is);
+        } catch (Exception e) {
+            log.error("OSS文件上传失败: {}", objectKey, e);
+            throw new RuntimeException("文件上传失败", e);
+        }
+
+        // 5. 返回文件OSS路径
+        return objectKey;
+    }
+
+
+    public String generateSignedUrl(String fileUrl) {
+        // 设置URL过期时间为10分钟后
+        Date expiration = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
+
+        // 生成签名URL
+        String signedUrl = ossClient.generatePresignedUrl(
+                bucketName,
+                fileUrl,
+                expiration
+        ).toString();
+        return signedUrl;
+    }
+    private String generateZipFileName(Project project) {
+        return String.format("project_%s_%s.zip",
+                project.getName(),
+                new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+    }
+
+    private void createActivityZipFile(Activity activity, List<ActivityFiles> files, Path zipPath) throws IOException {
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+            for (ActivityFiles file : files) {
+                addFileToZip(activity, file, zos);
+            }
+        }
+    }
+
+
+    private void addFileToZip(Activity activity, ActivityFiles file, ZipOutputStream zos) throws IOException {
+        // 1. 下载文件到临时存储
+        Path tempFile = downloadFromOSS(file.getFileUrl());
+
+        try {
+            // 2. 创建ZIP条目
+            String entryName = String.format("%s/%s/%s",
+                    activity.getTitle(),
+                    file.getFileSort(),
+                    file.getName());
+
+            zos.putNextEntry(new ZipEntry(entryName));
+
+            // 3. 写入文件内容
+            Files.copy(tempFile, zos);
+
+            zos.closeEntry();
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+    private Path downloadFromOSS(String ossKey) throws IOException {
+        Path tempFile = Files.createTempFile("oss_temp_", "");
+
+        try {
+            OSSObject ossObject = ossClient.getObject(bucketName, ossKey);
+            try (InputStream is = ossObject.getObjectContent()) {
+                Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            return tempFile;
+        } catch (Exception e) {
+            Files.deleteIfExists(tempFile);
+            throw new IOException("下载OSS文件失败: " + ossKey, e);
+        }
+    }
+
+    private void uploadToOSS(Path filePath, String ossKey) throws IOException {
+        try (InputStream is = Files.newInputStream(filePath)) {
+            ossClient.putObject(bucketName, ossKey, is);
+        } catch (Exception e) {
+            throw new IOException("上传文件到OSS失败", e);
+        }
+    }
+
+
 }

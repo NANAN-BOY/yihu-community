@@ -58,12 +58,13 @@ public class ActivityController {
     }
 
 
+    @AuthAccess
     @PostMapping("/uploadFile")
     public Result uploadFile(@RequestParam("file") MultipartFile file,
-                             @RequestParam Integer sort, @RequestParam Integer activityId){
+                             @RequestParam Integer sort, @RequestParam Integer activityId, @RequestParam Integer projectId){
 
         try{
-            int newId = activityService.uploadFile(file,activityId,sort);
+            int newId = activityService.uploadFile(file,activityId,sort,projectId);
             if (newId != 0){
                 // 返回文件的所有信息
                 ActivityFiles activityFiles = activityService.getById(newId);
@@ -79,7 +80,7 @@ public class ActivityController {
 
     /**
      * 文件下载接口
-     */
+     *//*
     @AuthAccess
     @GetMapping("/download/{id}")
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Integer id) {
@@ -152,6 +153,26 @@ public class ActivityController {
             log.error("Error downloading file: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }*/
+    /**
+     * OSS文件下载接口
+     */
+    @AuthAccess
+    @GetMapping("/download/{id}")
+    public ResponseEntity<String> downloadFile(@PathVariable Integer id) {
+        // 获取文件信息
+        ActivityFiles activityFilesEntity = activityService.getFileById(id);
+        if (activityFilesEntity == null) {
+            log.error("File not found: {}", id);
+            return ResponseEntity.notFound().build();
+
+        }
+
+        //生成OSS文件的签名URL（替换原来的file_url）
+        String publicOSSFileUrl  = activityService.generateSignedUrl(activityFilesEntity.getFileUrl());
+
+        return ResponseEntity.ok(publicOSSFileUrl);
+
     }
 
     @AuthAccess
@@ -167,6 +188,7 @@ public class ActivityController {
     }
 
 
+    @AuthAccess
     @DeleteMapping("/deleteFileById")
     public Result deleteFileById(@RequestParam Integer fileId){
         try {
@@ -209,7 +231,7 @@ public class ActivityController {
 
     @AuthAccess
     @DeleteMapping("/deleteById") // 表数据不删除，存储的文件需要删除
-    public Result delete(@RequestParam Integer activityId) {
+    public Result delete(@RequestParam Integer activityId,@RequestParam Integer projectId) {
 
         User currentUser = TokenUtils.getCurrentUser();
 
@@ -221,7 +243,7 @@ public class ActivityController {
 
 
         // 删除活动记录
-        activityService.deleteActivityById(activityId, currentUser.getId());
+        activityService.deleteActivityById(activityId, currentUser.getId(),projectId);
 
         return Result.success("删除活动成功");
     }
@@ -332,6 +354,7 @@ public class ActivityController {
             // 查询活动相关文件列表
             List<ActivityFiles> files = activityService.getFilesByActivityId(activityId);
 
+
             // 查询活动相关新闻列表
             List<ActivityNews> news = activityService.getNewsByActivityId(activityId);
 
@@ -360,6 +383,22 @@ public class ActivityController {
             return Result.error("获取活动详情失败");
         }
     }
+
+    @AuthAccess
+    @GetMapping("/downloadActivityFiles")
+    public ResponseEntity<?> downloadActivityFilesAsZip(@RequestParam Integer activityId) {
+        try {
+            String downloadUrl = activityService.packageAndDownloadActivityFiles(activityId);
+            return ResponseEntity.ok(downloadUrl);
+        } catch (Exception e) {
+            log.error("打包下载活动文件失败，活动ID: {}", activityId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Result.error("文件打包下载失败"));
+        }
+    }
+
+
+
 
 
 

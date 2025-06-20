@@ -23,4 +23,6 @@ public interface FileService{
 
 
     File getFileInfoById(Integer id);
+
+    String generateSingnedUrl(String storagePath);
 }

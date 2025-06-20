@@ -1,6 +1,7 @@
 package com.yihu.service.impl;
 
 import cn.hutool.core.io.FileUtil;
+import com.aliyun.oss.OSS;
 import com.yihu.entity.File;
 import com.yihu.mapper.FileMapper;
 import com.yihu.service.FileService;
@@ -22,6 +23,7 @@ import org.springframework.core.io.UrlResource;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.HexFormat;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -31,10 +33,14 @@ import java.nio.file.StandardCopyOption;
 public class FileServiceImpl implements FileService {
 
     //@Value("${file.storage.dir}") // 从配置文件中读取文件存储目录
-    private String storageDir = System.getProperty("user.dir") + "/files/";
+    private String storageDir = "chatfileorother";
+
 
     @Autowired
     private FileMapper fileMapper;
+    @Autowired
+    private OSS ossClient;
+    @Value("${aliyun.oss.bucket-name}") private String bucketName;
 
     @Override
     public int uploadFile(MultipartFile file) throws IOException, NoSuchAlgorithmException {
@@ -87,6 +93,20 @@ public class FileServiceImpl implements FileService {
         return fileMapper.selectById(id);
     }
 
+    @Override
+    public String generateSingnedUrl(String storagePath) {
+        // 设置URL过期时间为3天
+        Date expiration = new Date(System.currentTimeMillis() + 4320 * 60 * 1000);
+
+        // 生成签名URL
+        String signedUrl = ossClient.generatePresignedUrl(
+                bucketName,
+                storagePath,
+                expiration
+        ).toString();
+        return signedUrl;
+    }
+
 
     /**
      * 计算文件的 MD5 值
@@ -106,7 +126,7 @@ public class FileServiceImpl implements FileService {
 
     /**
      * 保存文件到存储目录
-     */
+     *//*
     private String saveFileToStorage(MultipartFile file, String md5) throws IOException {
         // 获取文件的后缀名（带 "."）
         String fileExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
@@ -136,5 +156,38 @@ public class FileServiceImpl implements FileService {
         }
 
         return targetPath.toString();
+    }*/
+
+
+    /**
+     * OSS保存文件到存储目录
+     */
+    private String saveFileToStorage(MultipartFile file, String md5) throws IOException {
+        // 获取文件的后缀名（带 "."）
+        String fileExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+
+        // 创建存储目录（按文件后缀名分目录）
+        String targetDir = fileExtension.substring(1); // 去掉 "." 作为目录名
+
+        // 生成存储文件名（MD5 + 文件扩展名）
+        String fileName = md5 + fileExtension;
+
+        // 3. 构建OSS对象键（模拟目录结构）
+        String objectKey = String.format("%s/%s/%s",
+                storageDir,
+                targetDir,
+                fileName);
+
+        // 4. 上传到OSS
+        try (InputStream is = file.getInputStream()) {
+            ossClient.putObject(bucketName, objectKey, is);
+        } catch (Exception e) {
+            log.error("OSS文件上传失败: {}", objectKey, e);
+            throw new RuntimeException("文件上传失败", e);
+        }
+
+        // 5. 返回文件OSS路径
+        return objectKey;
+
     }
 }

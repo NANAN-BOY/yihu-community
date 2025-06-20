@@ -60,7 +60,7 @@ public class FileController {
 
     /**
      * 文件下载接口
-     */
+     *//*
     @AuthAccess
     @GetMapping("/download/{id}")
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Integer id) {
@@ -104,8 +104,27 @@ public class FileController {
             log.error("Error downloading file: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
+    }*/
 
+    /**
+     * OSS文件下载接口，返回文件的URL签名
+     */
+    @AuthAccess
+    @GetMapping("/download/{id}")
+    public ResponseEntity<String> downloadFile(@PathVariable Integer id) {
+            // 获取文件信息
+            File fileEntity = fileService.getFileInfoById(id);
+            if (fileEntity == null) {
+                log.error("File not found: {}", id);
+                return ResponseEntity.notFound().build();
+
+            }
+
+            //生成OSS文件的签名URL（替换原来的file_url）
+            String publicOSSFileUrl  = fileService.generateSingnedUrl(fileEntity.getStoragePath());
+
+            return ResponseEntity.ok(publicOSSFileUrl);
+    }
     @AuthAccess
     @GetMapping("/getFileStoragePath/{id}")
     public Result getFileStoragePath(@PathVariable Integer id) {
@@ -117,6 +136,7 @@ public class FileController {
             return Result.error("文件不存在");
         }
     }
+
 
 }
 

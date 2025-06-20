@@ -87,7 +87,7 @@ public class ProjectController {
                 // 删除与该活动相关的文件记录
                 activityService.deleteFilesByActivityId(activityId);
                 // 删除活动记录
-                activityService.deleteActivityById(activityId, currentUser.getId());
+                activityService.deleteActivityById(activityId, currentUser.getId(),projectId);
             }
 
             // 删除项目记录
@@ -181,6 +181,19 @@ public class ProjectController {
         } catch (Exception e) {
             log.error("获取项目详情失败", e);
             return Result.error("获取项目详情失败");
+        }
+    }
+
+    @AuthAccess
+    @GetMapping("/downloadProjectFiles")
+    public ResponseEntity<?> downloadActivityFilesAsZip(@RequestParam Integer projectId) {
+        try {
+            String downloadUrl = projectService.packageAndDownloadActivityFiles(projectId);
+            return ResponseEntity.ok(downloadUrl);
+        } catch (Exception e) {
+            log.error("打包下载活动文件失败，项目ID: {}", projectId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Result.error("文件打包下载失败"));
         }
     }
 

@@ -38,4 +38,6 @@ public interface ProjectService {
 
 
     PageInfo<ActivityAuditDTO> checkActivityStatus(Integer projectId);
+
+    String packageAndDownloadActivityFiles(Integer projectId) throws IOException;
 }

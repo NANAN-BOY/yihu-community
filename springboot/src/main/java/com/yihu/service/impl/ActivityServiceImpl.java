@@ -442,7 +442,7 @@ public class ActivityServiceImpl implements ActivityService {
             // 2. 创建ZIP条目
             String entryName = String.format("%s/%s/%s",
                     activity.getTitle(),
-                    file.getFileSort(),
+                    getFileCategory(file.getFileSort()),
                     file.getName());
 
             zos.putNextEntry(new ZipEntry(entryName));
@@ -476,6 +476,19 @@ public class ActivityServiceImpl implements ActivityService {
         } catch (Exception e) {
             throw new IOException("上传文件到OSS失败", e);
         }
+    }
+
+    /**
+     * 根据文件排序类型获取分类名称
+     */
+    private String getFileCategory(Integer fileSort) {
+        return switch (fileSort) {
+            case 1, 2, 3 -> "签到";
+            case 4 -> "活动过程";
+            case 5 -> "纸质新闻稿";
+            case 6 -> "附件";
+            default -> throw new IllegalArgumentException("无效的文件排序类型: " + fileSort);
+        };
     }
 
 }

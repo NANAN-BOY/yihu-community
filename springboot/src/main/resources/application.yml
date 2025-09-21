@@ -1,76 +1,15 @@
-#
-#
-## \u6570\u636E\u5E93\u914D\u7F6E
-#spring:
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.NonRegisteringDriver
-#    username: yihu_system_1
-#    password: 20250407Qwertyuiop
-#    url: jdbc:mysql://pc-bp18yg73bys3sv.mysql.polardb.rds.aliyuncs.com/yihu_system?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
-#  data:
-#    redis:
-#      host: r-2zeyvwowmtducml6bzpd.redis.rds.aliyuncs.com
-#      port: 6379
-#      password: r-2zeyvwowmtducml6bzpd
-#      lettuce:
-#        pool:
-#          max-active: 4
-#          max-idle: 4
-#          min-idle: 4
-#          max-wait: 1000ms
-#      timeout: 2000ms
-#      username: r-2zeyvwowmtducml6bz
-#  jackson:
-#    serialization:
-#      write-dates-as-timestamps: false
-#    date-format: yyyy-MM-dd HH:mm:ss
-#    time-zone: Asia/Shanghai
-#  # 上传文件大小配置
-#  servlet:
-#    multipart:
-#      max-file-size: 50MB
-#      max-request-size: 50MB
-#
-## \u914D\u7F6Emybatis\u5B9E\u4F53\u548Cxml\u6620\u5C04
-#mybatis:
-#  ## \u6620\u5C04xml clssspath\u5BF9\u5E94resources
-#  mapper-locations: classpath:mapper/*.xml
-#  configuration:
-#    #\u914D\u7F6E\u65E5\u5FD7
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-#    map-underscore-to-camel-case: true
-#
-#
-## alipay
-#alipay:
-#  easy:
-#    protocol: https
-#    gatewayHost: openapi-sandbox.dl.alipaydev.com
-#    signType: RSA2
-#    appId: 9021000145690101
-#    merchantPrivateKey: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCCKYfA44SxG6LKWmOEAxPyeNdfcUJVujuyubWupacA448nSMfpJyCqtLgx1nkJBtBHruFnuUt6ELTEV5hBry37UP+7DmEjeYBas9NFloQJ8W9ev4hBPcbWj99ZYEQ41gcAnhBg4pa3WPKW/rzeaCgdVlbjwdziGrDbW8bH6hlrM0nAYbDCojJBqtBYi7hLD2IbsSfr4mwfEPlrOndnNlaWF20j48H++MixJ62JlUaaxy485bvouxV7lksfdfOC6Zo2dJO3qtu0o19gfxBPoUTAfmlZMDKm/PEJ/4T46ymsrm6Hq16DSEWV6qGYNewLI4gcbxb/BSxC8sFCoKgfygoHAgMBAAECggEARGEG9TlRUy2ehsmXcBmh2AbNtlEstRaiGBFhtb9Gjbv+T3f3ta+dhLBt95ihezF+J7pipff9A8JVBLSzwwYBlP6HakBynY1N9dh0jCE3enXAuTjLnuKSW9O3VR+yl10wzo07M3q2DNoIj3SByiFTuZ3LBdmpbYryEDsVoZ6E/gBw6eutmS+ARaL1n2DsXkwWJtJ6Pelo945M8CTAtX1123IWSzCELOkw8sB4Fv/eWahrTvKWh5Vl1hd1KsDw8Y8GB/c7EjPlchOmwrjq1Qgyy7M82FDm+FRYBQX2OBaDVQE/Z41xQjkz0ljS4zZMOD1uUWr8f3LW1pbiGqa0IdB6AQKBgQDSZNfZPNk6ABiQEadUuokDl5P2G/GNqX4nBMm7czx/TWPEx6icYcZYGsa0TIt0pn8r/Ta+xD5xcFIXWaDAEZacdBVS4sTOT5MeLewwJ3U6aCopt3Td4AmG0hl0AqkzN+hmWWA+4xk6wFz26D6DTtdveEKFYdN/zkMuyiCSjjudBwKBgQCeYHqM6jWbl7+CdWe33h6M1ULsG66zVyzB3C9tsQ3qGqsfoAe6IwcL9kPdSr/5g91BmOdr4w/H1dbpd6Oq0yeOObgE4faVkgaav8F2gUXC62PWQgPoaLtsHJhoOcZblXLcn+crFDpFDQDT1AcWa2aOLUTvlPIJqGM35M7/8w/rAQKBgQCZEHKUghdLggxcq+s/0iGiMmGb2EKJHHlB69LUBAdMWkIuRE9fziZdrMVJILMIX6T/nM16Rg1jvCKNCFDRyzn2guGMlpw1uGDAwQonEl3P6z5ZcTWdwcNMiYepBdKRB6iU5YsG1XNicdZwbxAjuXU0jJpgrYYQYkAwRy8hUEcAewKBgEPyloFgdlFjwGkjH7V12VuIn2aW1dPhgbVGVx7TiGm4uVQfH1GPd5V9OU52pHhTR5i+FgNmbj3JE6QkjRZb8yuEvdtyao1vEeBQhprmCV0AClxBBFYwoMBYYFbO+rgOHTJkdBQ6YGmBk6pN3CCVQXGcIGg9Wb4k/TRcuSZ8TIcBAoGBAMBUVNxEl/XiVwBDsYxxbKcFpcz17re5udhar5cTabG+RFv7jPASah3yl87ra7Hd9kkzSyb6ZjHpCjxYapjeikjpVS/+OQDFMpLxTmv/gkxGgMOitEJQDv+N0ekCx8MIUxuNFeLhfiKvQ0aUIh0AJBlCnfE1vQjYYVpC5xr4Fin9
-#    alipayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgWD7+Nci4UkK8bqxtWrGEK+4/OkcnC4NsTwnkeznZ+k1b+f1lUDB7er9bw8Vup1QDgq4x1nFlzZbbjO6VSxdRX0nFQFLuzXobx6E1SiHAoHFq3f0pG2En0EtAZJKxnwI4fr6zUF/c+VYUBVqJ2SYU2RVJXwp1RdQDxQ/KShfhKueOOHHl09lO0dUoPMzdfBIsNu8g9iCua68rHL97XeS7NazqDiiMDOSbGtvMTi30tQz6UEmiQl92WF5GFp8rPT3sSkKTtx1kccEBk3OaZJWJ5lNLXQuR7BWwbUHFqD5zT40ZcA8+n+Q98Hu8+hfIkLdQH9IBbSYNVJ+pdluJ4UWbwIDAQAB
-#    notifyUrl: http://123.249.11.153:22229/api/order/pay/notify
-#
-#
-#
-#
-
-
-
-
-# \u6570\u636E\u5E93\u914D\u7F6E
+# 数据库配置
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.NonRegisteringDriver
     username: yihu_system_1
-    password: Poiuytrewq321
+    password: ${DB_PASSWORD:} # 需要替换为实际的数据库密码
     url: jdbc:mysql://yihu.rwlb.rds.aliyuncs.com/yihu?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
   data:
     redis:
       host: r-2zepv1h8e52zfqg5gl.redis.rds.aliyuncs.com
       port: 6379
-      password: Poiuytrewq321
+      password: ${REDIS_PASSWORD:} # 需要替换为实际的Redis密码
       lettuce:
         pool:
           max-active: 4
@@ -90,34 +29,28 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
 
-# \u914D\u7F6Emybatis\u5B9E\u4F53\u548Cxml\u6620\u5C04
+# 配置mybatis实体和xml映射
 mybatis:
-  ## \u6620\u5C04xml clssspath\u5BF9\u5E94resources
   mapper-locations: classpath:mapper/*.xml
   configuration:
-    #\u914D\u7F6E\u65E5\u5FD7
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
 
-
-# alipay
+# alipay配置
 alipay:
   easy:
     protocol: https
     gatewayHost: openapi-sandbox.dl.alipaydev.com
     signType: RSA2
     appId: 9021000145690101
-    merchantPrivateKey: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCCKYfA44SxG6LKWmOEAxPyeNdfcUJVujuyubWupacA448nSMfpJyCqtLgx1nkJBtBHruFnuUt6ELTEV5hBry37UP+7DmEjeYBas9NFloQJ8W9ev4hBPcbWj99ZYEQ41gcAnhBg4pa3WPKW/rzeaCgdVlbjwdziGrDbW8bH6hlrM0nAYbDCojJBqtBYi7hLD2IbsSfr4mwfEPlrOndnNlaWF20j48H++MixJ62JlUaaxy485bvouxV7lksfdfOC6Zo2dJO3qtu0o19gfxBPoUTAfmlZMDKm/PEJ/4T46ymsrm6Hq16DSEWV6qGYNewLI4gcbxb/BSxC8sFCoKgfygoHAgMBAAECggEARGEG9TlRUy2ehsmXcBmh2AbNtlEstRaiGBFhtb9Gjbv+T3f3ta+dhLBt95ihezF+J7pipff9A8JVBLSzwwYBlP6HakBynY1N9dh0jCE3enXAuTjLnuKSW9O3VR+yl10wzo07M3q2DNoIj3SByiFTuZ3LBdmpbYryEDsVoZ6E/gBw6eutmS+ARaL1n2DsXkwWJtJ6Pelo945M8CTAtX1123IWSzCELOkw8sB4Fv/eWahrTvKWh5Vl1hd1KsDw8Y8GB/c7EjPlchOmwrjq1Qgyy7M82FDm+FRYBQX2OBaDVQE/Z41xQjkz0ljS4zZMOD1uUWr8f3LW1pbiGqa0IdB6AQKBgQDSZNfZPNk6ABiQEadUuokDl5P2G/GNqX4nBMm7czx/TWPEx6icYcZYGsa0TIt0pn8r/Ta+xD5xcFIXWaDAEZacdBVS4sTOT5MeLewwJ3U6aCopt3Td4AmG0hl0AqkzN+hmWWA+4xk6wFz26D6DTtdveEKFYdN/zkMuyiCSjjudBwKBgQCeYHqM6jWbl7+CdWe33h6M1ULsG66zVyzB3C9tsQ3qGqsfoAe6IwcL9kPdSr/5g91BmOdr4w/H1dbpd6Oq0yeOObgE4faVkgaav8F2gUXC62PWQgPoaLtsHJhoOcZblXLcn+crFDpFDQDT1AcWa2aOLUTvlPIJqGM35M7/8w/rAQKBgQCZEHKUghdLggxcq+s/0iGiMmGb2EKJHHlB69LUBAdMWkIuRE9fziZdrMVJILMIX6T/nM16Rg1jvCKNCFDRyzn2guGMlpw1uGDAwQonEl3P6z5ZcTWdwcNMiYepBdKRB6iU5YsG1XNicdZwbxAjuXU0jJpgrYYQYkAwRy8hUEcAewKBgEPyloFgdlFjwGkjH7V12VuIn2aW1dPhgbVGVx7TiGm4uVQfH1GPd5V9OU52pHhTR5i+FgNmbj3JE6QkjRZb8yuEvdtyao1vEeBQhprmCV0AClxBBFYwoMBYYFbO+rgOHTJkdBQ6YGmBk6pN3CCVQXGcIGg9Wb4k/TRcuSZ8TIcBAoGBAMBUVNxEl/XiVwBDsYxxbKcFpcz17re5udhar5cTabG+RFv7jPASah3yl87ra7Hd9kkzSyb6ZjHpCjxYapjeikjpVS/+OQDFMpLxTmv/gkxGgMOitEJQDv+N0ekCx8MIUxuNFeLhfiKvQ0aUIh0AJBlCnfE1vQjYYVpC5xr4Fin9
-    alipayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgWD7+Nci4UkK8bqxtWrGEK+4/OkcnC4NsTwnkeznZ+k1b+f1lUDB7er9bw8Vup1QDgq4x1nFlzZbbjO6VSxdRX0nFQFLuzXobx6E1SiHAoHFq3f0pG2En0EtAZJKxnwI4fr6zUF/c+VYUBVqJ2SYU2RVJXwp1RdQDxQ/KShfhKueOOHHl09lO0dUoPMzdfBIsNu8g9iCua68rHL97XeS7NazqDiiMDOSbGtvMTi30tQz6UEmiQl92WF5GFp8rPT3sSkKTtx1kccEBk3OaZJWJ5lNLXQuR7BWwbUHFqD5zT40ZcA8+n+Q98Hu8+hfIkLdQH9IBbSYNVJ+pdluJ4UWbwIDAQAB
+    merchantPrivateKey: ${ALIPAY_MERCHANT_PRIVATE_KEY:} # 需要替换为实际的商户私钥
+    alipayPublicKey: ${ALIPAY_PUBLIC_KEY:} # 需要替换为实际的支付宝公钥
     notifyUrl: http://59.110.19.72:8080/api/order/pay/notify
 
+# 阿里云OSS配置
 aliyun:
   oss:
-    endpoint: oss-cn-qingdao.aliyuncs.com  # 对应Bucket地域
+    endpoint: oss-cn-qingdao.aliyuncs.com
     bucket-name: yihutest01
-    access-key-id: LTAI5t79dY4oabQ5J1VMfBk5             # 替换为你的RAM用户Key
-    access-key-secret: kuyGDGdEgMJfaSFatIqg0TbY6ICwZO         # 替换为你的RAM用户Secret
-
-
-
-
+    access-key-id: ${OSS_ACCESS_KEY_ID:} # 需要替换为实际的Access Key ID
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:} # 需要替换为实际的Access Key Secret
